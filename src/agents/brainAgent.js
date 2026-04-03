@@ -1,9 +1,14 @@
 // Brain Agent：ReAct 循环（Reason → Act → Observe → Reason...）
 const { callMinimaxWithTools } = require('../services/llmClients');
 const { TOOL_DEFINITIONS, executeTool, getToolDisplay } = require('../services/toolRegistry');
+const { analyzeAgentImages } = require('../services/visionMcp');
 const { buildBrainSystemPrompt } = require('../prompts/brain');
 
 const MAX_TURNS = 15;
+
+function isStopRequested(session) {
+  return !!session?.stopRequested;
+}
 
 function isInternalThinking(text) {
   if (!text || typeof text !== 'string') return false;
@@ -54,16 +59,97 @@ function stripThinkingBlocks(text) {
 function buildMessages(session) {
   return [
     { role: 'system', content: buildBrainSystemPrompt() },
-    ...session.messages
+    ...session.messages.map((message) => {
+      const next = {
+        role: message.role,
+        content: message.content
+      };
+      if (message.tool_calls) next.tool_calls = message.tool_calls;
+      if (message.tool_call_id) next.tool_call_id = message.tool_call_id;
+      return next;
+    })
   ];
+}
+
+function canCallBuildPpt(session) {
+  return !!session?.bestPlan && !!session?.userInput;
+}
+
+function toPublicAttachments(attachments = []) {
+  return attachments.map((item) => ({
+    id: item.id,
+    name: item.name,
+    mimeType: item.mimeType,
+    size: item.size,
+    url: item.url,
+    analysis: item.analysis || '',
+    error: item.error || ''
+  }));
+}
+
+function appendSessionAttachments(session, attachments = []) {
+  if (!attachments.length) return;
+  const existing = Array.isArray(session.attachments) ? session.attachments : [];
+  const next = [...existing];
+  attachments.forEach((item) => {
+    if (!next.find((entry) => entry.id === item.id)) {
+      next.push({ ...item });
+    }
+  });
+  session.attachments = next;
+}
+
+function buildImageContextBlock(attachments = []) {
+  const usable = attachments.filter((item) => item.analysis || item.error);
+  if (!usable.length) return '';
+
+  return [
+    '以下是用户本轮上传图片，已通过 MiniMax MCP understand_image 分析，可视为用户提供的视觉上下文：',
+    ...usable.map((item, index) => {
+      if (item.analysis) {
+        return `[图片${index + 1}：${item.name || '未命名图片'}]\n${item.analysis}`;
+      }
+      return `[图片${index + 1}：${item.name || '未命名图片'}]\n分析失败：${item.error}`;
+    })
+  ].join('\n\n');
+}
+
+async function prepareUserInputMessage(text, attachments = [], session, onEvent) {
+  const normalizedText = String(text || '').trim();
+  if (!attachments.length) {
+    return {
+      content: normalizedText,
+      attachments: []
+    };
+  }
+
+  onEvent('text', { text: '我先看一下你发来的图片内容。' });
+  const analyzedAttachments = await analyzeAgentImages(attachments, {
+    minimaxApiKey: session.apiKeys.minimaxApiKey,
+    userText: normalizedText
+  });
+  const imageContext = buildImageContextBlock(analyzedAttachments);
+  const content = [normalizedText, imageContext].filter(Boolean).join('\n\n');
+
+  return {
+    content: content || '用户上传了图片，请结合图片内容理解需求并作答。',
+    attachments: toPublicAttachments(analyzedAttachments)
+  };
 }
 
 /**
  * 收到用户新消息，启动/继续 Brain 循环
  */
-async function run(session, userMessage, onEvent) {
-  session.messages.push({ role: 'user', content: userMessage });
+async function run(session, userMessage, onEvent, options = {}) {
+  const prepared = await prepareUserInputMessage(userMessage, options.attachments || [], session, onEvent);
+  appendSessionAttachments(session, prepared.attachments);
+  session.messages.push({
+    role: 'user',
+    content: prepared.content,
+    ...(prepared.attachments.length ? { attachments: prepared.attachments } : {})
+  });
   session.status = 'running';
+  session.stopRequested = false;
   session.doneEmitted = false;
   await runLoop(session, onEvent);
 }
@@ -71,17 +157,23 @@ async function run(session, userMessage, onEvent) {
 /**
  * 用户回答了 ask_user 的问题，恢复循环
  */
-async function resume(session, userReply, onEvent) {
+async function resume(session, userReply, onEvent, options = {}) {
+  const prepared = await prepareUserInputMessage(userReply, options.attachments || [], session, onEvent);
+  appendSessionAttachments(session, prepared.attachments);
   // 把用户回答作为 tool result 补回去
   if (session.pendingToolCallId) {
     session.messages.push({
       role: 'tool',
       tool_call_id: session.pendingToolCallId,
-      content: JSON.stringify({ answer: userReply })
+      content: JSON.stringify({
+        answer: prepared.content,
+        attachments: prepared.attachments
+      })
     });
     session.pendingToolCallId = null;
   }
   session.status = 'running';
+  session.stopRequested = false;
   session.doneEmitted = false;
   await runLoop(session, onEvent);
 }
@@ -93,6 +185,11 @@ async function runLoop(session, onEvent) {
   const loopTracker = {}; // "toolName:argsHash" → 调用次数
 
   for (let turn = 0; turn < MAX_TURNS; turn++) {
+    if (isStopRequested(session)) {
+      session.status = 'idle';
+      return;
+    }
+
     // 推送 thinking 事件
     onEvent('thinking', {});
 
@@ -110,8 +207,17 @@ async function runLoop(session, onEvent) {
       );
     } catch (err) {
       console.error('[BrainAgent] LLM 调用失败:', err.message);
+      if (isStopRequested(session)) {
+        session.status = 'idle';
+        return;
+      }
       onEvent('error', { message: `AI 调用失败：${err.message}` });
       session.status = 'failed';
+      return;
+    }
+
+    if (isStopRequested(session)) {
+      session.status = 'idle';
       return;
     }
 
@@ -147,6 +253,11 @@ async function runLoop(session, onEvent) {
 
     // 处理工具调用
     for (const toolCall of message.tool_calls) {
+      if (isStopRequested(session)) {
+        session.status = 'idle';
+        return;
+      }
+
       let args = {};
       try {
         args = JSON.parse(toolCall.function.arguments || '{}');
@@ -183,6 +294,26 @@ async function runLoop(session, onEvent) {
         return; // 暂停，等待 resume() 被调用
       }
 
+      // ── build_ppt：硬护栏，必须先有策划方案 ─────────────────────
+      if (toolName === 'build_ppt' && !canCallBuildPpt(session)) {
+        const toolResult = {
+          success: false,
+          error: '还没有策划方案，请先调用 run_strategy'
+        };
+        onEvent('tool_call', { tool: toolName, display: getToolDisplay(toolName, args), toolCallId: toolCall.id });
+        onEvent('tool_result', buildToolResultEvent(toolName, toolResult));
+        session.messages.push({
+          role: 'tool',
+          tool_call_id: toolCall.id,
+          content: JSON.stringify(toolResult)
+        });
+        session.messages.push({
+          role: 'user',
+          content: '系统提示：build_ppt 前置条件未满足。你必须先调用 run_strategy，拿到完整策划方案和 doc_ready 之后，才能生成 PPT。不要再次提前调用 build_ppt。'
+        });
+        continue;
+      }
+
       // ── 普通工具调用 ──────────────────────────────────────────
       const display = getToolDisplay(toolName, args);
       onEvent('tool_call', { tool: toolName, display, toolCallId: toolCall.id });
@@ -192,8 +323,17 @@ async function runLoop(session, onEvent) {
         toolResult = await executeTool(toolName, args, session, onEvent);
       } catch (err) {
         console.error(`[BrainAgent] 工具 ${toolName} 执行失败:`, err.message);
+        if (isStopRequested(session)) {
+          session.status = 'idle';
+          return;
+        }
         toolResult = { error: err.message };
         onEvent('tool_progress', { message: `执行失败：${err.message}` });
+      }
+
+      if (isStopRequested(session)) {
+        session.status = 'idle';
+        return;
       }
 
       onEvent('tool_result', buildToolResultEvent(toolName, toolResult));
@@ -246,6 +386,15 @@ function buildToolResultEvent(toolName, toolResult) {
         tool: toolName,
         ok: !safeResult.error,
         summary: `已整理任务简报${safeResult?.brief?.brand ? `：${safeResult.brief.brand}` : ''}`,
+        details
+      };
+    case 'review_uploaded_images':
+      return {
+        tool: toolName,
+        ok: !!safeResult.success,
+        summary: safeResult.success
+          ? `已重新查看 ${safeResult.count || 0} 张图片`
+          : (safeResult.error || '图片查看失败'),
         details
       };
     case 'web_search':

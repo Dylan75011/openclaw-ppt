@@ -590,7 +590,9 @@ function saveContent(id, content, contentFormat = 'tiptap-json') {
 function savePptToSpace({ spaceId, name, pptData, downloadUrl, previewSlides }) {
   const node = createNode({ parentId: spaceId, name, type: 'document', docType: 'ppt' });
   const f = path.join(DOCS_DIR, node.id + '.json');
-  const pptxFilename = downloadUrl ? downloadUrl.split('/').pop() : '';
+  const pptxFilename = downloadUrl
+    ? decodeURIComponent(String(downloadUrl).replace(/^.*\/api\/files\/download\//, ''))
+    : '';
   const content = {
     id: node.id,
     docType: 'ppt',

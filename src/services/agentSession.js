@@ -21,10 +21,12 @@ function createSession({ apiKeys = {}, spaceId = '' } = {}) {
     bestPlan: null,           // run_strategy 完成后存储最优方案
     bestScore: 0,
     userInput: null,          // 构建策划时使用的结构化输入
+    stopRequested: false,     // 用户主动停止后，供执行循环尽快退出
     docMarkdown: '',
     docHtml: '',
     brief: null,              // 当前会话已确认/推断的任务简报
     planItems: [],            // 当前任务计划
+    attachments: [],          // 当前会话累计上传的图片
     doneEmitted: false,       // 防止重复推送 done
     createdAt: Date.now(),
     updatedAt: Date.now()

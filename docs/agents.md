@@ -56,7 +56,7 @@
 
 **模型**：MiniMax（订阅）
 **并行数**：3 个实例同时运行
-**工具**：调用现有 `searchWithTavily()`
+**工具**：调用统一 `webSearch()`，默认优先使用 MiniMax `POST /v1/coding_plan/search`，必要时降级 Tavily / DuckDuckGo
 
 **输入**
 ```json

@@ -1,11 +1,10 @@
 // Brain Agent 工具注册表：定义 + 执行器
 const { search: webSearch } = require('./webSearch');
 const { fetchPage } = require('./webFetch');
-const StrategyAgent = require('../agents/strategyAgent');
-const CriticAgent = require('../agents/criticAgent');
+const { analyzeAgentImages } = require('./visionMcp');
 const PptBuilderAgent = require('../agents/pptBuilderAgent');
 const ImageAgent = require('../agents/imageAgent');
-const DocWriterAgent = require('../agents/docWriterAgent');
+const { strategize, critique, writeDoc } = require('../skills');
 const { generatePPT } = require('./pptGenerator');
 const { renderToHtml } = require('./previewRenderer');
 const config = require('../config');
@@ -65,6 +64,25 @@ const TOOL_DEFINITIONS = [
             items: { type: 'string' }
           }
         }
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'review_uploaded_images',
+      description: '重新查看本次对话里用户上传过的图片，并按当前问题提取关键信息、风格线索或识别图中内容。',
+      parameters: {
+        type: 'object',
+        properties: {
+          prompt: { type: 'string', description: '这次希望重点看什么，比如“识别品牌和产品”、“总结视觉风格”、“看海报里的关键信息”' },
+          image_ids: {
+            type: 'array',
+            description: '可选。指定要查看的图片 ID；不传则默认查看最近上传的全部图片',
+            items: { type: 'string' }
+          }
+        },
+        required: ['prompt']
       }
     }
   },
@@ -155,11 +173,6 @@ const TOOL_DEFINITIONS = [
 
 // ── 工具执行器 ────────────────────────────────────────────────────
 
-function injectKeys(agent, apiKeys) {
-  agent.apiKeys = apiKeys || {};
-  return agent;
-}
-
 /**
  * 执行具体工具
  * @param {string} toolName
@@ -173,6 +186,8 @@ async function executeTool(toolName, args, session, onEvent) {
       return execWriteTodos(args, session, onEvent);
     case 'update_brief':
       return execUpdateBrief(args, session, onEvent);
+    case 'review_uploaded_images':
+      return execReviewUploadedImages(args, session, onEvent);
     case 'web_search':
       return execWebSearch(args, session, onEvent);
     case 'web_fetch':
@@ -244,8 +259,59 @@ async function execUpdateBrief(args, session, onEvent) {
   };
 }
 
+async function execReviewUploadedImages(args, session, onEvent) {
+  const allAttachments = Array.isArray(session.attachments) ? session.attachments : [];
+  if (!allAttachments.length) {
+    return {
+      success: false,
+      error: '当前会话还没有可供查看的用户图片'
+    };
+  }
+
+  const requestedIds = Array.isArray(args.image_ids)
+    ? args.image_ids.map((item) => String(item || '').trim()).filter(Boolean)
+    : [];
+  const selectedAttachments = requestedIds.length
+    ? allAttachments.filter((item) => requestedIds.includes(item.id))
+    : allAttachments.slice(-4);
+
+  if (!selectedAttachments.length) {
+    return {
+      success: false,
+      error: '没有匹配到指定的图片 ID'
+    };
+  }
+
+  onEvent('tool_progress', { message: `正在重新查看 ${selectedAttachments.length} 张图片...` });
+  const analyses = await analyzeAgentImages(selectedAttachments, {
+    minimaxApiKey: session.apiKeys.minimaxApiKey,
+    userText: String(args.prompt || '').trim()
+  });
+
+  const summary = analyses.map((item, index) => {
+    if (item.analysis) {
+      return `[图片${index + 1}] ${item.name}\n${item.analysis}`;
+    }
+    return `[图片${index + 1}] ${item.name}\n分析失败：${item.error || '未知错误'}`;
+  }).join('\n\n');
+
+  return {
+    success: true,
+    count: analyses.length,
+    summary,
+    images: analyses.map((item) => ({
+      id: item.id,
+      name: item.name,
+      url: item.url,
+      analysis: item.analysis || '',
+      error: item.error || ''
+    }))
+  };
+}
+
 async function execWebSearch(args, session, onEvent) {
   const searchResult = await webSearch(args.query, {
+    minimaxApiKey: session.apiKeys.minimaxApiKey,
     tavilyApiKey: session.apiKeys.tavilyApiKey,
     maxResults: args.max_results || 8
   });
@@ -344,10 +410,6 @@ async function execRunStrategy(args, session, onEvent) {
   };
   onEvent('brief_update', { brief: session.brief });
 
-  const strategyAgent = injectKeys(new StrategyAgent(), session.apiKeys);
-  const criticAgent   = injectKeys(new CriticAgent(), session.apiKeys);
-  const docWriterAgent = injectKeys(new DocWriterAgent(), session.apiKeys);
-
   const maxRounds = config.criticMaxRounds;
   let bestPlan = null;
   let bestScore = 0;
@@ -356,17 +418,11 @@ async function execRunStrategy(args, session, onEvent) {
   for (let round = 1; round <= maxRounds; round++) {
     onEvent('tool_progress', { message: `第 ${round} 轮：制定策划方案...` });
 
-    const plan = await strategyAgent.run({
-      orchestratorOutput,
-      researchResults,
-      round,
-      previousFeedback,
-      userInput
-    });
+    const plan = await strategize({ orchestratorOutput, researchResults, round, previousFeedback, userInput }, session.apiKeys);
 
     onEvent('tool_progress', { message: `第 ${round} 轮：专家评审中（DeepSeek-R1）...` });
 
-    const review = await criticAgent.run({ plan, round, userInput });
+    const review = await critique({ plan, round, userInput }, session.apiKeys);
 
     onEvent('tool_progress', {
       message: `第 ${round} 轮评审完成，得分 ${review.score}${review.passed ? ' ✓' : ' — 继续优化'}`
@@ -386,11 +442,7 @@ async function execRunStrategy(args, session, onEvent) {
   session.bestScore = bestScore;
 
   onEvent('tool_progress', { message: '正在整理策划文档...' });
-  const { markdown, html } = await docWriterAgent.run({
-    plan: bestPlan,
-    userInput,
-    reviewFeedback: previousFeedback
-  });
+  const { markdown, html } = await writeDoc({ plan: bestPlan, userInput, reviewFeedback: previousFeedback }, session.apiKeys);
   session.docMarkdown = markdown;
   session.docHtml = html;
   onEvent('doc_ready', {
@@ -434,8 +486,8 @@ async function execBuildPpt(args, session, onEvent) {
     return { success: false, error: '还没有策划方案，请先调用 run_strategy' };
   }
 
-  const pptBuilderAgent = injectKeys(new PptBuilderAgent(), apiKeys);
-  const imageAgent      = injectKeys(new ImageAgent(), apiKeys);
+  const pptBuilderAgent = new PptBuilderAgent(apiKeys);
+  const imageAgent      = new ImageAgent(apiKeys);
 
   const imageMap = {};
 
@@ -477,11 +529,11 @@ async function execBuildPpt(args, session, onEvent) {
     });
 
     const filename = `ppt_${Date.now()}.pptx`;
-    await generatePPT(pptData, filename);
-    const downloadUrl = `/api/files/download/${filename}`;
+    const result = await generatePPT(pptData, filename, { runId: session.spaceId || `tool_${Date.now()}` });
+    const downloadUrl = result.path;
     const previewSlides = renderToHtml(pptData);
 
-    onEvent('done', { filename, downloadUrl, previewSlides, previewData: pptData });
+    onEvent('done', { filename: result.filename, downloadUrl, previewSlides, previewData: pptData });
 
     return { success: true, downloadUrl, pageCount: pptData?.pages?.length || 0 };
   } catch (err) {
@@ -495,6 +547,7 @@ function getToolDisplay(toolName, args) {
   switch (toolName) {
     case 'write_todos': return `更新计划（${Array.isArray(args.todos) ? args.todos.length : 0} 项）`;
     case 'update_brief': return '整理任务简报';
+    case 'review_uploaded_images': return `查看已上传图片：${(args.prompt || '').slice(0, 24)}`;
     case 'web_search': return `搜索：${args.query || ''}`;
     case 'web_fetch':  return `读取页面：${(args.url || '').replace(/https?:\/\//, '').slice(0, 50)}`;
     case 'run_strategy': return `制定策划方案：${args.brand || ''}`;

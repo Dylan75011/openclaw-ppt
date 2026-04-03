@@ -47,15 +47,15 @@
           </a-form-item>
         </a-card>
 
-        <!-- Tavily 搜索 -->
-        <a-card class="settings-card" title="Tavily（搜索服务 · 推荐开启）">
+        <!-- Tavily 兜底搜索 -->
+        <a-card class="settings-card" title="Tavily（可选兜底搜索）">
           <a-form-item label="API Key">
             <a-input-password
               v-model="form.tavilyApiKey"
               placeholder="tvly-..."
               allow-clear
             />
-            <template #extra>Tavily 是高精度搜索服务，可大幅提升策划方案的信息丰富度。<a href="https://tavily.com" target="_blank">获取 API Key</a>（免费额度 1000 次/月）</template>
+            <template #extra>默认优先走 MiniMax Web Search；这里只作为降级兜底。<a href="https://tavily.com" target="_blank">获取 Tavily API Key</a></template>
           </a-form-item>
         </a-card>
 

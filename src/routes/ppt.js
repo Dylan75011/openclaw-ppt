@@ -4,6 +4,7 @@ const router = express.Router();
 const pptGenerator = require('../services/pptGenerator');
 const templateManager = require('../services/templateManager');
 const aiAssistant = require('../services/aiAssistant');
+const { resolveOutputRelative, toOutputRelative } = require('../services/outputPaths');
 
 // 生成PPT
 router.post('/generate', async (req, res) => {
@@ -57,10 +58,11 @@ router.post('/generate', async (req, res) => {
 });
 
 // 预览PPT（返回基本信息）
-router.get('/preview/:filename', async (req, res) => {
+router.get('/preview/*', async (req, res) => {
   try {
-    const filename = req.params.filename;
-    const filepath = require('path').join(require('../config').outputDir, filename);
+    const relativePath = decodeURIComponent(req.params[0] || '');
+    const filepath = resolveOutputRelative(relativePath);
+    const filename = require('path').basename(filepath);
 
     if (!require('fs').existsSync(filepath)) {
       return res.status(404).json({
@@ -74,7 +76,7 @@ router.get('/preview/:filename', async (req, res) => {
       data: {
         filename,
         size: require('fs').statSync(filepath).size,
-        downloadUrl: `/api/files/download/${filename}`
+        downloadUrl: `/api/files/download/${toOutputRelative(filepath)}`
       }
     });
   } catch (error) {

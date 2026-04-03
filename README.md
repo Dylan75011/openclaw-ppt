@@ -39,8 +39,9 @@ PORT=3000
 OUTPUT_DIR=./output
 
 # 多 Agent 模式所需
-MINIMAX_API_KEY=        # 主力模型（订阅制，优先使用）
+MINIMAX_API_KEY=        # MiniMax Token Plan key（sk-cp- 开头），同时用于模型和 Web Search
 DEEPSEEK_API_KEY=       # 仅用于 Critic Agent（按量付费）
+TAVILY_API_KEY=         # 可选，MiniMax 搜索失败时的降级兜底
 ```
 
 ## 项目结构

@@ -7,8 +7,8 @@ const { fetchPages } = require('../services/webFetch');
 const FETCH_TOP_N = 3;
 
 class ResearchAgent extends BaseAgent {
-  constructor(agentId) {
-    super(`ResearchAgent-${agentId}`, 'minimax');
+  constructor(agentId, apiKeys = {}) {
+    super(`ResearchAgent-${agentId}`, 'minimax', apiKeys);
     this.agentId = agentId;
   }
 
@@ -16,17 +16,19 @@ class ResearchAgent extends BaseAgent {
     console.log(`[${this.name}] 开始搜索: ${task.focus}`);
 
     const searchOptions = {
+      minimaxApiKey: this.apiKeys.minimaxApiKey,
       tavilyApiKey: this.apiKeys.tavilyApiKey,
       maxResults: 5
     };
 
     // ── 第一步：搜索，获取结果列表 ──────────────────────────────────────
-    let searchResults = [];
+    let searchOutcome = { results: [], source: null, warning: null };
     try {
-      searchResults = await search(task.keywords.join(' '), searchOptions);
+      searchOutcome = await search(task.keywords.join(' '), searchOptions);
     } catch (err) {
       console.warn(`[${this.name}] 搜索异常: ${err.message}`);
     }
+    const searchResults = Array.isArray(searchOutcome.results) ? searchOutcome.results : [];
 
     // ── 第二步：对 Top N 结果抓取页面全文 ──────────────────────────────
     let fetchedPages = [];
@@ -66,7 +68,11 @@ class ResearchAgent extends BaseAgent {
 
     const result = await this.callLLMJson(messages, { maxTokens: 2048 });
     result.focus = task.focus;
-    console.log(`[${this.name}] 完成，共处理 ${searchResults.length} 条搜索结果，${fetchedPages.length} 个页面全文`);
+    result.searchSource = searchOutcome.source || null;
+    if (searchOutcome.warning) {
+      result.searchWarning = searchOutcome.warning;
+    }
+    console.log(`[${this.name}] 完成，共处理 ${searchResults.length} 条搜索结果，${fetchedPages.length} 个页面全文，来源：${searchOutcome.source || 'none'}`);
     return result;
   }
 }

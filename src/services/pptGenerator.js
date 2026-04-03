@@ -8,6 +8,7 @@ const path = require('path');
 const os = require('os');
 const config = require('../config');
 const { renderToHtml, wrapForScreenshot } = require('./previewRenderer');
+const { getRunAssetDir, getRunId, toOutputRelative } = require('./outputPaths');
 
 let _browser = null;
 
@@ -26,12 +27,11 @@ async function getBrowser() {
  * @param {Object} templateData - { title, theme, pages }
  * @param {string} outputFilename - 输出文件名（可选）
  */
-async function generatePPT(templateData, outputFilename = null) {
+async function generatePPT(templateData, outputFilename = null, options = {}) {
   const htmlFragments = renderToHtml(templateData);
   const pages = templateData.pages || [];
-
-  const outputDir = path.resolve(config.outputDir);
-  if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
+  const runId = getRunId(options.runId || templateData.runId || outputFilename?.replace(/\.pptx$/i, '') || null);
+  const outputDir = getRunAssetDir(runId, 'exports');
 
   const tempDir = path.join(os.tmpdir(), `oc_ppt_${Date.now()}`);
   fs.mkdirSync(tempDir, { recursive: true });
@@ -99,7 +99,9 @@ async function generatePPT(templateData, outputFilename = null) {
   return {
     filename,
     filepath,
-    path: `/api/files/download/${filename}`
+    runId,
+    relativePath: toOutputRelative(filepath),
+    path: `/api/files/download/${toOutputRelative(filepath)}`
   };
 }
 

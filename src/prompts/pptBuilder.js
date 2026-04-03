@@ -1,5 +1,5 @@
 // PPT Builder Agent 提示词
-// AI 生成的不只是内容，还有设计决策：布局(layout) + 风格(style)
+// AI 优先生成结构化版式，再回退到 layout 名称
 
 const LAYOUT_HINTS = `
 可选 layout:
@@ -21,6 +21,27 @@ const STYLE_HINTS = `
 - light_minimal: 浅色简约（白底 + 深灰文字 + 彩色点缀），适合商务简洁风
 - warm_premium: 暖色高端（米白底 + 棕色系），适合轻奢/国潮风格`;
 
+const COMPOSITION_HINTS = `
+优先输出结构化版式字段，而不是只给 layout 名称。
+
+每页尽量包含：
+- composition: "editorial-left" | "hero-asymmetric" | "split-editorial" | "stat-wall" | "manifesto-center"
+- regions: 信息区数组，每个区写 x / y / w / h / stack / gap / align / valign
+- imagePlacement: 图片参与方式，例如 {"mode":"background","emphasis":"hero"} 或 {"mode":"panel","x":60,"y":10,"w":28,"h":72}
+- textBlocks: 文本块数组，每个块标明归属 region 和 kind
+
+textBlocks.kind 可用：
+- eyebrow
+- title
+- subtitle
+- body
+- quote
+- fact-list
+- numbered-list
+- stats
+
+目标不是“像模板”，而是让 AI 真正决定每页的版式结构。`;
+
 function buildPptBuilderPrompt(plan, userInput) {
   const { brand, description, tone, brandColor } = userInput;
   const primaryColor = (brandColor || '1A1A1A').replace('#', '');
@@ -36,10 +57,11 @@ Taste 设计规则（必须落实到每页）：
 8. 页面布局要形成“张弛关系”：信息页之间插入 statement / editorial / image-led 页面，避免连续同构。`;
 
   const systemPrompt = `你是一位顶级PPT设计师，擅长将活动策划方案转化为视觉冲击力强、风格独特的PPT。
-你需要为每一页选择最合适的设计：布局(layout) + 风格(style) + 内容。
+你需要为每一页选择最合适的设计：优先输出结构化版式(composition / regions / imagePlacement / textBlocks)，其次才是布局(layout) + 风格(style) + 内容。
 
 ${LAYOUT_HINTS}
 ${STYLE_HINTS}
+${COMPOSITION_HINTS}
 ${tasteDirectives}
 
 输出必须是合法的JSON格式，不要包含任何其他文字。`;
@@ -69,6 +91,21 @@ ${planText}
     {
       "layout": "immersive_cover",
       "style": "dark_tech",
+      "composition": "hero-asymmetric",
+      "regions": [
+        {"name": "header", "x": 7, "y": 14, "w": 50, "h": 38, "stack": "vertical", "gap": 18, "align": "start", "valign": "start"},
+        {"name": "body", "x": 7, "y": 62, "w": 34, "h": 16, "stack": "vertical", "gap": 12, "align": "start", "valign": "end"}
+      ],
+      "imagePlacement": {
+        "mode": "background",
+        "emphasis": "hero"
+      },
+      "textBlocks": [
+        {"region": "header", "kind": "eyebrow", "text": "${brand}"},
+        {"region": "header", "kind": "title", "text": "大标题（品牌名或活动主题）"},
+        {"region": "header", "kind": "subtitle", "text": "副标题或 slogan"},
+        {"region": "body", "kind": "body", "text": "一句更像高端发布会前言的短句"}
+      ],
       "visualIntent": {
         "role": "cover",
         "mood": "一句话描述情绪气质",
@@ -95,6 +132,20 @@ ${planText}
     {
       "layout": "toc",
       "style": "dark_tech",
+      "composition": "split-editorial",
+      "regions": [
+        {"name": "header", "x": 8, "y": 16, "w": 18, "h": 50, "stack": "vertical", "gap": 12, "align": "start", "valign": "center"},
+        {"name": "facts", "x": 34, "y": 16, "w": 56, "h": 54, "stack": "vertical", "gap": 10, "align": "stretch", "valign": "center"}
+      ],
+      "imagePlacement": {
+        "mode": "background",
+        "emphasis": "none"
+      },
+      "textBlocks": [
+        {"region": "header", "kind": "eyebrow", "text": "CONTENTS"},
+        {"region": "header", "kind": "title", "text": "目录"},
+        {"region": "facts", "kind": "fact-list", "items": ["战略定位", "受众洞察", "核心亮点", "执行计划", "传播策略"]}
+      ],
       "visualIntent": {
         "role": "toc",
         "mood": "冷静、利落",
@@ -308,8 +359,8 @@ ${planText}
 
 重要规则：
 1. 内容要真实来自策划方案，不要编造
-2. globalStyle 是全局风格约束，但页面布局必须形成节奏变化，不能连续 3 页使用同一个 layout
-3. 布局要配合内容意图：数据用 data_cards、亮点用 bento_grid、章节开场优先 asymmetrical_story 或 image_statement、策略宣言优先 editorial_quote 或 minimal_text
+2. globalStyle 是全局风格约束，但页面结构必须形成节奏变化，不能连续 3 页使用同一个 composition
+3. 优先输出 composition / regions / imagePlacement / textBlocks。layout 只是兜底，不要把设计思考压缩成模板名
 4. imageStrategy.query 必须是可以直接用于搜图的英文短语，和该页内容相关，但偏氛围、材质、空间、光影，不要直白描述具体会议场景
 5. 如果某页信息很多，先提炼，不要把所有要点都塞进去；一页最多一个主要观点
 6. dark_tech 风格的 bg 用深色，content 背景图会叠加半透明遮罩
@@ -332,7 +383,7 @@ function buildImageAwareRefinementPrompt({ plan, userInput, pages, imageAnalyses
 
 规则：
 1. 保持页数和顺序不变。
-2. 只修改这些字段：layout、style、visualIntent、imageStrategy、content。
+2. 只修改这些字段：layout、style、composition、regions、imagePlacement、textBlocks、visualIntent、imageStrategy、content。
 3. 如果图片不适合做背景，必须把 imageStrategy.useBackground 改成 false。
 4. 优先根据图片的 darker side / recommended overlay / text placement 来决定文字位置和遮罩。
 5. 不要为了变化而变化。只在图片确实支持时切换 layout。
@@ -359,6 +410,10 @@ ${JSON.stringify(imageAnalyses, null, 2)}
     {
       "layout": "保留或改成更合适的布局",
       "style": "dark_tech",
+      "composition": "更合适的结构化版式",
+      "regions": [],
+      "imagePlacement": {},
+      "textBlocks": [],
       "visualIntent": {},
       "imageStrategy": {},
       "content": {}

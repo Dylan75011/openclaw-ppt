@@ -1,44 +1,18 @@
-// AI辅助生成服务 - 集成Tavily搜索
-const config = require('../config');
+// AI辅助生成服务 - 复用统一搜索能力
+const { search: webSearch } = require('./webSearch');
 
-// 调用Tavily API进行搜索
-async function searchWithTavily(query) {
-  const apiKey = config.tavilyApiKey;
-
-  if (!apiKey) {
-    return [];
-  }
-
+async function searchWeb(query) {
   try {
-    const response = await fetch('https://api.tavily.com/search', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        query,
-        search_depth: 'basic',
-        max_results: 5
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`Tavily API错误: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    return data.results || [];
-  } catch (error) {
-    return [];
+    return await webSearch(query, { maxResults: 5 });
+  } catch {
+    return { results: [], source: null, warning: null };
   }
 }
 
 // 根据主题生成PPT大纲
 async function generateOutline(topic, templateType = 'simple') {
-  // 使用Tavily搜索相关信息
-  const searchResult = await searchWithTavily(`${topic} 2025`);
+  // 使用统一搜索服务补充上下文
+  const searchResult = await searchWeb(`${topic} 2025`);
 
   const baseOutline = {
     simple: {
@@ -71,11 +45,11 @@ async function generateOutline(topic, templateType = 'simple') {
   const outline = baseOutline[templateType] || baseOutline.simple;
 
   // 如果搜索成功，添加强化信息
-  if (searchResult.success && searchResult.results.length > 0) {
+  if (searchResult.results.length > 0) {
     outline.searchResults = searchResult.results.slice(0, 3).map(r => ({
       title: r.title,
       url: r.url,
-      snippet: r.content
+      snippet: r.snippet
     }));
   }
 
@@ -134,7 +108,7 @@ async function generateFullPPT(topic, templateType = 'simple') {
 }
 
 module.exports = {
-  searchWithTavily,
+  searchWeb,
   generateOutline,
   fillPageContent,
   generateFullPPT

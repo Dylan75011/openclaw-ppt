@@ -1,0 +1,30 @@
+// Skill: 用 DeepSeek-R1 对策划方案打分评审，判断是否通过
+const { callLLMJson } = require('../utils/llmUtils');
+const { buildCriticPrompt } = require('../prompts/critic');
+
+const PASS_THRESHOLD = 7.0;
+
+/**
+ * @param {{ plan, round, userInput }} input
+ * @param {object} apiKeys  { deepseekApiKey }
+ * @returns {Promise<{ score, passed, strengths, weaknesses, specificFeedback }>}
+ */
+async function critique({ plan, round, userInput }, apiKeys) {
+  console.log(`[skill:critique] 开始评审（第${round}轮）...`);
+  const { systemPrompt, userPrompt } = buildCriticPrompt(plan, round, userInput);
+  const result = await callLLMJson(
+    [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
+    {
+      model: 'deepseek-reasoner',
+      runtimeKey: apiKeys.deepseekApiKey,
+      maxTokens: 4096,
+      temperature: 0.5,
+      name: 'critique'
+    }
+  );
+  result.passed = result.score >= PASS_THRESHOLD;
+  console.log(`[skill:critique] 评审完成，得分: ${result.score}，通过: ${result.passed}`);
+  return result;
+}
+
+module.exports = { critique };

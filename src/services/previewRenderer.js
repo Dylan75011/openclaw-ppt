@@ -5,6 +5,7 @@
 const fs = require('fs');
 const { renderAllSlides: designerRender, SLIDE_CSS: designerCSS } = require('./slideDesigner');
 const path = require('path');
+const { toOutputUrl } = require('./outputPaths');
 
 function esc(str) {
   if (!str) return '';
@@ -19,7 +20,7 @@ function normalizeImageUrl(imagePath) {
   if (!imagePath) return '';
   if (imagePath.startsWith('/output/')) return imagePath;
   if (path.isAbsolute(imagePath)) {
-    return `/output/images/${path.basename(imagePath)}`;
+    return toOutputUrl(imagePath);
   }
   return imagePath;
 }
@@ -286,6 +287,7 @@ function renderToHtml(pptData) {
       const mappedPages = pages.map(p => {
         const pageContent = p.content || {};
         return {
+          ...p,
           layout: p.layout || p.type,
           style: p.style || theme.globalStyle || 'dark_tech',
           title: p.title || pageContent.title || p.mainTitle || p.topic || '',
@@ -320,8 +322,8 @@ function renderToHtml(pptData) {
   return pages.map(page => {
     let bgStyle = '';
     if (page.bgImagePath) {
-      const imgName = path.basename(page.bgImagePath);
-      bgStyle = `background-image:url('/output/images/${imgName}');background-size:cover;background-position:center;`;
+      const imageUrl = normalizeImageUrl(page.bgImagePath);
+      bgStyle = `background-image:url('${imageUrl}');background-size:cover;background-position:center;`;
     }
     const vars = `--primary:${primary};--secondary:${secondary};${bgStyle}`;
 
@@ -354,12 +356,12 @@ function renderToHtml(pptData) {
 function wrapForScreenshot(htmlFragment, bgImagePath = null) {
   let html = htmlFragment;
   if (bgImagePath) {
-    const imgName = path.basename(bgImagePath);
+    const imageUrl = normalizeImageUrl(bgImagePath);
     const dataUrl = buildImageDataUrl(bgImagePath);
-    // 替换 /output/images/xxx 为内联 data URL，避免 about:blank + file:// 加载限制
+    // 替换 output 静态 URL 为内联 data URL，避免 about:blank + file:// 加载限制
     html = html.replace(
-      new RegExp(`(['"(])\\/output\\/images\\/${imgName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(['")])`, 'g'),
-      `$1${dataUrl}$2`
+      new RegExp(imageUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+      dataUrl
     );
   }
   return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">

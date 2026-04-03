@@ -117,7 +117,22 @@
           
           <!-- 用户消息 -->
           <template v-if="msg.role === 'user'">
-            <div class="bubble user">{{ msg.text }}</div>
+            <div class="bubble user">
+              <div v-if="msg.text">{{ msg.text }}</div>
+              <div v-if="msg.attachments?.length" class="chat-image-grid">
+                <a
+                  v-for="item in msg.attachments"
+                  :key="item.id || item.url || item.name"
+                  class="chat-image-card"
+                  :href="item.url"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  <img :src="item.url" :alt="item.name || '用户图片'" class="chat-image-thumb" />
+                  <span class="chat-image-name">{{ item.name || '图片' }}</span>
+                </a>
+              </div>
+            </div>
           </template>
           
           <!-- AI消息 -->
@@ -191,6 +206,26 @@
       <div class="chat-input-area">
 
         <div class="input-card" :class="{ focused: inputFocused }">
+          <input
+            ref="imageInputRef"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            multiple
+            class="chat-image-input"
+            @change="onImageInputChange"
+          />
+
+          <div v-if="pendingImages.length" class="pending-image-grid">
+            <div v-for="item in pendingImages" :key="item.id" class="pending-image-card">
+              <img :src="item.previewUrl" :alt="item.name" class="pending-image-thumb" />
+              <div class="pending-image-meta">
+                <div class="pending-image-name">{{ item.name }}</div>
+                <div class="pending-image-size">{{ formatFileSize(item.size) }}</div>
+              </div>
+              <button type="button" class="pending-image-remove" @click="removePendingImage(item.id)">×</button>
+            </div>
+          </div>
+
           <!-- 文本输入 -->
           <a-textarea
             v-model="inputText"
@@ -206,9 +241,19 @@
 
           <!-- 工具栏 -->
           <div class="input-toolbar">
+            <button
+              v-if="!showStopButton"
+              type="button"
+              class="attach-btn"
+              :disabled="isRunning"
+              @click="triggerImagePicker"
+            >
+              图片
+            </button>
+
             <!-- 终止按钮（任务运行中显示） -->
             <button
-              v-if="isRunning || wsState === 'execution'"
+              v-if="showStopButton"
               type="button"
               class="stop-btn"
               @click="stopTask"
@@ -221,8 +266,8 @@
               v-else
               type="button"
               class="send-btn"
-              :class="{ 'send-btn--active': inputText.trim() }"
-              :disabled="!inputText.trim()"
+              :class="{ 'send-btn--active': inputText.trim() || pendingImages.length }"
+              :disabled="!inputText.trim() && !pendingImages.length"
               @click="send"
             >
               <icon-arrow-up />
@@ -781,11 +826,15 @@ function shouldSkipStreamEvent(eventType, payload = {}) {
 // 提交澄清回答
 async function submitClarificationReply(msg) {
   const reply = clarificationReplyText.value.trim()
-  if (!reply) return
+  const images = pendingImages.value.map(item => ({ ...item }))
+  if (!reply && !images.length) return
   clarificationReplyText.value = ''
   msg.answered = true
 
-  pushMsg('user', reply)
+  pushMsg('user', reply || '（补充了图片）', '', {
+    attachments: buildMessageAttachments(images)
+  })
+  clearPendingImages()
   waitingForClarification.value = false
   isRunning.value = true
 
@@ -795,10 +844,10 @@ async function submitClarificationReply(msg) {
 
     fetch(`/api/agent/${currentSessionId.value}/reply`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reply, apiKeys: settings.apiKeys })
+      body: buildAgentFormData({ reply, apiKeys: settings.apiKeys, images })
     }).then(r => r.json()).then(res => {
       if (!res.success) throw new Error(res.message)
+      replaceLatestUserAttachments(res.attachments || [])
       connectBrainSSE(res.streamUrl, done)
     }).catch(err => {
       pushMsg('ai', '', `回复失败：${err.message}`)
@@ -811,6 +860,8 @@ async function submitClarificationReply(msg) {
 // ── 聊天消息 ────────────────────────────────────────────────────
 const messages  = ref([])
 const inputText = ref('')
+const imageInputRef = ref(null)
+const pendingImages = ref([])
 const historyRef = ref(null)
 const isRunning  = ref(false)
 const conversations = ref([])
@@ -871,6 +922,98 @@ function pushAiMessage(message) {
   nextTick(() => {
     if (historyRef.value) historyRef.value.scrollTop = historyRef.value.scrollHeight
   })
+}
+
+function formatFileSize(size = 0) {
+  if (size >= 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(1)} MB`
+  if (size >= 1024) return `${Math.round(size / 1024)} KB`
+  return `${size} B`
+}
+
+function clearImageInputValue() {
+  if (imageInputRef.value) imageInputRef.value.value = ''
+}
+
+function revokePreviewUrl(url = '') {
+  if (typeof url === 'string' && url.startsWith('blob:')) {
+    URL.revokeObjectURL(url)
+  }
+}
+
+function clearPendingImages() {
+  pendingImages.value.forEach(item => revokePreviewUrl(item.previewUrl))
+  pendingImages.value = []
+  clearImageInputValue()
+}
+
+function triggerImagePicker() {
+  imageInputRef.value?.click()
+}
+
+function removePendingImage(id) {
+  const target = pendingImages.value.find(item => item.id === id)
+  if (target) revokePreviewUrl(target.previewUrl)
+  pendingImages.value = pendingImages.value.filter(item => item.id !== id)
+  clearImageInputValue()
+}
+
+function onImageInputChange(event) {
+  const files = Array.from(event.target?.files || [])
+  if (!files.length) return
+
+  const nextItems = []
+  for (const file of files) {
+    if (!/^image\/(png|jpeg|webp)$/.test(file.type)) {
+      Message.warning(`暂只支持 PNG / JPEG / WebP：${file.name}`)
+      continue
+    }
+    nextItems.push({
+      id: createMessageId('img'),
+      file,
+      name: file.name,
+      size: file.size,
+      mimeType: file.type,
+      previewUrl: URL.createObjectURL(file)
+    })
+  }
+
+  const merged = [...pendingImages.value, ...nextItems]
+  if (merged.length > 4) {
+    Message.warning('单次最多上传 4 张图片')
+  }
+  pendingImages.value = merged.slice(0, 4)
+  clearImageInputValue()
+}
+
+function buildMessageAttachments(items = []) {
+  return items.map(item => ({
+    id: item.id,
+    name: item.name,
+    size: item.size,
+    mimeType: item.mimeType,
+    url: item.url || item.previewUrl
+  }))
+}
+
+function replaceLatestUserAttachments(attachments = []) {
+  if (!attachments.length) return
+  const target = [...messages.value].reverse().find(msg => msg.role === 'user')
+  if (!target) return
+  target.attachments = attachments.map(item => ({ ...item }))
+  scheduleConversationPersist()
+}
+
+function buildAgentFormData(payload = {}) {
+  const form = new FormData()
+  if (payload.message !== undefined) form.append('message', payload.message)
+  if (payload.reply !== undefined) form.append('reply', payload.reply)
+  if (payload.spaceId !== undefined) form.append('spaceId', payload.spaceId)
+  if (payload.sessionId !== undefined) form.append('sessionId', payload.sessionId)
+  form.append('apiKeys', JSON.stringify(payload.apiKeys || {}))
+  ;(payload.images || []).forEach((item) => {
+    form.append('images', item.file, item.name)
+  })
+  return form
 }
 
 function formatTime(isoString) {
@@ -939,6 +1082,10 @@ const currentTaskSummary = computed(() => {
 })
 const currentStageTitle = computed(() => {
   return '执行任务中'
+})
+const showStopButton = computed(() => {
+  if (waitingForClarification.value) return false
+  return isRunning.value || (hasActiveStream.value && ['execution', 'streaming'].includes(wsState.value))
 })
 const latestArtifact = computed(() => artifacts.value[0] || null)
 const artifactTimeline = computed(() => artifacts.value.slice(0, 5))
@@ -1208,6 +1355,7 @@ function restoreFromConversation(detail) {
   messages.value = Array.isArray(detail?.messages)
     ? detail.messages.map(msg => ({
         ...msg,
+        attachments: Array.isArray(msg.attachments) ? msg.attachments : [],
         id: msg.id || createMessageId('msg'),
         createdAt: msg.createdAt || new Date().toISOString()
       }))
@@ -1251,6 +1399,7 @@ function restoreFromConversation(detail) {
 function clearConversationView() {
   restoringConversation.value = true
   messages.value = []
+  clearPendingImages()
   currentTask.value = null
   taskMode.value = 'idle'
   brainPlanItems.value = []
@@ -1527,11 +1676,21 @@ function startResize() {
 
 let   sse        = null      // SSE 连接实例（必须声明，防止全局污染）
 let   resolveCurrent = null  // 当前 agent 任务的 resolve，用于外部终止
+const hasActiveStream = ref(false)
+
+function closeSseConnection() {
+  if (sse) {
+    sse.close()
+    sse = null
+  }
+  hasActiveStream.value = false
+}
 
 // 发送：直接走 Brain Agent，不再做前置意图解析
 async function send() {
   const text = inputText.value.trim()
-  if (!text || isRunning.value) return
+  const images = pendingImages.value.map(item => ({ ...item }))
+  if ((!text && !images.length) || isRunning.value) return
   inputText.value = ''
 
   // 如果正在等待澄清回答
@@ -1553,17 +1712,20 @@ async function send() {
     currentSessionId.value = ''
   }
 
-  const conversationId = await ensureActiveConversation(text.slice(0, 24))
+  const conversationId = await ensureActiveConversation((text || images[0]?.name || '图片对话').slice(0, 24))
   if (!conversationId) {
     inputText.value = text
     return
   }
 
-  pushMsg('user', text)
+  pushMsg('user', text || '（发送了图片）', '', {
+    attachments: buildMessageAttachments(images)
+  })
+  clearPendingImages()
   await nextTick()
   if (historyRef.value) historyRef.value.scrollTop = historyRef.value.scrollHeight
 
-  await runBrainTask(text)
+  await runBrainTask(text, images)
 }
 
 function retryCurrentTask() {
@@ -1581,34 +1743,47 @@ function restoreTaskToInput() {
 
 // ── 终止当前任务 ───────────────────────────────────────────────────
 function stopTask() {
-  if (sse) { sse.close(); sse = null }
+  const sessionId = currentSessionId.value
+  if (sessionId) {
+    fetch(`/api/agent/${sessionId}/stop`, { method: 'POST' }).catch(() => {})
+  }
+  closeSseConnection()
   isRunning.value  = false
   isBuilding.value = false
+  waitingForClarification.value = false
+  failedReason.value = '用户已停止任务'
+  if (wsState.value === 'execution' || wsState.value === 'streaming') {
+    wsState.value = 'failed'
+  }
   // resolve 挂起的 Promise，让队列处理器正常退出
   if (resolveCurrent) { resolveCurrent(); resolveCurrent = null }
   pushMsg('ai', '', '已终止当前任务。')
 }
 
 // ── Brain Agent 任务 ──────────────────────────────────────────────
-async function runBrainTask(text) {
+async function runBrainTask(text, images = []) {
   const isContinuing = !!currentSessionId.value  // 是否复用现有 session
+  const taskSeed = text || images[0]?.name || '图片需求'
   isRunning.value = true
   waitingForClarification.value = false
   resetProcessedStreamEvents()
   if (!isContinuing) {
     resetSteps()
     brainPlanItems.value = defaultBrainPlan()
-    currentTask.value = { topic: text.slice(0, 32), requirements: text }
+    currentTask.value = {
+      topic: taskSeed.slice(0, 32),
+      requirements: text || '用户上传了图片，希望结合视觉内容继续分析'
+    }
   }
   taskMode.value = 'brain'
   progress.value = isContinuing ? Math.max(progress.value, 8) : 8
   progressLabel.value = isContinuing ? '继续推进...' : '正在理解需求...'
   wsState.value = 'execution'
-  addExecutionLog(isContinuing ? `继续任务：${text.slice(0, 48)}` : `收到新任务：${text.slice(0, 48)}`)
+  addExecutionLog(isContinuing ? `继续任务：${taskSeed.slice(0, 48)}` : `收到新任务：${taskSeed.slice(0, 48)}`)
 
   return new Promise(resolve => {
     const timeoutId = setTimeout(() => {
-      if (sse) { sse.close(); sse = null }
+      closeSseConnection()
       isRunning.value = false
       wsState.value = wsState.value !== 'done' ? 'failed' : wsState.value
       pushMsg('ai', '', '任务执行超时，已自动终止。')
@@ -1620,16 +1795,17 @@ async function runBrainTask(text) {
 
     fetch('/api/agent/start', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+      body: buildAgentFormData({
         message: text,
         spaceId: selectedSpaceId.value,
         apiKeys: settings.apiKeys,
-        sessionId: currentSessionId.value || undefined  // 复用已有 session（如有）
+        sessionId: currentSessionId.value || undefined,
+        images
       })
     }).then(r => r.json()).then(res => {
       if (!res.success) throw new Error(res.message || '启动失败')
       currentSessionId.value = res.sessionId
+      replaceLatestUserAttachments(res.attachments || [])
       connectBrainSSE(res.streamUrl, done)
     }).catch(err => {
       pushMsg('ai', '', `启动失败：${err.message}`)
@@ -1641,8 +1817,9 @@ async function runBrainTask(text) {
 }
 
 function connectBrainSSE(url, resolve = () => {}) {
-  if (sse) sse.close()
+  closeSseConnection()
   sse = new EventSource(url)
+  hasActiveStream.value = true
 
   // 移除上一条 thinking 气泡的辅助函数
   function popThinking() {
@@ -1752,7 +1929,7 @@ function connectBrainSSE(url, resolve = () => {}) {
   sse.addEventListener('done', e => {
     popThinking()
     handleDone(JSON.parse(e.data))
-    sse.close(); sse = null
+    closeSseConnection()
     isRunning.value = false
     resolve()
   })
@@ -1768,7 +1945,7 @@ function connectBrainSSE(url, resolve = () => {}) {
     } else if (!failedReason.value) {
       failedReason.value = '任务连接中断，请重试。'
     }
-    if (sse) { sse.close(); sse = null }
+    closeSseConnection()
     isRunning.value = false
     if (wsState.value !== 'done') wsState.value = 'failed'
     resolve()
@@ -2015,7 +2192,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (sse) sse.close()
+  clearPendingImages()
+  closeSseConnection()
   stopResize()
   clearTimeout(persistConversationTimer)
   clearPendingLoadingTicker()
@@ -3191,6 +3369,37 @@ onUnmounted(() => {
   color: #374151;
 }
 
+.chat-image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.chat-image-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-decoration: none;
+}
+
+.chat-image-thumb {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #f8fafc;
+}
+
+.chat-image-name {
+  font-size: 12px;
+  color: #64748b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .task-card {
   min-width: 320px;
 }
@@ -3712,6 +3921,66 @@ onUnmounted(() => {
   box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 0 0 3px rgba(var(--arcoblue-6), 0.08);
 }
 
+.chat-image-input {
+  display: none;
+}
+
+.pending-image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+  padding: 12px 12px 0;
+}
+
+.pending-image-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+.pending-image-thumb {
+  width: 54px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.pending-image-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.pending-image-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1f2937;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pending-image-size {
+  margin-top: 3px;
+  font-size: 11px;
+  color: #64748b;
+}
+
+.pending-image-remove {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #475569;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 :deep(.chat-textarea),
 :deep(.chat-textarea .arco-textarea-wrapper),
 :deep(.chat-textarea .arco-textarea-wrapper:hover),
@@ -3748,8 +4017,30 @@ onUnmounted(() => {
 .input-toolbar {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   padding: 6px 10px 10px;
+}
+
+.attach-btn {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+}
+
+.attach-btn:hover:not(:disabled) {
+  background: #dbeafe;
+  color: #0f172a;
+}
+
+.attach-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 /* 发送按钮 */

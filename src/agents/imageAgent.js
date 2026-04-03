@@ -1,6 +1,7 @@
 const BaseAgent = require('./baseAgent');
 const { searchPexels, generateMiniMaxImage, downloadImage, processImageForPpt } = require('../services/imageSearch');
 const { analyzeImageForLayout, colorDistance } = require('../services/imageAnalyzer');
+const { getRunAssetDir, toOutputUrl } = require('../services/outputPaths');
 const config = require('../config');
 const path   = require('path');
 
@@ -12,9 +13,151 @@ function slugify(value) {
     .slice(0, 48) || 'page';
 }
 
+function dedupeStrings(values = []) {
+  return [...new Map(values.filter(Boolean).map(v => [String(v).trim().toLowerCase(), String(v).trim()])).values()];
+}
+
+function inferPageBucket(page = {}) {
+  const layout = page.layout || '';
+  const role = page.role || '';
+  const title = `${page.pageTitle || ''} ${page.title || ''}`.toLowerCase();
+
+  if (layout === 'immersive_cover' || role === 'cover') return 'cover';
+  if (layout === 'timeline_flow' || /结构|timeline|launch sequence|发布会结构/.test(title) || role === 'timeline') return 'timeline';
+  if (layout === 'data_cards' || /效果|数据|metrics|result/.test(title) || role === 'metrics') return 'metrics';
+  if (layout === 'editorial_quote' || /命题|quote|manifesto|brand/.test(title) || role === 'manifesto') return 'editorial';
+  if (layout === 'bento_grid' || /亮点|highlights|feature/.test(title) || role === 'highlights') return 'highlights';
+  if (layout === 'split_content' || /路径|comparison|journey/.test(title) || role === 'comparison') return 'journey';
+  if (layout === 'end_card' || role === 'ending') return 'ending';
+  return 'story';
+}
+
+function resolveTreatmentForLayout(layout = '') {
+  if (layout === 'immersive_cover') return 'full-bleed-dark';
+  if (layout === 'end_card') return 'quiet-finale';
+  if (layout === 'split_content') return 'split-atmosphere';
+  if (layout === 'data_cards') return 'subtle-grid';
+  if (layout === 'editorial_quote') return 'editorial-fade';
+  return 'ambient-texture';
+}
+
+function buildStyleModifiers(styleAnalysis = {}) {
+  const styleText = [
+    ...(styleAnalysis?.styleKeywords || []),
+    styleAnalysis?.styleDescription || '',
+    styleAnalysis?.visualPersonality || '',
+    styleAnalysis?.colorPalette || '',
+  ]
+    .join(' ')
+    .toLowerCase();
+
+  const modifiers = [];
+  if (/luxury|premium|editorial/.test(styleText)) modifiers.push('editorial luxury');
+  if (/teal|cyan|blue/.test(styleText)) modifiers.push('teal haze');
+  if (/bronze|amber|gold|warm/.test(styleText)) modifiers.push('bronze glow');
+  if (/cinematic|film|movie/.test(styleText)) modifiers.push('cinematic');
+  if (/minimal|minimalist/.test(styleText)) modifiers.push('minimal');
+  if (/technology|tech|future/.test(styleText)) modifiers.push('future mood');
+  return dedupeStrings(modifiers).slice(0, 2);
+}
+
+function buildRoleDrivenQueries(page = {}, styleAnalysis = {}) {
+  const bucket = inferPageBucket(page);
+  const warmPalette = /bronze|warm|amber|gold|orange/i.test(styleAnalysis?.colorPalette || '');
+  const accent = warmPalette ? 'bronze glow' : 'teal glow';
+  const modifiers = buildStyleModifiers(styleAnalysis);
+
+  const presets = {
+    cover: [
+      `cinematic concept silhouette ${accent}`,
+      `storm clouds dramatic key visual`,
+      `moody launch atmosphere abstract`
+    ],
+    editorial: [
+      `editorial fabric shadow ${accent}`,
+      `sculptural light beams abstract`,
+      `gallery light and shadow minimal`
+    ],
+    highlights: [
+      `macro metallic texture ${accent}`,
+      `precision material detail dark`,
+      `abstract surface with reflected light`
+    ],
+    journey: [
+      `light ribbon through darkness abstract`,
+      `gradient tunnel minimal cinematic`,
+      `directional light path moody`
+    ],
+    timeline: [
+      `sequential light trail dark stage`,
+      `motion path in black space`,
+      `dark event runway lights`
+    ],
+    metrics: [
+      `graphite grid texture macro`,
+      `data mesh subtle dark pattern`,
+      `precision lines abstract dark`
+    ],
+    ending: [
+      `distant horizon glow minimal`,
+      `night sky atmospheric finale`,
+      `quiet cinematic horizon dark`
+    ],
+    story: [
+      `atmospheric abstract depth dark`,
+      `soft volumetric light moody`,
+      `minimal cinematic environment`
+    ]
+  };
+
+  return dedupeStrings(
+    (presets[bucket] || presets.story).map((query, index) => {
+      const modifier = modifiers[index % Math.max(modifiers.length, 1)] || '';
+      return sanitizeQuery(`${query} ${modifier}`.trim());
+    })
+  );
+}
+
+function buildFallbackPageQuery(page = {}, styleAnalysis = {}) {
+  const queries = buildRoleDrivenQueries(page, styleAnalysis);
+  const seed = `${page.pageIndex || 0}-${page.pageTitle || ''}-${page.role || ''}-${page.layout || ''}`;
+  const pivot = Array.from(seed).reduce((acc, ch) => acc + ch.charCodeAt(0), 0) % Math.max(queries.length, 1);
+  const ordered = [...queries.slice(pivot), ...queries.slice(0, pivot)];
+  return {
+    query: ordered[0] || 'minimal cinematic environment',
+    variations: ordered.slice(1, 4),
+    treatment: resolveTreatmentForLayout(page.layout),
+  };
+}
+
+function sanitizeQuery(query = '') {
+  return String(query)
+    .replace(/\b(architectural|architecture|industrial|corridor|warehouse|factory|metallic lines?)\b/gi, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
+function looksLikePlaceholder(value = '') {
+  return /搜索词|备选|该页|prompt|主搜索词|variation|query/i.test(String(value || ''));
+}
+
+function isUsableQueryPayload(payload, expectedPageCount = 0) {
+  if (!payload || typeof payload !== 'object') return false;
+  if (looksLikePlaceholder(payload?.cover?.primary) || looksLikePlaceholder(payload?.content?.primary) || looksLikePlaceholder(payload?.end?.primary)) {
+    return false;
+  }
+  if (expectedPageCount > 0 && (!Array.isArray(payload.pages) || payload.pages.length < Math.min(expectedPageCount, 4))) {
+    return false;
+  }
+  if (Array.isArray(payload.pages) && payload.pages.some(page => looksLikePlaceholder(page?.query))) {
+    return false;
+  }
+  return true;
+}
+
 class ImageAgent extends BaseAgent {
-  constructor() {
-    super('ImageAgent', 'minimax');
+  constructor(apiKeys = {}) {
+    super('ImageAgent', 'minimax', apiKeys);
   }
 
   /**
@@ -85,7 +228,8 @@ class ImageAgent extends BaseAgent {
 
     // ─── Step 3: 基于风格化搜索词搜索 Pexels + MiniMax 生图 ────────
     const minimaxKey = this.apiKeys?.minimaxApiKey || config.minimaxApiKey;
-    const outputBase = path.resolve(config.outputDir, 'images');
+    const runId = taskId || `img_${Date.now()}`;
+    const outputBase = getRunAssetDir(runId, 'images');
 
     // 使用风格化搜索词 + 少量变体，保持全局一致性
     const coverSearchQueries = [
@@ -106,10 +250,13 @@ class ImageAgent extends BaseAgent {
     // 并行搜索多个方向
     const pagePlans = Array.isArray(queries.pages) ? queries.pages.slice(0, 16) : [];
     const pageSearchPromises = pagePlans.map(async (pagePlan, index) => {
-      const searchTerms = [
-        pagePlan.query,
-        ...(pagePlan.variations || []).slice(0, 1)
-      ].filter(Boolean);
+      const roleDrivenQueries = buildRoleDrivenQueries(pagePlan, styleAnalysis);
+      const rawTerms = [
+        sanitizeQuery(pagePlan.query),
+        ...(pagePlan.variations || []).slice(0, 2).map(sanitizeQuery),
+        ...roleDrivenQueries
+      ];
+      const searchTerms = dedupeStrings(rawTerms).slice(0, 4);
       return {
         pageIndex: Number.isInteger(pagePlan.pageIndex) ? pagePlan.pageIndex : index,
         pageTitle: pagePlan.pageTitle || '',
@@ -147,8 +294,8 @@ class ImageAgent extends BaseAgent {
         await processImageForPpt(localPath);
         aiCandidate = {
           id:        'ai_generated',
-          url:       `/output/images/${localName}`,
-          thumb:     `/output/images/${localName}`,
+          url:       toOutputUrl(localPath),
+          thumb:     toOutputUrl(localPath),
           localPath: localPath,
           photographer: 'MiniMax AI',
           photographerUrl: '',
@@ -257,26 +404,42 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
     ];
 
     try {
-      return await this.callLLMJson(messages, { maxTokens: 512, temperature: 0.4 });
+      const raw = await this.callLLMJson(messages, { maxTokens: 512, temperature: 0.4 });
+      if (!isUsableQueryPayload(raw, pageSummary.length)) {
+        throw new Error('query payload contains placeholders or insufficient page coverage');
+      }
+      if (Array.isArray(raw?.pages)) {
+        raw.pages = raw.pages.map((page, index) => {
+          const summary = pageSummary[index] || {};
+          const extras = buildRoleDrivenQueries({
+            layout: summary.layout,
+            role: page.role || summary.role,
+            pageTitle: page.pageTitle || summary.title
+          }, styleAnalysis);
+          return {
+            ...page,
+            query: sanitizeQuery(page.query || ''),
+            variations: dedupeStrings([...(page.variations || []).map(sanitizeQuery), ...extras]).slice(0, 3)
+          };
+        });
+      }
+      return raw;
     } catch (e) {
       console.warn('[ImageAgent] 搜索词生成失败，使用风格化默认值:', e.message);
+      const coverFallback = buildFallbackPageQuery({ layout: 'immersive_cover', role: 'cover', pageTitle: 'cover' }, styleAnalysis);
+      const contentFallback = buildFallbackPageQuery({ layout: 'editorial_quote', role: 'manifesto', pageTitle: 'content' }, styleAnalysis);
+      const endFallback = buildFallbackPageQuery({ layout: 'end_card', role: 'ending', pageTitle: 'ending' }, styleAnalysis);
       return {
-        cover: { primary: `${styleStr} elegant dark`, variations: [`${styleStr} dramatic dark`, `${styleStr} cinematic lights`] },
-        content: { primary: `${styleStr} abstract atmosphere`, variations: [`${styleStr} particles light`, `${styleStr} moody dark`] },
-        end: { primary: `${styleStr} minimalist elegant`, variations: [`${styleStr} stars night`, `${styleStr} horizon dark`] },
+        cover: { primary: coverFallback.query, variations: coverFallback.variations },
+        content: { primary: contentFallback.query, variations: contentFallback.variations },
+        end: { primary: endFallback.query, variations: endFallback.variations },
         pages: pageSummary.map(page => ({
           pageIndex: page.pageIndex,
           pageTitle: page.title,
           role: page.role || page.layout,
-          query: `${styleStr} ${page.layout === 'timeline_flow' ? 'linear light path' : page.layout === 'data_cards' ? 'subtle technology texture' : page.layout === 'immersive_cover' ? 'cinematic architectural atmosphere' : 'editorial atmospheric space'}`,
-          variations: [],
-          treatment: page.layout === 'immersive_cover' ? 'full-bleed-dark'
-            : page.layout === 'end_card' ? 'quiet-finale'
-            : page.layout === 'split_content' ? 'split-atmosphere'
-            : page.layout === 'data_cards' ? 'subtle-grid'
-            : 'ambient-texture'
+          ...buildFallbackPageQuery(page, styleAnalysis)
         })),
-        coverGeneratePrompt: `${styleStr} elegant dark cinematic background`
+        coverGeneratePrompt: `${coverFallback.query} abstract launch key visual`
       };
     }
   }
@@ -300,7 +463,7 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
     }
 
     if (candidate.url?.startsWith('/output/')) {
-      candidate.localPath = path.resolve('.', candidate.url.replace(/^\//, ''));
+      candidate.localPath = path.resolve(config.outputDir, candidate.url.replace(/^\/output\/?/, ''));
       await processImageForPpt(candidate.localPath).catch(() => {});
       return candidate;
     }
@@ -320,8 +483,11 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
     const preparedPages = [];
     for (let index = 0; index < pagePlans.length; index++) {
       const pagePlan = pagePlans[index];
-      const resultSets = await Promise.all((pagePlan.searchTerms || []).map(q => searchPexels(q, { perPage: 4 })));
-      const rawCandidates = [...new Map(resultSets.flat().map(p => [p.id, p])).values()].slice(0, 6);
+      const resultSets = await Promise.all((pagePlan.searchTerms || []).map(async (q) => {
+        const photos = await searchPexels(q, { perPage: 8 });
+        return photos.map(photo => ({ ...photo, originQuery: q }));
+      }));
+      const rawCandidates = [...new Map(resultSets.flat().map(p => [p.id, p])).values()].slice(0, 12);
       const candidates = [];
       for (let i = 0; i < rawCandidates.length; i++) {
         const prepared = await this.prepareCandidate(
@@ -333,6 +499,7 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
         const analysis = await analyzeImageForLayout(prepared.localPath).catch(() => null);
         candidates.push({
           ...prepared,
+          originQuery: rawCandidates[i].originQuery || '',
           analysis,
         });
       }
@@ -352,6 +519,7 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
     const warmPalette = /bronze|warm|amber|gold|orange/i.test(styleAnalysis?.colorPalette || '');
     const role = pagePlan.role || '';
     const treatment = pagePlan.treatment || 'ambient-texture';
+    const originQuery = candidate.originQuery || '';
 
     let score = 0;
     if (brightness >= 28 && brightness <= 145) score += 18;
@@ -365,6 +533,8 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
     if (warmPalette && colorDistance(avgColor, '#8a6f4d') < 120) score += 10;
     if (!warmPalette && colorDistance(avgColor, '#2d3d45') < 120) score += 10;
     if (candidate.isAI) score += 6;
+    if (/architect|industrial|warehouse|factory|corridor/i.test(originQuery)) score -= 10;
+    if (/fabric|gallery|sculptural|silhouette|horizon|trail|ribbon|mesh|texture/i.test(originQuery)) score += 10;
     return score;
   }
 
@@ -372,6 +542,7 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
     const usedIds = new Set();
     const selected = [];
     let lastAverageColor = null;
+    let lastQueryFamily = '';
 
     for (const pagePlan of pagePlans) {
       const ranked = (pagePlan.candidates || [])
@@ -382,6 +553,7 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
             - (lastAverageColor && candidate.analysis?.averageColor
                 ? Math.max(0, 22 - colorDistance(lastAverageColor, candidate.analysis.averageColor) / 10)
                 : 0)
+            - (lastQueryFamily && candidate.originQuery && candidate.originQuery.toLowerCase().includes(lastQueryFamily) ? 12 : 0)
         }))
         .sort((a, b) => b.score - a.score);
 
@@ -398,6 +570,7 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
         candidates: ranked.slice(0, 3).map(item => ({
           id: item.candidate.id,
           localPath: item.candidate.localPath,
+          originQuery: item.candidate.originQuery || '',
           score: Math.round(item.score),
           averageColor: item.candidate.analysis?.averageColor || '',
         })),
@@ -405,6 +578,10 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
 
       if (picked?.id) usedIds.add(picked.id);
       if (picked?.analysis?.averageColor) lastAverageColor = picked.analysis.averageColor;
+      if (picked?.originQuery) {
+        const family = picked.originQuery.toLowerCase().match(/fabric|gallery|sculptural|trail|ribbon|mesh|texture|horizon|silhouette|architect|industrial|corridor|warehouse|factory/);
+        lastQueryFamily = family?.[0] || '';
+      }
     }
 
     return selected;

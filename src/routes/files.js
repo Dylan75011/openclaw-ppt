@@ -4,16 +4,18 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const config = require('../config');
+const { getOutputRoot, resolveOutputRelative, toOutputRelative } = require('../services/outputPaths');
 
 // 下载文件
-router.get('/download/:filename', (req, res) => {
+router.get('/download/*', (req, res) => {
   try {
-    const filename = req.params.filename;
-    const filepath = path.join(config.outputDir, filename);
+    const relativePath = decodeURIComponent(req.params[0] || '');
+    const filepath = resolveOutputRelative(relativePath);
+    const filename = path.basename(filepath);
 
     // 安全检查：确保文件在输出目录内
     const resolvedPath = path.resolve(filepath);
-    const resolvedOutputDir = path.resolve(config.outputDir);
+    const resolvedOutputDir = getOutputRoot();
 
     if (!resolvedPath.startsWith(resolvedOutputDir)) {
       return res.status(403).json({
@@ -41,7 +43,7 @@ router.get('/download/:filename', (req, res) => {
 // 列出生成的文件
 router.get('/list', (req, res) => {
   try {
-    const outputDir = path.resolve(config.outputDir);
+    const outputDir = getOutputRoot();
 
     if (!fs.existsSync(outputDir)) {
       return res.json({
@@ -50,18 +52,28 @@ router.get('/list', (req, res) => {
       });
     }
 
-    const files = fs.readdirSync(outputDir)
-      .filter(f => f.endsWith('.pptx'))
-      .map(f => {
-        const filepath = path.join(outputDir, f);
+    const files = [];
+    const walk = (dir) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const filepath = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          walk(filepath);
+          continue;
+        }
+        if (!entry.name.endsWith('.pptx')) continue;
         const stats = fs.statSync(filepath);
-        return {
-          filename: f,
+        files.push({
+          filename: entry.name,
+          relativePath: toOutputRelative(filepath),
           size: stats.size,
           created: stats.birthtime,
-          downloadUrl: `/api/files/download/${f}`
-        };
-      });
+          downloadUrl: `/api/files/download/${toOutputRelative(filepath)}`
+        });
+      }
+    };
+
+    walk(outputDir);
+    files.sort((a, b) => new Date(b.created) - new Date(a.created));
 
     res.json({
       success: true,
@@ -76,14 +88,14 @@ router.get('/list', (req, res) => {
 });
 
 // 删除文件
-router.delete('/:filename', (req, res) => {
+router.delete('/*', (req, res) => {
   try {
-    const filename = req.params.filename;
-    const filepath = path.join(config.outputDir, filename);
+    const relativePath = decodeURIComponent(req.params[0] || '');
+    const filepath = resolveOutputRelative(relativePath);
 
     // 安全检查
     const resolvedPath = path.resolve(filepath);
-    const resolvedOutputDir = path.resolve(config.outputDir);
+    const resolvedOutputDir = getOutputRoot();
 
     if (!resolvedPath.startsWith(resolvedOutputDir)) {
       return res.status(403).json({
