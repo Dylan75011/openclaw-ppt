@@ -75,7 +75,7 @@ async function generatePPT(templateData, outputFilename = null, options = {}) {
   // ─── 打包 PPTX ────────────────────────────────────────────────────────────
   const pptx = new PptxGenJS();
   pptx.layout = 'LAYOUT_16x9'; // 10" × 5.625"
-  pptx.author = 'OpenClaw PPT';
+  pptx.author = 'Luna PPT';
   pptx.title = templateData.title || 'PPT Document';
 
   for (const screenshotPath of screenshotPaths) {

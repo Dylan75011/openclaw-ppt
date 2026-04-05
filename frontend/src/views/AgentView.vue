@@ -211,8 +211,68 @@
 
       <!-- 输入区 -->
       <div class="chat-input-area">
+        <div class="input-card-outer">
+          <div v-if="quickReplyOptions.length" class="quick-reply-bar">
+            <div class="quick-reply-label">{{ quickReplyLabel }}</div>
+            <div class="quick-reply-list" role="listbox" aria-label="下一步选择">
+              <button
+                v-for="item in quickReplyOptions"
+                :key="item.label"
+                type="button"
+                class="quick-reply-item"
+                :disabled="isRunning"
+                @click="sendQuickReply(item)"
+              >
+                <span class="quick-reply-item-title">{{ item.label }}</span>
+                <span v-if="item.description" class="quick-reply-item-desc">{{ item.description }}</span>
+              </button>
+            </div>
+          </div>
 
-        <div class="input-card" :class="{ focused: inputFocused }">
+          <!-- @ 内联菜单 -->
+          <div v-if="atMentionVisible && atMentionResults.length" class="at-mention-dropdown">
+            <div
+              v-for="(doc, i) in atMentionResults"
+              :key="doc.id"
+              class="at-mention-item"
+              :class="{ active: i === atMentionIndex }"
+              @mousedown.prevent="selectMention(doc)"
+            >
+              <icon-file-pdf v-if="doc.docType === 'ppt'" class="at-mention-icon" />
+              <icon-file v-else class="at-mention-icon" />
+              <span class="at-mention-name">{{ doc.name }}</span>
+            </div>
+          </div>
+
+          <!-- 空间文档 picker 下拉 -->
+          <div v-if="workspacePickerVisible" class="ws-picker-dropdown">
+            <div class="ws-picker-head">
+              <input
+                v-model="workspacePickerQuery"
+                class="ws-picker-search"
+                placeholder="搜索文档..."
+                @keydown.stop
+              />
+              <span class="ws-picker-hint">点击引用 · 再次点击取消</span>
+            </div>
+            <div class="ws-picker-list">
+              <div v-if="!workspacePickerResults.length" class="ws-picker-empty">无匹配文档</div>
+              <div
+                v-for="doc in workspacePickerResults"
+                :key="doc.id"
+                class="ws-picker-item"
+                :class="{ selected: pendingWorkspaceRefs.some(r => r.id === doc.id) }"
+                @click="pendingWorkspaceRefs.some(r => r.id === doc.id) ? removeWorkspaceRef(doc.id) : addWorkspaceRef(doc)"
+              >
+                <icon-file-pdf v-if="doc.docType === 'ppt'" class="ws-picker-icon" />
+                <icon-file v-else class="ws-picker-icon" />
+                <span class="ws-picker-name">{{ doc.name }}</span>
+                <span v-if="pendingWorkspaceRefs.some(r => r.id === doc.id)" class="ws-picker-check">✓</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="input-card" :class="{ focused: inputFocused }">
           <input
             ref="imageInputRef"
             type="file"
@@ -245,21 +305,51 @@
             </div>
           </div>
 
+          <!-- 空间文档引用 chips -->
+          <div v-if="pendingWorkspaceRefs.length" class="pending-ws-refs">
+            <div v-for="ref in pendingWorkspaceRefs" :key="ref.id" class="pending-ws-ref-chip">
+              <icon-file-pdf v-if="ref.docType === 'ppt'" class="ws-ref-chip-icon" />
+              <icon-file v-else class="ws-ref-chip-icon" />
+              <span class="ws-ref-chip-name">{{ ref.name }}</span>
+              <button type="button" class="ws-ref-chip-remove" @click="removeWorkspaceRef(ref.id)">×</button>
+            </div>
+          </div>
+
           <!-- 文本输入 -->
           <a-textarea
+            ref="textareaRef"
             v-model="inputText"
             class="chat-textarea"
             :auto-size="{ minRows: 2, maxRows: 6 }"
-            :placeholder="waitingForClarification ? '请回答上述问题...' : '描述活动需求，如：帮我为小米做一个大型新品发布会...'"
+            :placeholder="waitingForClarification ? '请回答上述问题...' : '描述需求、上传策划方案文档，或输入 @ 引用空间文档...'"
             @focus="inputFocused = true"
-            @blur="inputFocused = false"
+            @blur="inputFocused = false; atMentionVisible = false"
             @compositionstart="isComposing = true"
             @compositionend="isComposing = false"
             @keydown.enter.exact="handleEnter"
+            @keydown="handleTextareaKeydown"
+            @input="onTextareaInput"
+            @paste="onPaste"
           />
 
           <!-- 工具栏 -->
           <div class="input-toolbar">
+            <!-- 从空间引用按钮 + picker -->
+            <div v-if="!showStopButton" class="ws-picker-wrap">
+              <button
+                type="button"
+                class="attach-btn"
+                :class="{ active: workspacePickerVisible || pendingWorkspaceRefs.length }"
+                :disabled="isRunning || !spaceDocsFlat.length"
+                :title="spaceDocsFlat.length ? '引用空间文档' : '当前空间暂无文档'"
+                @click="toggleWorkspacePicker"
+              >
+                <icon-layers />
+              </button>
+              <!-- 引用数 badge -->
+              <span v-if="pendingWorkspaceRefs.length" class="ws-picker-badge">{{ pendingWorkspaceRefs.length }}</span>
+            </div>
+
             <button
               v-if="!showStopButton"
               type="button"
@@ -292,8 +382,9 @@
               <icon-arrow-up />
             </button>
           </div>
-        </div>
-      </div>
+          </div><!-- /input-card -->
+        </div><!-- /input-card-outer -->
+      </div><!-- /chat-input-area -->
     </div>
 
     <div
@@ -340,8 +431,6 @@
             :title="docTitle || displayedArtifact?.title || '策划方案'"
             :spaces="spaces"
             :loading="isRunning"
-            @generate-ppt="triggerPptBuild"
-            @saved="loadSpaces"
           />
         </div>
       </template>
@@ -363,7 +452,6 @@
 
           <!-- 面板内容 -->
           <div class="artifact-pane-body">
-
             <!-- task_brief -->
             <template v-if="displayedArtifact.artifactType === 'task_brief'">
               <div class="pane-section">
@@ -500,7 +588,7 @@
     <!-- 保存对话框 -->
     <a-modal
       v-model:visible="showSaveModal"
-      title="保存到文档空间"
+      title="保存到策划空间"
       @ok="doSave"
       @cancel="showSaveModal = false"
     >
@@ -519,7 +607,7 @@
     <!-- 保存MD对话框 -->
     <a-modal
       v-model:visible="showSaveModalForMd"
-      title="保存到文档空间 (Markdown)"
+      title="保存到策划空间 (Markdown)"
       @ok="doSaveMd"
       @cancel="showSaveModalForMd = false"
     >
@@ -549,7 +637,8 @@ import PlanDocumentPanel from '../components/PlanDocumentPanel.vue'
 import PptEditor from '../components/PptEditor.vue'
 import {
   IconMobile, IconCompass, IconCamera, IconRecordStop,
-  IconBulb, IconSearch, IconEdit, IconCheckCircle, IconLayout, IconAttachment
+  IconBulb, IconSearch, IconEdit, IconCheckCircle, IconLayout, IconAttachment,
+  IconLayers, IconFile, IconFilePdf
 } from '@arco-design/web-vue/es/icon'
 
 const router   = useRouter()
@@ -655,6 +744,9 @@ const historyRef = ref(null)
 const isRunning  = ref(false)
 const conversations = ref([])
 const activeConversationId = ref('')
+const lastBoundConversationId = ref('')
+const quickReplyLabel = ref('你可以直接这样回复')
+const quickReplyOptions = ref([])
 const conversationSearch = ref('')
 const conversationSidebarCollapsed = ref(loadConversationSidebarCollapsed())
 const restoringConversation = ref(false)
@@ -662,6 +754,29 @@ let persistConversationTimer = null
 
 function createMessageId(prefix = 'msg') {
   return `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`
+}
+
+function setQuickReplies(label = '', options = []) {
+  quickReplyLabel.value = label || '你可以直接这样回复'
+  quickReplyOptions.value = options
+    .filter(item => item && item.label && item.value)
+    .map(item => ({
+      label: item.label,
+      value: item.value,
+      description: item.description || ''
+    }))
+    .slice(0, 5)
+}
+
+function clearQuickReplies() {
+  quickReplyOptions.value = []
+}
+
+async function sendQuickReply(item) {
+  if (!item?.value || isRunning.value) return
+  inputText.value = item.value
+  clearQuickReplies()
+  await send()
 }
 
 function stripHtmlText(value = '') {
@@ -678,6 +793,88 @@ function escapeHtml(value = '') {
     .replace(/>/g, '&gt;')
 }
 
+function decodeHtmlEntities(value = '') {
+  if (!value || typeof window === 'undefined' || typeof document === 'undefined') {
+    return String(value || '')
+  }
+  const textarea = document.createElement('textarea')
+  textarea.innerHTML = String(value)
+  return textarea.value
+}
+
+function htmlToStructuredText(value = '') {
+  if (!value || typeof window === 'undefined' || typeof DOMParser === 'undefined') {
+    return String(value || '')
+  }
+
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(String(value), 'text/html')
+  const chunks = []
+
+  const walk = (node, listDepth = 0) => {
+    if (!node) return
+    if (node.nodeType === Node.TEXT_NODE) {
+      chunks.push(node.textContent || '')
+      return
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return
+
+    const tag = node.tagName.toLowerCase()
+    if (tag === 'table') {
+      chunks.push(`\n${node.outerHTML}\n`)
+      return
+    }
+    if (tag === 'br') {
+      chunks.push('\n')
+      return
+    }
+    if (tag === 'hr') {
+      chunks.push('\n---\n')
+      return
+    }
+    if (/^h[1-6]$/.test(tag)) {
+      const level = Number(tag[1])
+      chunks.push(`${'#'.repeat(level)} ${node.textContent || ''}\n\n`)
+      return
+    }
+    if (tag === 'li') {
+      const indent = '  '.repeat(Math.max(0, listDepth - 1))
+      chunks.push(`${indent}- `)
+      Array.from(node.childNodes).forEach(child => walk(child, listDepth))
+      chunks.push('\n')
+      return
+    }
+    if (tag === 'ul' || tag === 'ol') {
+      chunks.push('\n')
+      Array.from(node.childNodes).forEach(child => walk(child, listDepth + 1))
+      chunks.push('\n')
+      return
+    }
+    if (tag === 'pre') {
+      const codeText = node.textContent || ''
+      chunks.push(`\n\`\`\`\n${codeText}\n\`\`\`\n`)
+      return
+    }
+    if (tag === 'code') {
+      if (node.parentElement?.tagName?.toLowerCase() === 'pre') return
+      chunks.push(`\`${node.textContent || ''}\``)
+      return
+    }
+
+    Array.from(node.childNodes).forEach(child => walk(child, listDepth))
+
+    if (['p', 'div', 'section', 'article', 'blockquote'].includes(tag)) {
+      chunks.push('\n\n')
+    }
+  }
+
+  Array.from(doc.body.childNodes).forEach(node => walk(node))
+
+  return chunks.join('')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 function parseInlineRichText(value = '') {
   return escapeHtml(value)
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -685,19 +882,48 @@ function parseInlineRichText(value = '') {
     .replace(/`([^`]+)`/g, '<code>$1</code>')
 }
 
+function isMarkdownTableDelimiter(line = '') {
+  const trimmed = String(line || '').trim()
+  if (!trimmed) return false
+  const normalized = trimmed.replace(/^\||\|$/g, '')
+  const cells = normalized.split('|').map(cell => cell.trim())
+  if (!cells.length) return false
+  return cells.every(cell => /^:?-{3,}:?$/.test(cell))
+}
+
+function splitMarkdownTableRow(line = '') {
+  return String(line || '')
+    .trim()
+    .replace(/^\||\|$/g, '')
+    .split('|')
+    .map(cell => cell.trim())
+}
+
 function renderAiTextToHtml(value = '') {
-  const source = String(value || '')
+  let source = String(value || '')
     .replace(/<think>[\s\S]*?<\/think>/gi, '')
     .replace(/\r\n/g, '\n')
     .trim()
 
   if (!source) return ''
-  if (/<[a-z][\s\S]*>/i.test(source)) return source
+  source = decodeHtmlEntities(source)
+
+  if (/<table[\s\S]*?>/i.test(source)) return source
+  if (/<[a-z][\s\S]*>/i.test(source)) {
+    source = htmlToStructuredText(source)
+  }
+
+  source = source
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/&nbsp;/gi, ' ')
+    .trim()
 
   const lines = source.split('\n')
   const blocks = []
   let listItems = []
   let paragraph = []
+  let codeFence = null
+  let codeLines = []
 
   const flushParagraph = () => {
     if (!paragraph.length) return
@@ -711,11 +937,44 @@ function renderAiTextToHtml(value = '') {
     listItems = []
   }
 
-  for (const rawLine of lines) {
+  const flushCode = () => {
+    if (!codeFence) return
+    blocks.push(`<pre><code>${escapeHtml(codeLines.join('\n'))}</code></pre>`)
+    codeFence = null
+    codeLines = []
+  }
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const rawLine = lines[index]
     const line = rawLine.trim()
+
+    const fenceMatch = rawLine.match(/^```([\w-]+)?\s*$/)
+    if (fenceMatch) {
+      flushParagraph()
+      flushList()
+      if (codeFence) {
+        flushCode()
+      } else {
+        codeFence = fenceMatch[1] || 'plain'
+      }
+      continue
+    }
+
+    if (codeFence) {
+      codeLines.push(rawLine)
+      continue
+    }
+
     if (!line) {
       flushParagraph()
       flushList()
+      continue
+    }
+
+    if (/^---+$/.test(line) || /^\*\*\*+$/.test(line)) {
+      flushParagraph()
+      flushList()
+      blocks.push('<hr />')
       continue
     }
 
@@ -735,12 +994,38 @@ function renderAiTextToHtml(value = '') {
       continue
     }
 
+    if (
+      line.startsWith('|')
+      && index + 1 < lines.length
+      && isMarkdownTableDelimiter(lines[index + 1])
+    ) {
+      flushParagraph()
+      flushList()
+
+      const headers = splitMarkdownTableRow(line)
+      const rows = []
+      index += 2
+      while (index < lines.length && lines[index].trim().startsWith('|')) {
+        rows.push(splitMarkdownTableRow(lines[index].trim()))
+        index += 1
+      }
+      index -= 1
+
+      const thead = `<thead><tr>${headers.map(cell => `<th>${parseInlineRichText(cell)}</th>`).join('')}</tr></thead>`
+      const tbody = rows.length
+        ? `<tbody>${rows.map(row => `<tr>${headers.map((_, cellIndex) => `<td>${parseInlineRichText(row[cellIndex] || '')}</td>`).join('')}</tr>`).join('')}</tbody>`
+        : ''
+      blocks.push(`<div class="ai-table-wrap"><table>${thead}${tbody}</table></div>`)
+      continue
+    }
+
     flushList()
     paragraph.push(line)
   }
 
   flushParagraph()
   flushList()
+  flushCode()
   return blocks.join('')
 }
 
@@ -831,8 +1116,7 @@ function removePendingImage(id) {
   clearImageInputValue()
 }
 
-function onFileInputChange(event) {
-  const files = Array.from(event.target?.files || [])
+function processFiles(files) {
   if (!files.length) return
 
   const nextImages = []
@@ -849,16 +1133,16 @@ function onFileInputChange(event) {
         previewUrl: URL.createObjectURL(file)
       })
     } else if (
-      file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf') ||
+      file.type === 'application/pdf' || file.name?.toLowerCase().endsWith('.pdf') ||
       file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
-      file.name.toLowerCase().endsWith('.docx')
+      file.name?.toLowerCase().endsWith('.docx')
     ) {
       nextDocs.push({
         id: createMessageId('doc'),
         file,
         name: file.name,
         size: file.size,
-        mimeType: file.type || (file.name.endsWith('.pdf') ? 'application/pdf'
+        mimeType: file.type || (file.name?.endsWith('.pdf') ? 'application/pdf'
           : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
       })
     } else {
@@ -877,8 +1161,23 @@ function onFileInputChange(event) {
     if (merged.length > 3) Message.warning('文档最多 3 份')
     pendingDocs.value = merged.slice(0, 3)
   }
+}
 
+function onFileInputChange(event) {
+  const files = Array.from(event.target?.files || [])
+  processFiles(files)
   clearImageInputValue()
+}
+
+function onPaste(event) {
+  const items = Array.from(event.clipboardData?.items || [])
+  const fileItems = items.filter(item => item.kind === 'file')
+  if (!fileItems.length) return
+  // 有文件类型时阻止默认粘贴行为（避免将文件路径粘贴成文本）
+  const files = fileItems.map(item => item.getAsFile()).filter(Boolean)
+  if (!files.length) return
+  event.preventDefault()
+  processFiles(files)
 }
 
 function buildMessageAttachments(items = []) {
@@ -907,6 +1206,9 @@ function buildAgentFormData(payload = {}) {
   if (payload.sessionId !== undefined) form.append('sessionId', payload.sessionId)
   if (payload.restoreSession !== undefined) form.append('restoreSession', JSON.stringify(payload.restoreSession))
   form.append('apiKeys', JSON.stringify(payload.apiKeys || {}))
+  if ((payload.workspaceRefs || []).length) {
+    form.append('workspaceRefs', JSON.stringify(payload.workspaceRefs.map(r => r.id)))
+  }
   ;(payload.images || []).forEach((item) => {
     form.append('images', item.file, item.name)
   })
@@ -1076,6 +1378,9 @@ const currentPreviewHint = computed(() => {
   }
   if (taskMode.value === 'brain') {
     if (waitingForClarification.value) return '正在等待你补充一个关键信息，收到后会继续推进。'
+    if (wsState.value === 'document' && docContent.value) {
+      return '策划文档已经生成。是否进入 PPT 会在对话里确认；如果还想优化方案，也可以直接继续聊。'
+    }
     if (isBuilding.value) return '正在把方案转换成 PPT 页面，新的页面会在这里逐张出现。'
     if (brainPlanItems.value.some(item => item.status === 'in_progress')) {
       return '系统正在按计划推进任务，会把任务理解、搜索研究和方案草稿同步展示在这里。'
@@ -1225,6 +1530,93 @@ function defaultBrainPlan() {
 // ── 工作空间 ────────────────────────────────────────────────────
 const spaces = ref([])
 const selectedSpaceId = ref('')
+
+// ── 工作空间文档引用 ─────────────────────────────────────────────
+const pendingWorkspaceRefs = ref([])       // [{id, name, docType}]
+const workspacePickerVisible = ref(false)  // 按钮选择器
+const workspacePickerQuery = ref('')       // 选择器搜索词
+const atMentionVisible = ref(false)        // @ 内联菜单
+const atMentionQuery = ref('')             // @ 后的匹配词
+const atMentionIndex = ref(0)              // 键盘高亮项
+const textareaRef = ref(null)              // a-textarea 组件 ref
+
+function flattenDocs(nodes, result = []) {
+  for (const node of nodes || []) {
+    if (node.type === 'document') result.push(node)
+    if (node.children?.length) flattenDocs(node.children, result)
+  }
+  return result
+}
+
+const spaceDocsFlat = computed(() => {
+  if (!selectedSpaceId.value) return []
+  const space = spaces.value.find(s => s.id === selectedSpaceId.value)
+  return space ? flattenDocs(space.children || []) : []
+})
+
+const atMentionResults = computed(() => {
+  const q = atMentionQuery.value.toLowerCase()
+  return spaceDocsFlat.value
+    .filter(d => !q || d.name.toLowerCase().includes(q))
+    .slice(0, 8)
+})
+
+const workspacePickerResults = computed(() => {
+  const q = workspacePickerQuery.value.toLowerCase()
+  return spaceDocsFlat.value
+    .filter(d => !q || d.name.toLowerCase().includes(q))
+})
+
+function addWorkspaceRef(doc) {
+  if (!pendingWorkspaceRefs.value.find(r => r.id === doc.id)) {
+    pendingWorkspaceRefs.value.push({ id: doc.id, name: doc.name, docType: doc.docType || 'document' })
+  }
+}
+
+function removeWorkspaceRef(id) {
+  pendingWorkspaceRefs.value = pendingWorkspaceRefs.value.filter(r => r.id !== id)
+}
+
+function toggleWorkspacePicker() {
+  workspacePickerVisible.value = !workspacePickerVisible.value
+  if (workspacePickerVisible.value) workspacePickerQuery.value = ''
+}
+
+// 检测 textarea 中 @ 触发
+function onTextareaInput() {
+  const ta = textareaRef.value?.$el?.querySelector('textarea') ?? textareaRef.value?.$el
+  // 优先读取 native textarea 的当前值和光标位置，避免 Arco v-model 更新延迟
+  const text = ta?.value ?? inputText.value
+  const cursor = ta?.selectionStart ?? text.length
+  const before = text.slice(0, cursor)
+  const match = before.match(/@([^\s@]*)$/)
+  if (match) {
+    atMentionQuery.value = match[1]
+    atMentionVisible.value = true
+    atMentionIndex.value = 0
+  } else {
+    atMentionVisible.value = false
+    atMentionQuery.value = ''
+  }
+}
+
+function selectMention(doc) {
+  if (!doc) return
+  // 删除输入框里的 @query 文字
+  const ta = textareaRef.value?.$el?.querySelector('textarea') ?? textareaRef.value?.$el
+  const cursor = ta?.selectionStart ?? inputText.value.length
+  const before = inputText.value.slice(0, cursor)
+  const match = before.match(/@([^\s@]*)$/)
+  if (match) {
+    const start = cursor - match[0].length
+    inputText.value = inputText.value.slice(0, start) + inputText.value.slice(cursor)
+  }
+  addWorkspaceRef(doc)
+  atMentionVisible.value = false
+  atMentionQuery.value = ''
+  // 焦点还给 textarea
+  nextTick(() => ta?.focus())
+}
 const activeConversationTitle = computed(() => conversations.value.find(item => item.id === activeConversationId.value)?.title || '')
 const filteredConversations = computed(() => {
   const keyword = conversationSearch.value.trim().toLowerCase()
@@ -1253,9 +1645,28 @@ const inputFocused  = ref(false)
 const isComposing   = ref(false)  // IME 合成中（中文/日文输入法）
 
 function handleEnter(e) {
-  if (isComposing.value) return   // IME 确认词组阶段，不拦截
+  if (isComposing.value) return
+  if (atMentionVisible.value) {
+    e.preventDefault()
+    selectMention(atMentionResults.value[atMentionIndex.value])
+    return
+  }
   e.preventDefault()
   send()
+}
+
+function handleTextareaKeydown(e) {
+  if (!atMentionVisible.value) return
+  if (e.key === 'ArrowDown') {
+    e.preventDefault()
+    atMentionIndex.value = Math.min(atMentionIndex.value + 1, atMentionResults.value.length - 1)
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault()
+    atMentionIndex.value = Math.max(atMentionIndex.value - 1, 0)
+  } else if (e.key === 'Escape') {
+    e.preventDefault()
+    atMentionVisible.value = false
+  }
 }
 
 async function loadSpaces() {
@@ -1426,6 +1837,7 @@ function clearConversationView() {
   restoringConversation.value = true
   messages.value = []
   clearPendingImages()
+  clearQuickReplies()
   currentSessionId.value = ''
   wasManuallyStopped.value = false
   currentTask.value = null
@@ -1473,6 +1885,7 @@ async function openConversation(conversationId) {
   try {
     const res = await workspaceApi.getConversation(conversationId)
     activeConversationId.value = conversationId
+    lastBoundConversationId.value = conversationId
     restoreFromConversation(res.data)
   } catch {
     Message.error('加载对话失败')
@@ -1490,6 +1903,7 @@ async function ensureActiveConversation(seedTitle = '') {
   const conversation = res.data
   conversations.value = [conversation, ...conversations.value]
   activeConversationId.value = conversation.id
+  lastBoundConversationId.value = conversation.id
   return conversation.id
 }
 
@@ -1504,6 +1918,7 @@ async function createNewConversation() {
     const conversation = res.data
     conversations.value = [conversation, ...conversations.value]
     activeConversationId.value = conversation.id
+    lastBoundConversationId.value = conversation.id
     await persistConversationSnapshot(true)
   } catch {
     Message.error('新建对话失败')
@@ -1624,6 +2039,7 @@ function scheduleConversationPersist() {
 async function persistConversationSnapshot(immediate = false) {
   if (restoringConversation.value || !activeConversationId.value) return
   if (!immediate) clearTimeout(persistConversationTimer)
+  lastBoundConversationId.value = activeConversationId.value
   const payload = {
     title: deriveConversationTitle(),
     status: wsState.value === 'failed' ? 'failed' : wsState.value === 'done' ? 'completed' : 'active',
@@ -1666,6 +2082,11 @@ const examples = [
 
 function fillExample(text) {
   inputText.value = text
+}
+
+async function submitFollowupMessage(text) {
+  inputText.value = text
+  return send()
 }
 
 function clampPreviewWidth(nextWidth) {
@@ -1722,6 +2143,19 @@ async function send() {
   const docs   = pendingDocs.value.map(item => ({ ...item }))
   if ((!text && !images.length && !docs.length) || isRunning.value) return
   inputText.value = ''
+  clearQuickReplies()
+
+  // 兜底：如果当前页面仍保留着上下文，但 activeConversationId 被意外清空，
+  // 优先继续绑定最近一次活跃对话，避免把“继续确认/继续优化”误建成新对话。
+  const hasLiveContext = !!(
+    currentSessionId.value ||
+    docContent.value ||
+    messages.value.length ||
+    currentTask.value
+  )
+  if (!activeConversationId.value && hasLiveContext && lastBoundConversationId.value) {
+    activeConversationId.value = lastBoundConversationId.value
+  }
 
   // 如果正在等待澄清回答
   if (waitingForClarification.value) {
@@ -1750,16 +2184,20 @@ async function send() {
     return
   }
 
-  const displayText = text || (docs.length ? `（发送了 ${docs.length} 份文档）` : '（发送了图片）')
+  const wsRefs = pendingWorkspaceRefs.value.map(r => ({ ...r }))
+  const displayText = text || (docs.length ? `（发送了 ${docs.length} 份文档）` : wsRefs.length ? `（引用了 ${wsRefs.length} 份空间文档）` : '（发送了图片）')
   pushMsg('user', displayText, '', {
     attachments: buildMessageAttachments(images),
-    documents: docs.map(d => ({ id: d.id, name: d.name, size: d.size, mimeType: d.mimeType }))
+    documents: docs.map(d => ({ id: d.id, name: d.name, size: d.size, mimeType: d.mimeType })),
+    workspaceRefs: wsRefs
   })
   clearPendingImages()
+  pendingWorkspaceRefs.value = []
+  workspacePickerVisible.value = false
   await nextTick()
   if (historyRef.value) historyRef.value.scrollTop = historyRef.value.scrollHeight
 
-  await runBrainTask(text, images, docs)
+  await runBrainTask(text, images, docs, wsRefs)
 }
 
 function retryCurrentTask() {
@@ -1796,7 +2234,7 @@ function stopTask() {
 }
 
 // ── Brain Agent 任务 ──────────────────────────────────────────────
-async function runBrainTask(text, images = [], docs = []) {
+async function runBrainTask(text, images = [], docs = [], workspaceRefs = []) {
   const isContinuing = !!currentSessionId.value  // 是否复用现有 session
   const taskSeed = text || docs[0]?.name || images[0]?.name || '文件需求'
   isRunning.value = true
@@ -1838,7 +2276,8 @@ async function runBrainTask(text, images = [], docs = []) {
         sessionId: currentSessionId.value || undefined,
         restoreSession: currentSessionId.value ? buildRestoreSessionPayload() : undefined,
         images,
-        docs
+        docs,
+        workspaceRefs
       })
     }).then(r => r.json()).then(res => {
       if (!res.success) throw new Error(res.message || '启动失败')
@@ -1958,6 +2397,46 @@ function connectBrainSSE(url, resolve = () => {}) {
     waitingForClarification.value = true
     isRunning.value = false
     pushAiMessage({ kind: 'clarification', question: d.question, questionType: d.type, answered: false })
+    if (d.type === 'confirmation') {
+      setQuickReplies('请选择下一步', [
+        {
+          label: '可以开始生成 PPT',
+          value: '可以开始生成 PPT',
+          description: '按当前确认过的方案继续往下生成汇报稿。'
+        },
+        {
+          label: '先继续优化方案',
+          value: '先别生成 PPT，继续优化方案',
+          description: '保留当前方向，但继续调整方案细节。'
+        }
+      ])
+    } else if (d.type === 'suggestion' || d.type === 'ambiguous') {
+      setQuickReplies('请选择你要的方向', [
+        {
+          label: '按方向一继续',
+          value: '按方向一继续',
+          description: '沿着第一个方向继续深化。'
+        },
+        {
+          label: '按方向二继续',
+          value: '按方向二继续',
+          description: '沿着第二个方向继续深化。'
+        },
+        {
+          label: '我补充一下要求',
+          value: '我再补充一下要求',
+          description: '先补充限制条件，再决定方向。'
+        }
+      ])
+    } else {
+      setQuickReplies('请补充一个关键信息', [
+        {
+          label: '我补充一下',
+          value: '我补充一下',
+          description: '继续补充当前缺少的信息。'
+        }
+      ])
+    }
     scheduleConversationPersist()
   })
 
@@ -2003,6 +2482,20 @@ function connectBrainSSE(url, resolve = () => {}) {
       addExecutionLog(d.summary || `${d.tool} 已完成`, d.timestamp || Date.now())
     }
     scheduleConversationPersist()
+  })
+
+  // 空间文档更新（auto-save / save_to_workspace）
+  sse.addEventListener('workspace_updated', e => {
+    const d = JSON.parse(e.data)
+    // 刷新空间文档列表
+    loadSpaces()
+    // 标记最近保存/读取的文档
+    if (d.docId) {
+      recentlySavedDocIds.value = new Set([d.docId, ...recentlySavedDocIds.value])
+      setTimeout(() => {
+        recentlySavedDocIds.value = new Set([...recentlySavedDocIds.value].filter(id => id !== d.docId))
+      }, 4000)
+    }
   })
 
   // 复用现有事件处理
@@ -2065,6 +2558,7 @@ function handleArtifact(d) {
   if (['plan_draft', 'review_feedback', 'ppt_outline'].includes(d.artifactType)) {
     addExecutionLog(`${artifactTypeLabel(d.artifactType)}已更新：${artifactTimelineText({ artifactType: d.artifactType, payload: d.payload || {} })}`, d.timestamp || Date.now())
   }
+
 }
 
 function artifactCardTitle(type, payload) {
@@ -2113,7 +2607,7 @@ function handleDocReady(d) {
   docContent.value = d.docHtml || ''
   docTitle.value = d.title || currentTask.value?.topic || '策划方案'
   progress.value = Math.max(progress.value, 88)
-  progressLabel.value = '策划文档已生成，等待确认'
+  progressLabel.value = '策划文档已生成，等待对话确认下一步'
   wsState.value = 'document'
   const documentCard = {
     kind: 'artifact-card',
@@ -2139,7 +2633,25 @@ function handleDocReady(d) {
   pushAiMessage(documentCard)
   activeArtifact.value = documentCard
   isRunning.value = false
-  addExecutionLog('策划文档已生成，请先确认文档内容，再生成 PPT。', d.timestamp || Date.now())
+  addExecutionLog('策划文档已生成。若还不满意，可继续指出要优化的方向，再决定是否生成 PPT。', d.timestamp || Date.now())
+  pushMsg('ai', '', '策划文档我已经整理好了。你先看方案本身是否满意；如果方向对了，直接在对话里回复“可以开始生成 PPT”，我会按这版继续往下做。如果还想调整，也直接告诉我改哪里。')
+  setQuickReplies('请选择下一步', [
+    {
+      label: '可以开始生成 PPT',
+      value: '可以开始生成 PPT',
+      description: '按当前这版方案直接进入 PPT 生成。'
+    },
+    {
+      label: '继续优化方案',
+      value: '先别生成 PPT，继续优化方案',
+      description: '当前方向保留，但继续收紧主题、结构或执行细节。'
+    },
+    {
+      label: '先补充新要求',
+      value: '我先补充一些新的要求，再继续往下推',
+      description: '先补限制条件或偏好，再决定是否出 PPT。'
+    }
+  ])
 }
 
 function handleSlideAdded(d) {
@@ -2200,8 +2712,9 @@ function handleDone(d) {
 
   if (isBrainOnly) {
     pushMsg('ai', '', d.hasPlan
-      ? '方案方向已经整理完了，我会带着这版判断继续配合你细化，确认后也可以直接生成 PPT。'
+      ? '方案方向已经整理完了。是否进入 PPT，我会在对话里和你确认；如果这版还不够满意，也可以继续让我改。'
       : '这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。')
+    if (!d.hasPlan) clearQuickReplies()
     wsState.value = docContent.value
       ? 'document'
       : (hasStrategyPreview.value ? 'done' : 'welcome')
@@ -2209,11 +2722,12 @@ function handleDone(d) {
     pushMsg('ai', '', isPptDone
       ? 'PPT 已生成完成，可在右侧直接预览、翻页并下载。'
       : '策划方案已生成完成！可在右侧预览，或点击"进入编辑器"精修。')
+    clearQuickReplies()
     wsState.value = 'done'
   }
   addExecutionLog(
     isBrainOnly
-      ? '本轮任务已完成，可继续补充要求或进入 PPT 生成。'
+      ? '本轮任务已完成，可继续补充要求、优化方案，确认后再进入 PPT 生成。'
       : (isPptDone ? 'PPT 已生成完成，支持右侧预览和下载。' : '任务已完成，支持预览、编辑和保存。')
   )
   isRunning.value = false
@@ -2222,64 +2736,6 @@ function handleDone(d) {
   failedReason.value = ''
   failedStage.value = ''
   // resolve 由 connectSSE 的 done 监听器调用
-}
-
-async function triggerPptBuild({ content: editedHtml } = {}) {
-  isRunning.value = true
-  isBuilding.value = false
-  wsState.value = 'execution'
-  progress.value = Math.max(progress.value, 90)
-  progressLabel.value = '正在基于文档生成 PPT...'
-  if (editedHtml) {
-    docContent.value = editedHtml
-  }
-
-  try {
-    const fallbackPlanPayload = latestPlanDraft.value?.payload || null
-    const fallbackPlan = fallbackPlanPayload
-      ? {
-          title: fallbackPlanPayload.planTitle || docTitle.value || currentTask.value?.topic || '策划方案',
-          coreStrategy: fallbackPlanPayload.coreStrategy || '',
-          highlights: Array.isArray(fallbackPlanPayload.highlights) ? fallbackPlanPayload.highlights : [],
-          sections: Array.isArray(fallbackPlanPayload.sections) ? fallbackPlanPayload.sections : [],
-          visualTheme: fallbackPlanPayload.visualTheme || {},
-          timeline: fallbackPlanPayload.timeline || {},
-          kpis: Array.isArray(fallbackPlanPayload.kpis) ? fallbackPlanPayload.kpis : [],
-          budget: fallbackPlanPayload.budget || {},
-          riskMitigation: Array.isArray(fallbackPlanPayload.riskMitigation) ? fallbackPlanPayload.riskMitigation : []
-        }
-      : null
-
-    if (!currentSessionId.value && !fallbackPlan) {
-      Message.error('当前会话缺少可用于生成 PPT 的方案数据，请先重新生成策划文档')
-      isRunning.value = false
-      wsState.value = 'document'
-      return
-    }
-
-    const requestSessionId = currentSessionId.value || `restore_${activeConversationId.value || Date.now()}`
-    const res = await fetch(`/api/agent/${requestSessionId}/build-ppt`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        docContent: docContent.value,
-        apiKeys: settings.apiKeys,
-        planData: currentSessionId.value ? undefined : fallbackPlan,
-        userInput: currentTask.value || {},
-        spaceId: selectedSpaceId.value || ''
-      })
-    }).then(r => r.json())
-
-    if (!res.success) throw new Error(res.message || '启动失败')
-    if (res.sessionId) currentSessionId.value = res.sessionId
-    if (!sse || sse.readyState === EventSource.CLOSED) {
-      connectBrainSSE(res.streamUrl, () => {})
-    }
-  } catch (err) {
-    Message.error('生成 PPT 失败：' + err.message)
-    isRunning.value = false
-    wsState.value = 'document'
-  }
 }
 
 // ── 保存 PPT ─────────────────────────────────────────────────────
@@ -2299,7 +2755,7 @@ function selectArtifact(msg) {
 
 function openSaveResearch() {
   if (!spaces.value.length) {
-    Message.warning('请先在文档空间创建工作空间')
+    Message.warning('请先在策划空间创建工作空间')
     return
   }
   const researchItems = researchPreviewItems.value
@@ -2313,7 +2769,7 @@ function openSaveResearch() {
 
 function openSavePlanDraft() {
   if (!spaces.value.length) {
-    Message.warning('请先在文档空间创建工作空间')
+    Message.warning('请先在策划空间创建工作空间')
     return
   }
   if (!latestPlanDraft.value) return
@@ -2336,7 +2792,7 @@ function openSavePlanDraft() {
 
 function showSaveDialog() {
   if (!spaces.value.length) {
-    Message.warning('请先在文档空间创建工作空间')
+    Message.warning('请先在策划空间创建工作空间')
     return
   }
   saveSpaceId.value = selectedSpaceId.value || spaces.value[0]?.id || ''
@@ -2362,8 +2818,8 @@ async function doSave() {
 
     showSaveModal.value = false
     if (res.success) {
-      Message.success('已保存到文档空间')
-      pushMsg('ai', '', '策划方案已保存到文档空间。')
+      Message.success('已保存到策划空间')
+      pushMsg('ai', '', '策划方案已保存到策划空间。')
     } else {
       Message.error(res.message || '保存失败')
     }
@@ -2381,7 +2837,7 @@ async function doSaveMd() {
       await workspaceApi.saveContent(nodeId, mdContentToSave.value, 'markdown')
     }
     showSaveModalForMd.value = false
-    Message.success('已保存到文档空间')
+    Message.success('已保存到策划空间')
     mdContentToSave.value = ''
   } catch (err) {
     Message.error('保存失败：' + err.message)
@@ -2405,8 +2861,26 @@ watch(wsState, (state) => {
   scheduleConversationPersist()
 })
 
+function onDocumentMousedown(e) {
+  if (workspacePickerVisible.value) {
+    const pickerEl = document.querySelector('.ws-picker-dropdown')
+    const wrapEl = document.querySelector('.ws-picker-wrap')
+    if (!pickerEl?.contains(e.target) && !wrapEl?.contains(e.target)) {
+      workspacePickerVisible.value = false
+    }
+  }
+  if (atMentionVisible.value) {
+    const dropEl = document.querySelector('.at-mention-dropdown')
+    const taEl = textareaRef.value?.$el
+    if (!dropEl?.contains(e.target) && !taEl?.contains(e.target)) {
+      atMentionVisible.value = false
+    }
+  }
+}
+
 onMounted(() => {
   window.addEventListener('resize', syncPreviewWidth)
+  document.addEventListener('mousedown', onDocumentMousedown)
 })
 
 onUnmounted(() => {
@@ -2415,6 +2889,7 @@ onUnmounted(() => {
   stopResize()
   clearTimeout(persistConversationTimer)
   window.removeEventListener('resize', syncPreviewWidth)
+  document.removeEventListener('mousedown', onDocumentMousedown)
 })
 </script>
 
@@ -2444,12 +2919,12 @@ onUnmounted(() => {
   gap: 8px;
   cursor: pointer;
   font-size: 14px;
-  color: #475569;
+  color: #57534e;
   transition: background 0.2s;
 }
 
 .thinking-toggle:hover {
-  background: rgba(59, 130, 246, 0.05);
+  background: rgba(68,64,60,0.06);
 }
 
 .thinking-icon {
@@ -2472,12 +2947,12 @@ onUnmounted(() => {
 
 .thinking-step-time {
   font-size: 11px;
-  color: #94a3b8;
+  color: #a8a29e;
   margin-bottom: 4px;
 }
 
 .thinking-step-content {
-  color: #475569;
+  color: #57534e;
   line-height: 1.5;
 }
 
@@ -2503,12 +2978,12 @@ onUnmounted(() => {
   justify-content: space-between;
   cursor: pointer;
   font-size: 13px;
-  color: #64748b;
+  color: #57534e;
   transition: background 0.2s;
 }
 
 .tool-calls-toggle:hover {
-  background: rgba(148, 163, 184, 0.1);
+  background: rgba(68,64,60,0.1);
 }
 
 .tool-calls-chevron {
@@ -2538,7 +3013,7 @@ onUnmounted(() => {
 }
 
 .tool-call-mini-text {
-  color: #475569;
+  color: #57534e;
   flex: 1;
 }
 
@@ -2576,12 +3051,12 @@ onUnmounted(() => {
 .tool-call-card-title {
   font-size: 13px;
   font-weight: 500;
-  color: #4b5563;
+  color: #57534e;
 }
 
 .tool-call-card-progress {
   font-size: 12px;
-  color: #6b7280;
+  color: #a8a29e;
   animation: pulse 2s infinite;
 }
 
@@ -2598,7 +3073,7 @@ onUnmounted(() => {
 
 .tool-call-card-result-summary {
   font-size: 13px;
-  color: #374151;
+  color: #44403c;
   line-height: 1.5;
 }
 
@@ -2608,7 +3083,7 @@ onUnmounted(() => {
   border: none;
   border-radius: 6px;
   background: rgba(0, 0, 0, 0.04);
-  color: #6b7280;
+  color: #a8a29e;
   font-size: 12px;
   cursor: pointer;
   transition: all 0.15s;
@@ -2616,7 +3091,7 @@ onUnmounted(() => {
 
 .tool-call-card-toggle:hover {
   background: rgba(0, 0, 0, 0.08);
-  color: #374151;
+  color: #44403c;
 }
 
 .tool-call-card-details {
@@ -2625,7 +3100,7 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.6);
   border-radius: 8px;
   font-size: 12px;
-  color: #6b7280;
+  color: #a8a29e;
   overflow-x: auto;
   max-height: 280px;
   line-height: 1.6;
@@ -2635,7 +3110,7 @@ onUnmounted(() => {
 .ai-message-card {
   font-size: 14px;
   line-height: 1.7;
-  color: #374151;
+  color: #44403c;
   padding: 4px 0;
   max-width: 85%;
   word-break: break-word;
@@ -2653,7 +3128,7 @@ onUnmounted(() => {
 .ai-message-card :deep(h2),
 .ai-message-card :deep(h3) {
   margin: 0 0 8px;
-  color: #111827;
+  color: #1c1917;
   line-height: 1.45;
 }
 
@@ -2674,21 +3149,72 @@ onUnmounted(() => {
   padding-left: 20px;
 }
 
+.ai-message-card :deep(hr) {
+  border: 0;
+  border-top: 1px solid rgba(68, 64, 60, 0.12);
+  margin: 12px 0;
+}
+
 .ai-message-card :deep(li) {
   margin-bottom: 4px;
 }
 
 .ai-message-card :deep(strong) {
-  color: #111827;
+  color: #1c1917;
   font-weight: 700;
 }
 
 .ai-message-card :deep(code) {
   padding: 1px 6px;
   border-radius: 6px;
-  background: #f3f4f6;
-  color: #334155;
+  background: rgba(68,64,60,0.06);
+  color: #44403c;
   font-size: 12px;
+}
+
+.ai-message-card :deep(pre) {
+  margin: 10px 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #1c1917;
+  color: #f5f5f4;
+  overflow-x: auto;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.ai-message-card :deep(pre code) {
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  font-size: inherit;
+}
+
+.ai-message-card :deep(.ai-table-wrap) {
+  margin: 10px 0;
+  overflow-x: auto;
+}
+
+.ai-message-card :deep(table) {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 420px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.ai-message-card :deep(th),
+.ai-message-card :deep(td) {
+  padding: 8px 10px;
+  border: 1px solid rgba(68, 64, 60, 0.12);
+  text-align: left;
+  vertical-align: top;
+}
+
+.ai-message-card :deep(th) {
+  background: rgba(68, 64, 60, 0.05);
+  color: #1c1917;
+  font-weight: 700;
 }
 
 /* ── 澄清卡片 ── */
@@ -2708,7 +3234,7 @@ onUnmounted(() => {
 
 .clarification-question {
   font-size: 14px;
-  color: #374151;
+  color: #44403c;
   line-height: 1.7;
   white-space: pre-wrap;
   flex: 1;
@@ -2718,7 +3244,7 @@ onUnmounted(() => {
 .artifact-msg-card {
   width: min(85%, 560px);
   background: #fff;
-  border: 1px solid #E2E8F0;
+  border: 1px solid rgba(0,0,0,0.06);
   border-radius: 0;
   border-left-width: 3px;
   padding: 12px 14px 10px 12px;
@@ -2753,7 +3279,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   background: #F8FAFC;
-  border: 1px solid #E2E8F0;
+  border: 1px solid rgba(0,0,0,0.06);
 }
 
 .artifact-msg-card-icon {
@@ -2846,8 +3372,8 @@ onUnmounted(() => {
   font-size: 11px;
   padding: 2px 8px;
   background: #F8FAFC;
-  color: #475569;
-  border: 1px solid #E2E8F0;
+  color: #57534e;
+  border: 1px solid rgba(0,0,0,0.06);
   border-radius: 999px;
   white-space: nowrap;
   max-width: 160px;
@@ -2873,7 +3399,7 @@ onUnmounted(() => {
 .artifact-modal-label {
   font-size: 12px;
   font-weight: 600;
-  color: #6b7280;
+  color: #a8a29e;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 8px;
@@ -2881,7 +3407,7 @@ onUnmounted(() => {
 
 .artifact-modal-text {
   font-size: 14px;
-  color: #1f2937;
+  color: #1c1917;
   line-height: 1.6;
 }
 
@@ -2910,10 +3436,10 @@ onUnmounted(() => {
   align-items: flex-start;
   gap: 10px;
   padding: 10px 12px;
-  background: #f8faff;
+  background: rgba(68,64,60,0.03);
   border-radius: 8px;
   font-size: 13px;
-  color: #374151;
+  color: #44403c;
   line-height: 1.5;
 }
 
@@ -2942,7 +3468,7 @@ onUnmounted(() => {
   align-items: flex-start;
   gap: 10px;
   padding: 8px 10px;
-  background: #f8faff;
+  background: rgba(68,64,60,0.03);
   border-radius: 8px;
 }
 
@@ -2960,20 +3486,20 @@ onUnmounted(() => {
 .section-title {
   font-size: 13px;
   font-weight: 600;
-  color: #1f2937;
+  color: #1c1917;
   margin-bottom: 2px;
 }
 
 .section-points {
   font-size: 12px;
-  color: #6b7280;
+  color: #a8a29e;
 }
 
 .artifact-modal-list {
   margin: 0;
   padding-left: 20px;
   font-size: 13px;
-  color: #374151;
+  color: #44403c;
   line-height: 1.8;
 }
 
@@ -3031,7 +3557,7 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
   padding: 8px 10px;
-  background: #f8faff;
+  background: rgba(68,64,60,0.03);
   border-radius: 6px;
   font-size: 12px;
 }
@@ -3039,8 +3565,8 @@ onUnmounted(() => {
 .page-num {
   width: 22px;
   height: 22px;
-  background: #e5e7eb;
-  color: #374151;
+  background: rgba(0,0,0,0.06);
+  color: #44403c;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -3061,18 +3587,18 @@ onUnmounted(() => {
 
 .page-title {
   flex: 1;
-  color: #374151;
+  color: #44403c;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .artifact-modal-json {
-  background: #f3f4f6;
+  background: rgba(68,64,60,0.06);
   padding: 12px;
   border-radius: 8px;
   font-size: 12px;
-  color: #374151;
+  color: #44403c;
   overflow-x: auto;
   line-height: 1.5;
 }
@@ -3120,13 +3646,13 @@ onUnmounted(() => {
 .task-summary-title {
   font-size: 15px;
   font-weight: 600;
-  color: #1e293b;
+  color: #1c1917;
   margin-bottom: 4px;
 }
 
 .task-summary-subtitle {
   font-size: 13px;
-  color: #64748b;
+  color: #57534e;
 }
 
 .task-summary-progress {
@@ -3154,7 +3680,7 @@ onUnmounted(() => {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  background: #f8fafc;
+  background: #faf9f7;
   border-right: 1px solid rgba(15, 23, 42, 0.06);
   transition: width 0.22s ease, min-width 0.22s ease;
   overflow: hidden;
@@ -3191,7 +3717,7 @@ onUnmounted(() => {
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: #86909c;
+  color: #a8a29e;
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
@@ -3209,15 +3735,15 @@ onUnmounted(() => {
   border: none;
   border-radius: 6px;
   background: #ffffff;
-  color: #94a3b8;
+  color: #a8a29e;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), inset 0 0 0 1px rgba(15, 23, 42, 0.06);
   cursor: pointer;
   transition: left 0.22s ease, background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .conversation-sidebar-rail-toggle:hover {
-  background: #f8fafc;
-  color: #4e5969;
+  background: #faf9f7;
+  color: #57534e;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.1), inset 0 0 0 1px rgba(15, 23, 42, 0.08);
 }
 
@@ -3227,7 +3753,7 @@ onUnmounted(() => {
 
 .conversation-create-btn:hover {
   background: rgba(15, 23, 42, 0.04);
-  color: #4e5969;
+  color: #57534e;
 }
 
 .conversation-sidebar-copy {
@@ -3249,7 +3775,7 @@ onUnmounted(() => {
   flex-shrink: 0;
   font-size: 11px;
   font-weight: 500;
-  color: #94a3b8;
+  color: #a8a29e;
 }
 
 .conversation-sidebar-body {
@@ -3265,7 +3791,7 @@ onUnmounted(() => {
   padding: 0 2px 12px;
   font-size: 13px;
   font-weight: 700;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .conversation-sidebar-section + .conversation-sidebar-section {
@@ -3296,7 +3822,7 @@ onUnmounted(() => {
 :deep(.conversation-sidebar-head-select .arco-select-view-value) {
   font-size: 12px;
   font-weight: 600;
-  color: #4e5969;
+  color: #57534e;
 }
 
 :deep(.conversation-sidebar-head-select .arco-select-view-icon) {
@@ -3307,23 +3833,23 @@ onUnmounted(() => {
   border: none;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.78);
-  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(68,64,60,0.12);
   transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 :deep(.conversation-search .arco-input-wrapper:hover),
 :deep(.conversation-search .arco-input-wrapper.arco-input-focus) {
   background: rgba(255, 255, 255, 0.96);
-  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(68,64,60,0.22);
 }
 
 :deep(.conversation-search .arco-input) {
   font-size: 12px;
-  color: #334155;
+  color: #44403c;
 }
 
 :deep(.conversation-search .arco-input::placeholder) {
-  color: #94a3b8;
+  color: #a8a29e;
 }
 
 :deep(.conversation-search .arco-input-prefix) {
@@ -3342,7 +3868,7 @@ onUnmounted(() => {
 .conversation-group-title {
   font-size: 11px;
   font-weight: 600;
-  color: #86909c;
+  color: #a8a29e;
   padding: 0 2px 6px;
   text-transform: none;
   letter-spacing: 0.01em;
@@ -3362,14 +3888,14 @@ onUnmounted(() => {
 .conversation-list-empty-title {
   font-size: 12px;
   font-weight: 700;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .conversation-list-empty-desc {
   margin-top: 6px;
   font-size: 12px;
   line-height: 1.6;
-  color: #86909c;
+  color: #a8a29e;
 }
 
 .conversation-pill {
@@ -3407,7 +3933,7 @@ onUnmounted(() => {
 .conversation-pill-title {
   font-size: 13px;
   font-weight: 700;
-  color: #1d2129;
+  color: #1c1917;
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -3417,7 +3943,7 @@ onUnmounted(() => {
 
 .conversation-pill-meta {
   font-size: 11px;
-  color: #94a3b8;
+  color: #a8a29e;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3437,7 +3963,7 @@ onUnmounted(() => {
   border: none;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.75);
-  color: #4e5969;
+  color: #57534e;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
@@ -3459,7 +3985,7 @@ onUnmounted(() => {
   max-width: 720px;
   margin-top: 14px;
   padding: 14px 16px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(0,0,0,0.06);
   border-radius: 18px;
   background: linear-gradient(180deg, #ffffff 0%, #fbfcff 100%);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
@@ -3515,14 +4041,14 @@ onUnmounted(() => {
 .task-hud-title {
   font-size: 15px;
   font-weight: 700;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .task-hud-subtitle {
   margin-top: 4px;
   font-size: 12px;
   line-height: 1.6;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .task-hud-chip-row {
@@ -3539,12 +4065,12 @@ onUnmounted(() => {
   padding: 5px 10px;
   border-radius: 999px;
   background: #f7f8fa;
-  color: #4e5969;
+  color: #57534e;
   font-size: 12px;
 }
 
 .task-hud-chip b {
-  color: #86909c;
+  color: #a8a29e;
   font-weight: 700;
 }
 
@@ -3569,13 +4095,13 @@ onUnmounted(() => {
   min-width: 54px;
   font-size: 11px;
   font-weight: 700;
-  color: #86909c;
+  color: #a8a29e;
 }
 
 .task-hud-log-text {
   font-size: 12px;
   line-height: 1.6;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .chat-layout.preview-open .chat-panel {
@@ -3620,35 +4146,33 @@ onUnmounted(() => {
 
 .panel-resizer-toggle {
   position: absolute;
-  top: 50%;
+  top: 20px;
   left: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateX(-50%);
   width: 20px;
-  height: 36px;
-  border-radius: 4px;
+  height: 48px;
+  border-radius: 6px;
   border: 1px solid #e2e8f0;
   background: #fff;
-  color: #94a3b8;
-  font-size: 13px;
+  color: #78716c;
+  font-size: 14px;
   line-height: 1;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0;
-  transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+  opacity: 1;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
   z-index: 10;
   padding: 0;
-}
-
-.panel-resizer:hover .panel-resizer-toggle,
-.panel-resizer--collapsed .panel-resizer-toggle {
-  opacity: 1;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
 
 .panel-resizer-toggle:hover {
   color: rgb(var(--arcoblue-6));
   border-color: rgba(var(--arcoblue-6), 0.4);
+  background: #f8faff;
+  box-shadow: 0 2px 8px rgba(var(--arcoblue-6), 0.12);
 }
 
 .chat-history {
@@ -3683,12 +4207,12 @@ onUnmounted(() => {
 }
 
 .bubble.user {
-  color: #1e293b;
+  color: #1c1917;
   font-weight: 500;
 }
 
 .bubble.ai {
-  color: #374151;
+  color: #44403c;
 }
 
 .chat-image-grid {
@@ -3710,13 +4234,13 @@ onUnmounted(() => {
   height: 110px;
   object-fit: cover;
   border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  background: #f8fafc;
+  border: 1px solid rgba(0,0,0,0.06);
+  background: #faf9f7;
 }
 
 .chat-image-name {
   font-size: 12px;
-  color: #64748b;
+  color: #57534e;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -3771,14 +4295,14 @@ onUnmounted(() => {
 .task-card-title {
   font-size: 14px;
   font-weight: 700;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .task-card-subtitle {
   margin-top: 4px;
   font-size: 12px;
   line-height: 1.6;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .task-card-progress {
@@ -3799,13 +4323,13 @@ onUnmounted(() => {
   padding: 5px 10px;
   border-radius: 999px;
   background: #fff;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(0,0,0,0.06);
   font-size: 12px;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .task-card-chip b {
-  color: #86909c;
+  color: #a8a29e;
   font-weight: 700;
 }
 
@@ -3816,7 +4340,7 @@ onUnmounted(() => {
   gap: 10px;
   margin-top: 12px;
   font-size: 11px;
-  color: #86909c;
+  color: #a8a29e;
 }
 
 .task-card-focus {
@@ -3829,7 +4353,7 @@ onUnmounted(() => {
 .task-card-focus-label {
   font-size: 11px;
   font-weight: 700;
-  color: #86909c;
+  color: #a8a29e;
 }
 
 .task-card-focus-row {
@@ -3843,7 +4367,7 @@ onUnmounted(() => {
 .task-card-focus-text {
   font-size: 13px;
   line-height: 1.5;
-  color: #1d2129;
+  color: #1c1917;
   font-weight: 600;
 }
 
@@ -3854,8 +4378,8 @@ onUnmounted(() => {
   font-size: 11px;
   font-weight: 700;
   background: #fff;
-  color: #86909c;
-  border: 1px solid #e5e7eb;
+  color: #a8a29e;
+  border: 1px solid rgba(0,0,0,0.06);
 }
 
 .task-card-focus-status.running {
@@ -3897,7 +4421,7 @@ onUnmounted(() => {
 .task-card-section-title {
   font-size: 12px;
   font-weight: 700;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .task-card-steps,
@@ -3928,7 +4452,7 @@ onUnmounted(() => {
 .task-card-log-text {
   font-size: 12px;
   line-height: 1.6;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .task-card-step-status,
@@ -3936,7 +4460,7 @@ onUnmounted(() => {
   flex-shrink: 0;
   font-size: 11px;
   font-weight: 700;
-  color: #86909c;
+  color: #a8a29e;
 }
 
 .task-card-error {
@@ -3946,7 +4470,7 @@ onUnmounted(() => {
   background: rgba(255, 240, 240, 0.8);
   font-size: 12px;
   line-height: 1.6;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .task-log {
@@ -3960,14 +4484,14 @@ onUnmounted(() => {
   flex-shrink: 0;
   font-size: 11px;
   font-weight: 700;
-  color: #86909c;
+  color: #a8a29e;
   min-width: 54px;
 }
 
 .task-log-text {
   font-size: 12px;
   line-height: 1.6;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .ai-rich-message {
@@ -3984,7 +4508,7 @@ onUnmounted(() => {
 .ai-rich-summary {
   font-size: 13px;
   line-height: 1.7;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .ai-rich-toggle {
@@ -4005,7 +4529,7 @@ onUnmounted(() => {
   gap: 10px;
   min-width: 180px;
   padding: 2px 0;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .pending-loading-card :deep(.chat-loading-orb) {
@@ -4028,13 +4552,13 @@ onUnmounted(() => {
 .pending-loading-card :deep(.chat-loading-text) {
   font-size: 13px;
   line-height: 1.2;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .pending-loading-card :deep(.chat-loading-detail) {
   font-size: 11px;
   line-height: 1.2;
-  color: #86909c;
+  color: #a8a29e;
 }
 
 .pending-loading-card :deep(.chat-loading-bar) {
@@ -4104,7 +4628,7 @@ onUnmounted(() => {
 /* ── 任务队列 ── */
 .task-queue {
   margin-bottom: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(0,0,0,0.06);
   border-radius: 12px;
   background: #fff;
   overflow: hidden;
@@ -4119,7 +4643,7 @@ onUnmounted(() => {
   border-bottom: 1px solid #f0f0f0;
   font-size: 12px;
   font-weight: 600;
-  color: #6b7280;
+  color: #a8a29e;
 }
 
 .queue-header-icon {
@@ -4177,8 +4701,8 @@ onUnmounted(() => {
   font-weight: 600;
   padding: 1px 6px;
   border-radius: 4px;
-  background: #f3f4f6;
-  color: #6b7280;
+  background: rgba(68,64,60,0.06);
+  color: #a8a29e;
 }
 .queue-item.agent .queue-item-type {
   background: rgb(var(--arcoblue-1));
@@ -4190,7 +4714,7 @@ onUnmounted(() => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  color: #374151;
+  color: #44403c;
 }
 
 .queue-item-status {
@@ -4225,7 +4749,75 @@ onUnmounted(() => {
   padding: 8px 20px 24px;
 }
 
+.input-card-outer {
+  position: relative;
+}
+
+.quick-reply-bar {
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.05);
+}
+
+.quick-reply-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #a8a29e;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.quick-reply-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.quick-reply-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  border-radius: 14px;
+  background: #fff;
+  color: #44403c;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.quick-reply-item:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(var(--arcoblue-6), 0.35);
+  background: rgba(var(--arcoblue-1), 0.68);
+}
+
+.quick-reply-item-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1c1917;
+}
+
+.quick-reply-item-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #78716c;
+}
+
+.quick-reply-item:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
 .input-card {
+  position: relative;
   border: 1.5px solid #e4e6ea;
   border-radius: 18px;
   background: #ffffff;
@@ -4253,6 +4845,205 @@ onUnmounted(() => {
   gap: 10px;
   padding: 12px 12px 0;
 }
+
+/* ── 空间文档引用 ── */
+.pending-ws-refs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px 0;
+}
+
+.pending-ws-ref-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px 4px 10px;
+  background: #f5f5f4;
+  border: 1px solid #e4e6ea;
+  border-radius: 20px;
+  max-width: 200px;
+}
+
+.ws-ref-chip-icon {
+  font-size: 13px;
+  color: #78716c;
+  flex-shrink: 0;
+}
+
+.ws-ref-chip-name {
+  font-size: 12px;
+  color: #44403c;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.ws-ref-chip-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #a8a29e;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 0 0 2px;
+  flex-shrink: 0;
+}
+.ws-ref-chip-remove:hover { color: #44403c; }
+
+/* @ 内联菜单 */
+.at-mention-dropdown {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 12px;
+  right: 12px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  overflow: hidden;
+  z-index: 100;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.at-mention-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.at-mention-item:hover,
+.at-mention-item.active {
+  background: #f5f5f4;
+}
+
+.at-mention-icon {
+  font-size: 14px;
+  color: #a8a29e;
+  flex-shrink: 0;
+}
+
+.at-mention-name {
+  font-size: 13px;
+  color: #1c1917;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 工具栏空间引用按钮 */
+.ws-picker-wrap {
+  position: relative;
+}
+
+.ws-picker-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: rgb(var(--arcoblue-6));
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 8px;
+  padding: 1px 4px;
+  min-width: 16px;
+  text-align: center;
+  line-height: 1.4;
+  pointer-events: none;
+}
+
+.attach-btn.active {
+  color: rgb(var(--arcoblue-6));
+}
+
+/* 空间文档 picker 下拉 */
+.ws-picker-dropdown {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: 280px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.14);
+  overflow: hidden;
+  z-index: 200;
+}
+
+.ws-picker-head {
+  padding: 10px 12px 6px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.ws-picker-search {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 13px;
+  outline: none;
+  color: #1c1917;
+}
+.ws-picker-search:focus { border-color: rgb(var(--arcoblue-6)); }
+
+.ws-picker-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: #a8a29e;
+}
+
+.ws-picker-list {
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.ws-picker-empty {
+  padding: 12px;
+  font-size: 13px;
+  color: #a8a29e;
+  text-align: center;
+}
+
+.ws-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.ws-picker-item:hover { background: #f5f5f4; }
+.ws-picker-item.selected { background: rgba(var(--arcoblue-6), 0.06); }
+
+.ws-picker-icon {
+  font-size: 14px;
+  color: #a8a29e;
+  flex-shrink: 0;
+}
+.ws-picker-item.selected .ws-picker-icon { color: rgb(var(--arcoblue-6)); }
+
+.ws-picker-name {
+  font-size: 13px;
+  color: #1c1917;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ws-picker-check {
+  font-size: 13px;
+  color: rgb(var(--arcoblue-6));
+  font-weight: 700;
+  flex-shrink: 0;
+}
+/* ── end 空间文档引用 ── */
 
 .pending-doc-list {
   display: flex;
@@ -4302,9 +5093,9 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
   padding: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(0,0,0,0.06);
   border-radius: 14px;
-  background: #f8fafc;
+  background: #faf9f7;
 }
 
 .pending-image-thumb {
@@ -4323,7 +5114,7 @@ onUnmounted(() => {
 .pending-image-name {
   font-size: 12px;
   font-weight: 600;
-  color: #1f2937;
+  color: #1c1917;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -4332,7 +5123,7 @@ onUnmounted(() => {
 .pending-image-size {
   margin-top: 3px;
   font-size: 11px;
-  color: #64748b;
+  color: #57534e;
 }
 
 .pending-image-remove {
@@ -4341,7 +5132,7 @@ onUnmounted(() => {
   border: none;
   border-radius: 50%;
   background: #e2e8f0;
-  color: #475569;
+  color: #57534e;
   cursor: pointer;
   flex-shrink: 0;
 }
@@ -4365,7 +5156,7 @@ onUnmounted(() => {
   padding: 14px 16px 6px;
   font-size: 14px;
   line-height: 1.7;
-  color: #1f2937;
+  color: #1c1917;
 }
 
 :deep(.chat-textarea textarea::placeholder) {
@@ -4397,7 +5188,7 @@ onUnmounted(() => {
   border: none;
   border-radius: 50%;
   background: #eef2ff;
-  color: #334155;
+  color: #44403c;
   font-size: 15px;
   cursor: pointer;
   transition: background 0.18s, color 0.18s;
@@ -4419,7 +5210,7 @@ onUnmounted(() => {
   height: 30px;
   border: none;
   border-radius: 50%;
-  background: #e5e7eb;
+  background: rgba(0,0,0,0.06);
   color: #9ca3af;
   font-size: 15px;
   display: inline-flex;
@@ -4431,13 +5222,13 @@ onUnmounted(() => {
 }
 
 .send-btn--active {
-  background: #111827;
+  background: #1c1917;
   color: #fff;
   cursor: pointer;
 }
 
 .send-btn--active:hover {
-  background: #374151;
+  background: #44403c;
   transform: scale(1.06);
 }
 
@@ -4493,7 +5284,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  border-bottom: 1px solid #E2E8F0;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
   flex-shrink: 0;
   background: #fff;
 }
@@ -4525,7 +5316,7 @@ onUnmounted(() => {
   border-radius: 6px;
   background: #fff;
   font-size: 12px;
-  color: #475569;
+  color: #57534e;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
 }
@@ -4559,7 +5350,7 @@ onUnmounted(() => {
 
 .pane-text {
   font-size: 14px;
-  color: #334155;
+  color: #44403c;
   line-height: 1.7;
 }
 
@@ -4593,7 +5384,7 @@ onUnmounted(() => {
 }
 .pane-list li {
   font-size: 13px;
-  color: #475569;
+  color: #57534e;
   line-height: 1.6;
 }
 
@@ -4604,7 +5395,7 @@ onUnmounted(() => {
   padding: 8px 0;
   border-bottom: 1px solid #F1F5F9;
   font-size: 13px;
-  color: #334155;
+  color: #44403c;
   line-height: 1.5;
 }
 
@@ -4715,7 +5506,7 @@ onUnmounted(() => {
 
 .pane-page-title {
   font-size: 13px;
-  color: #334155;
+  color: #44403c;
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4896,12 +5687,12 @@ onUnmounted(() => {
   padding: 6px 10px;
   border-radius: 999px;
   background: #f7f8fa;
-  color: #4e5969;
+  color: #57534e;
   font-size: 12px;
 }
 
 .exec-chip b {
-  color: #86909c;
+  color: #a8a29e;
   font-weight: 600;
 }
 
@@ -4916,7 +5707,7 @@ onUnmounted(() => {
   margin-top: 6px;
   font-size: 13px;
   line-height: 1.7;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .exec-error-actions {
@@ -4938,13 +5729,13 @@ onUnmounted(() => {
 .preview-stage-title {
   font-size: 14px;
   font-weight: 700;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .preview-stage-desc {
   margin-top: 6px;
   font-size: 12.5px;
-  color: #4e5969;
+  color: #57534e;
   line-height: 1.6;
 }
 
@@ -4967,7 +5758,7 @@ onUnmounted(() => {
   gap: 10px;
   font-size: 14px;
   font-weight: 700;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .artifact-score {
@@ -4987,7 +5778,7 @@ onUnmounted(() => {
   margin-top: 10px;
   font-size: 12.5px;
   line-height: 1.7;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .artifact-chip-row {
@@ -5003,7 +5794,7 @@ onUnmounted(() => {
   padding: 5px 10px;
   border-radius: 999px;
   background: #f2f3f5;
-  color: #4e5969;
+  color: #57534e;
   font-size: 12px;
 }
 
@@ -5026,13 +5817,13 @@ onUnmounted(() => {
 
 .artifact-list-item b {
   font-size: 12px;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .artifact-list-item span {
   font-size: 12px;
   line-height: 1.6;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .highlight-grid {
@@ -5058,7 +5849,7 @@ onUnmounted(() => {
   margin-top: 8px;
   font-size: 12px;
   line-height: 1.7;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .artifact-timeline {
@@ -5094,7 +5885,7 @@ onUnmounted(() => {
 .artifact-timeline-text {
   font-size: 12px;
   line-height: 1.6;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .strategy-preview {
@@ -5145,14 +5936,14 @@ onUnmounted(() => {
   font-size: 24px;
   font-weight: 800;
   line-height: 1.2;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .strategy-hero-desc {
   margin-top: 10px;
   font-size: 13px;
   line-height: 1.75;
-  color: #4e5969;
+  color: #57534e;
   max-width: 680px;
 }
 
@@ -5176,13 +5967,13 @@ onUnmounted(() => {
 .strategy-meta-card span {
   font-size: 11px;
   font-weight: 700;
-  color: #86909c;
+  color: #a8a29e;
 }
 
 .strategy-meta-card strong {
   font-size: 14px;
   line-height: 1.5;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .preview-block {
@@ -5198,7 +5989,7 @@ onUnmounted(() => {
 .preview-block-title {
   font-size: 13px;
   font-weight: 700;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .research-grid {
@@ -5218,14 +6009,14 @@ onUnmounted(() => {
 .research-card-title {
   font-size: 12px;
   font-weight: 700;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .research-card-summary {
   margin-top: 8px;
   font-size: 12px;
   line-height: 1.6;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .research-card-points {
@@ -5238,7 +6029,7 @@ onUnmounted(() => {
 .research-card-points span {
   font-size: 11px;
   line-height: 1.6;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .plan-outline {
@@ -5282,14 +6073,14 @@ onUnmounted(() => {
 .plan-outline-title {
   font-size: 13px;
   font-weight: 700;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .plan-outline-desc {
   margin-top: 6px;
   font-size: 12px;
   line-height: 1.6;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .review-block {
@@ -5328,7 +6119,7 @@ onUnmounted(() => {
   margin-top: 8px;
   font-size: 18px;
   font-weight: 800;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .section-live-points {
@@ -5341,7 +6132,7 @@ onUnmounted(() => {
 .section-live-points span {
   font-size: 12px;
   line-height: 1.7;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .section-live-list {
@@ -5377,7 +6168,7 @@ onUnmounted(() => {
   height: 28px;
   border-radius: 8px;
   background: #f2f3f5;
-  color: #4e5969;
+  color: #57534e;
   font-size: 11px;
   font-weight: 800;
   display: flex;
@@ -5388,14 +6179,14 @@ onUnmounted(() => {
 .section-live-item-title {
   font-size: 13px;
   font-weight: 700;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .section-live-item-desc {
   margin-top: 8px;
   font-size: 12px;
   line-height: 1.7;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .preview-tabs-head {
@@ -5420,7 +6211,7 @@ onUnmounted(() => {
 .preview-tab {
   border: none;
   background: transparent;
-  color: #4e5969;
+  color: #57534e;
   padding: 8px 12px;
   border-radius: 10px;
   font-size: 12px;
@@ -5465,14 +6256,14 @@ onUnmounted(() => {
   flex-shrink: 0;
   font-size: 11px;
   font-weight: 700;
-  color: #86909c;
+  color: #a8a29e;
   min-width: 54px;
 }
 
 .exec-log-text {
   font-size: 12px;
   line-height: 1.6;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .preview-skel,
@@ -5758,7 +6549,7 @@ onUnmounted(() => {
   border-radius: 8px;
   border-left: 2px solid #e5e6eb;
   font-size: 13px;
-  color: #4e5969;
+  color: #57534e;
   max-width: 460px;
 }
 
@@ -5784,7 +6575,7 @@ onUnmounted(() => {
 
 .tool-call-progress {
   font-size: 12px;
-  color: #86909c;
+  color: #a8a29e;
   flex-shrink: 0;
   max-width: 140px;
   overflow: hidden;
@@ -5804,7 +6595,7 @@ onUnmounted(() => {
   justify-content: space-between;
   gap: 12px;
   font-size: 12px;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .tool-call-toggle {
@@ -5823,7 +6614,7 @@ onUnmounted(() => {
   background: #fff;
   border: 1px solid #e5e6eb;
   border-radius: 8px;
-  color: #4e5969;
+  color: #57534e;
   font-size: 12px;
   line-height: 1.6;
   overflow-x: auto;
@@ -5857,7 +6648,7 @@ onUnmounted(() => {
 .process-summary-title {
   font-size: 12px;
   font-weight: 700;
-  color: #4e5969;
+  color: #57534e;
 }
 
 .process-summary-toggle {
@@ -5888,13 +6679,13 @@ onUnmounted(() => {
   min-width: 54px;
   font-size: 11px;
   font-weight: 700;
-  color: #86909c;
+  color: #a8a29e;
 }
 
 .process-summary-text {
   font-size: 12px;
   line-height: 1.6;
-  color: #4e5969;
+  color: #57534e;
 }
 
 /* clarification 气泡 */
@@ -5911,7 +6702,7 @@ onUnmounted(() => {
 
 .clarification-question {
   font-size: 14px;
-  color: #1d2129;
+  color: #1c1917;
   line-height: 1.6;
 }
 
@@ -5927,7 +6718,7 @@ onUnmounted(() => {
 
 .clarification-answered {
   font-size: 12px;
-  color: #86909c;
+  color: #a8a29e;
 }
 
 /* ── 独立产出物面板 ── */
@@ -5968,12 +6759,12 @@ onUnmounted(() => {
 .panel-title {
   font-size: 14px;
   font-weight: 600;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .panel-badge {
   font-size: 11px;
-  color: #86909c;
+  color: #a8a29e;
   background: #f4f5f5;
   padding: 2px 8px;
   border-radius: 4px;
@@ -6027,13 +6818,13 @@ onUnmounted(() => {
 .research-item-title {
   font-size: 13px;
   font-weight: 600;
-  color: #1d2129;
+  color: #1c1917;
   margin-bottom: 6px;
 }
 
 .research-item-summary {
   font-size: 12px;
-  color: #4e5969;
+  color: #57534e;
   line-height: 1.5;
   margin-bottom: 8px;
 }
@@ -6046,7 +6837,7 @@ onUnmounted(() => {
 
 .finding-item {
   font-size: 12px;
-  color: #4e5969;
+  color: #57534e;
   padding-left: 12px;
   position: relative;
 }
@@ -6062,7 +6853,7 @@ onUnmounted(() => {
 .plan-draft-title {
   font-size: 15px;
   font-weight: 600;
-  color: #1d2129;
+  color: #1c1917;
   margin-bottom: 12px;
 }
 
@@ -6081,7 +6872,7 @@ onUnmounted(() => {
 .highlight-title {
   font-size: 13px;
   font-weight: 600;
-  color: #1d2129;
+  color: #1c1917;
   margin-bottom: 8px;
 }
 
@@ -6090,7 +6881,7 @@ onUnmounted(() => {
   align-items: flex-start;
   gap: 8px;
   font-size: 13px;
-  color: #4e5969;
+  color: #57534e;
   margin-bottom: 6px;
 }
 
@@ -6121,7 +6912,7 @@ onUnmounted(() => {
 .structure-title {
   font-size: 13px;
   font-weight: 600;
-  color: #1d2129;
+  color: #1c1917;
   margin-bottom: 10px;
 }
 
@@ -6157,13 +6948,13 @@ onUnmounted(() => {
 .structure-item-title {
   font-size: 13px;
   font-weight: 500;
-  color: #1d2129;
+  color: #1c1917;
   margin-bottom: 2px;
 }
 
 .structure-item-points {
   font-size: 12px;
-  color: #86909c;
+  color: #a8a29e;
 }
 
 /* ── 章节内容面板 ── */
@@ -6194,12 +6985,12 @@ onUnmounted(() => {
 .section-item-title {
   font-size: 13px;
   font-weight: 500;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .section-item-points {
   font-size: 12px;
-  color: #86909c;
+  color: #a8a29e;
   padding-left: 30px;
 }
 
@@ -6214,7 +7005,7 @@ onUnmounted(() => {
 .ppt-outline-title {
   font-size: 13px;
   font-weight: 600;
-  color: #1d2129;
+  color: #1c1917;
   margin-bottom: 10px;
 }
 
@@ -6247,7 +7038,7 @@ onUnmounted(() => {
 
 .ppt-page-layout {
   font-size: 11px;
-  color: #86909c;
+  color: #a8a29e;
   background: #fff;
   padding: 2px 6px;
   border-radius: 4px;
@@ -6257,7 +7048,7 @@ onUnmounted(() => {
 .ppt-page-name {
   flex: 1;
   font-size: 12px;
-  color: #1d2129;
+  color: #1c1917;
 }
 
 .ppt-slides {
@@ -6271,7 +7062,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   padding: 60px 20px;
-  color: #86909c;
+  color: #a8a29e;
 }
 
 .empty-icon {

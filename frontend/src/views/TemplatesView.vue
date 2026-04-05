@@ -4,6 +4,10 @@
     <!-- ── Header ── -->
     <div class="tpl-header">
       <div class="tpl-header-copy">
+        <div class="tpl-category-label">
+          <PhCalendar :size="13" weight="duotone" />
+          活动策划模版
+        </div>
         <h1 class="tpl-title">模版中心</h1>
         <p class="tpl-subtitle">从预设框架出发，快速生成专业活动策划与视觉方案</p>
       </div>
@@ -31,7 +35,7 @@
             v-for="(tpl, idx) in planningTemplates"
             :key="tpl.id"
             class="plan-card"
-            :class="[`span-${tpl.span}`, { selected: previewItem?.id === tpl.id }]"
+            :class="{ selected: previewItem?.id === tpl.id }"
             :style="{ '--accent': tpl.accent, '--index': idx }"
             @mousemove="onSpotlight"
             @mouseleave="clearSpotlight"
@@ -51,7 +55,7 @@
               </div>
               <div class="outline-chips">
                 <span
-                  v-for="s in tpl.slides.filter(s => s.type !== 'cover' && s.type !== 'end' && s.type !== 'toc').slice(0, tpl.span >= 7 ? 5 : 3)"
+                  v-for="s in tpl.slides.filter(s => s.type !== 'cover' && s.type !== 'end' && s.type !== 'toc').slice(0, 4)"
                   :key="s.title"
                   class="chip"
                 >{{ s.title }}</span>
@@ -80,19 +84,31 @@
             @click="openPreview(tpl)"
           >
             <div class="slide-strip">
-              <div class="mini-slide" :style="{ background: tpl.coverBg }">
-                <div class="ms-title-line" :style="{ background: tpl.titleColor }" />
-                <div class="ms-sub-line"  :style="{ background: tpl.titleColor + '80' }" />
-              </div>
-              <div class="mini-slide" :style="{ background: tpl.contentBg, border: '1px solid #e5e7eb' }">
-                <div class="ms-header-bar" :style="{ background: tpl.primary }" />
-                <div class="ms-content-lines">
-                  <div class="ms-line" /><div class="ms-line short" /><div class="ms-line" />
+              <div class="mini-slide mini-slide--cover" :style="{ background: tpl.coverBg }">
+                <div class="ms-cover">
+                  <div class="ms-cover-brand" :style="{ color: tpl.titleColor + '80' }">品牌</div>
+                  <div class="ms-cover-title" :style="{ color: tpl.titleColor }">新品发布会</div>
+                  <div class="ms-cover-divider" :style="{ background: tpl.titleColor + '40' }" />
                 </div>
               </div>
-              <div class="mini-slide" :style="{ background: tpl.endBg }">
-                <div class="ms-end-dot"  :style="{ background: tpl.titleColor }" />
-                <div class="ms-end-line" :style="{ background: tpl.titleColor + '60' }" />
+              <div class="mini-slide mini-slide--content" :style="{ background: tpl.contentBg }">
+                <div class="ms-content-header" :style="{ background: tpl.primary }" />
+                <div class="ms-content-body">
+                  <div class="ms-content-title" :style="{ color: tpl.primary }">活动背景</div>
+                  <div class="ms-lines">
+                    <div class="ms-line-full" :style="{ background: tpl.primary + '15' }" />
+                    <div class="ms-line-full" :style="{ background: tpl.primary + '15' }" />
+                    <div class="ms-line-partial" :style="{ background: tpl.primary + '10' }" />
+                  </div>
+                </div>
+              </div>
+              <div class="mini-slide mini-slide--end" :style="{ background: tpl.endBg }">
+                <div class="ms-end">
+                  <div class="ms-end-circle" :style="{ borderColor: tpl.titleColor + '30' }">
+                    <div class="ms-end-dot" :style="{ background: tpl.titleColor }" />
+                  </div>
+                  <div class="ms-end-title" :style="{ color: tpl.titleColor }">感谢</div>
+                </div>
               </div>
             </div>
             <div class="layout-meta">
@@ -112,168 +128,176 @@
         </div>
       </transition>
 
-      <!-- ── Preview Panel ── -->
-      <transition name="panel-slide">
-        <div v-if="previewItem" class="preview-panel">
-          <button class="panel-close" @click="closePreview"><PhX :size="14" weight="bold" /></button>
-
+      <!-- ── Preview Modal ── -->
+      <a-modal
+        v-model:visible="previewVisible"
+        :width="800"
+        :footer="null"
+        :mask-closable="true"
+        class="tpl-preview-modal"
+        @cancel="closePreview"
+      >
+        <template v-if="previewItem">
           <!-- Planning preview -->
           <template v-if="activeTab === 'planning'">
-            <div class="panel-header" :style="{ '--accent': previewItem.accent }">
-              <div class="panel-icon" :style="{ background: `${previewItem.accent}18`, color: previewItem.accent }">
-                <component :is="previewItem.icon" :size="22" weight="duotone" />
-              </div>
-              <div>
-                <h2 class="panel-title">{{ previewItem.name }}</h2>
-                <div class="panel-meta-row">
-                  <span class="panel-badge">{{ previewItem.slides.length }} 张幻灯片</span>
-                  <span class="panel-badge">{{ previewItem.duration }}</span>
+            <div class="modal-header" :style="{ '--accent': previewItem.accent }">
+              <div class="modal-header-left">
+                <div class="modal-badge">
+                  <PhCalendar :size="12" weight="duotone" />
+                  活动策划模版
                 </div>
+                <h2 class="modal-title">{{ previewItem.name }}</h2>
+                <div class="modal-meta">
+                  <span class="modal-badge-tag">{{ previewItem.slides.length }} 张幻灯片</span>
+                  <span class="modal-badge-tag">{{ previewItem.duration }}</span>
+                </div>
+              </div>
+              <div class="modal-icon-wrap" :style="{ background: `${previewItem.accent}14` }">
+                <component :is="previewItem.icon" :size="28" weight="duotone" :style="{ color: previewItem.accent }" />
               </div>
             </div>
 
-            <p class="panel-desc">{{ previewItem.desc }}</p>
+            <p class="modal-desc">{{ previewItem.desc }}</p>
 
-            <div class="panel-section-title">完整幻灯片结构</div>
-
-            <div class="slide-list">
+            <div class="modal-doc-outline">
               <div
                 v-for="(slide, i) in previewItem.slides"
                 :key="i"
-                class="slide-row"
-                :style="{ '--accent': previewItem.accent, '--delay': `${i * 30}ms` }"
+                class="doc-item"
               >
-                <div class="slide-row-left">
-                  <span class="slide-num">{{ String(i + 1).padStart(2, '0') }}</span>
-                  <div class="slide-type-dot" :class="`type-${slide.type}`" />
+                <div class="doc-item-header">
+                  <span class="doc-num">{{ String(i + 1).padStart(2, '0') }}</span>
+                  <span class="doc-title">{{ slide.title }}</span>
                 </div>
-                <div class="slide-row-body">
-                  <div class="slide-row-title">{{ slide.title }}</div>
-                  <ul v-if="slide.points?.length" class="slide-points">
-                    <li v-for="p in slide.points" :key="p">{{ p }}</li>
-                  </ul>
-                  <div v-if="slide.note" class="slide-note">{{ slide.note }}</div>
-                </div>
-                <span class="slide-type-label">{{ slideTypeLabel(slide.type) }}</span>
+                <ul v-if="slide.points?.length" class="doc-points">
+                  <li v-for="p in slide.points.slice(0, 3)" :key="p">{{ p }}</li>
+                </ul>
               </div>
             </div>
 
-            <div class="panel-section-title" style="margin-top:18px">提示词预览</div>
-            <div class="prompt-preview">
-              <span class="prompt-text">{{ previewItem.prompt }}</span>
-              <span class="prompt-cursor">|</span>
+            <div class="modal-prompt-section">
+              <div class="modal-section-title" style="margin-top: 12px;">AI 提示词</div>
+              <div class="modal-prompt-preview">
+                <div class="prompt-icon">
+                  <PhRocket :size="16" weight="duotone" />
+                </div>
+                <div class="prompt-content">
+                  <div class="prompt-text">{{ previewItem.prompt }}</div>
+                  <div class="prompt-cursor">|</div>
+                </div>
+              </div>
+              <div class="prompt-hint">使用后将自动填入智能助手对话框，可继续补充活动细节</div>
             </div>
-            <p class="prompt-hint">使用后将自动填入智能体对话框，可继续补充活动细节</p>
 
-            <div class="panel-tags">
-              <span v-for="t in previewItem.tags" :key="t" class="tag">{{ t }}</span>
+            <div class="modal-footer">
+              <div class="modal-tags">
+                <span v-for="t in previewItem.tags" :key="t" class="modal-tag">{{ t }}</span>
+              </div>
+              <button
+                class="modal-use-btn"
+                :style="{ background: previewItem.accent }"
+                @click="usePlanningTemplate(previewItem)"
+              >
+                使用此模版，开始策划
+                <PhArrowRight :size="14" weight="bold" />
+              </button>
             </div>
-
-            <button
-              class="panel-use-btn"
-              :style="{ background: previewItem.accent }"
-              @click="usePlanningTemplate(previewItem)"
-            >
-              使用此模版，开始策划
-              <PhArrowRight :size="14" weight="bold" />
-            </button>
           </template>
 
           <!-- Layout preview -->
           <template v-else>
-            <div class="panel-header">
-              <div class="panel-color-dot" :style="{ background: previewItem.primary }" />
-              <div>
-                <h2 class="panel-title">{{ previewItem.name }}</h2>
-                <div class="panel-meta-row">
-                  <span v-if="activeLayoutId === previewItem.id" class="panel-badge active-text">当前已应用</span>
+            <div class="modal-header">
+              <div class="modal-header-left">
+                <div class="modal-badge">
+                  <PhLayout :size="12" weight="duotone" />
+                  PPT 排版风格
+                </div>
+                <h2 class="modal-title">{{ previewItem.name }}</h2>
+                <div class="modal-meta">
+                  <span v-if="activeLayoutId === previewItem.id" class="modal-badge-tag active">当前已应用</span>
                 </div>
               </div>
+              <div class="modal-color-swatch-lg" :style="{ background: `linear-gradient(135deg, ${previewItem.primary} 0%, ${previewItem.colors[1]} 100%)` }" />
             </div>
 
-            <p class="panel-desc">{{ previewItem.desc }}</p>
+            <p class="modal-desc">{{ previewItem.desc }}</p>
 
-            <div class="panel-section-title">幻灯片预览</div>
-            <div class="large-slides">
-              <div class="large-slide-wrap">
-                <div class="large-slide" :style="{ background: previewItem.coverBg }">
-                  <div class="ls-cover-content">
-                    <div class="ls-cover-tag" :style="{ background: previewItem.titleColor + '25', color: previewItem.titleColor }">活动策划</div>
-                    <div class="ls-cover-title" :style="{ color: previewItem.titleColor }">活动主标题</div>
-                    <div class="ls-cover-sub"   :style="{ color: previewItem.titleColor + 'aa' }">副标题 · 2026年</div>
-                    <div class="ls-cover-line"  :style="{ background: previewItem.titleColor + '40' }" />
-                    <div class="ls-cover-org"   :style="{ color: previewItem.titleColor + '70' }">主办方 / 品牌名称</div>
+            <div class="modal-section-title" style="margin-top: 16px; margin-bottom: 12px;">幻灯片预览</div>
+            <div class="modal-slides-preview">
+              <div class="modal-slide-preview-card">
+                <div class="msp-slide msp-slide--cover" :style="{ background: previewItem.coverBg }">
+                  <div class="msp-cover-content">
+                    <div class="msp-cover-brand" :style="{ color: previewItem.titleColor + '80' }">品牌名称</div>
+                    <div class="msp-cover-title" :style="{ color: previewItem.titleColor }">新品发布会</div>
+                    <div class="msp-cover-divider" :style="{ background: previewItem.titleColor + '40' }" />
+                    <div class="msp-cover-info" :style="{ color: previewItem.titleColor + '70' }">2026 · 城市</div>
                   </div>
                 </div>
-                <span class="slide-label">封面页</span>
+                <div class="msp-label">封面页</div>
               </div>
-
-              <div class="large-slide-wrap">
-                <div class="large-slide" :style="{ background: previewItem.contentBg, border: '1px solid #e5e7eb' }">
-                  <div class="ls-content-top" :style="{ background: previewItem.primary }" />
-                  <div class="ls-content-body">
-                    <div class="ls-content-title" :style="{ color: previewItem.primary }">议程安排</div>
-                    <div class="ls-content-items">
-                      <div v-for="item in ['开幕致辞', '主题演讲', '产品展示', '圆桌讨论']" :key="item" class="ls-content-item">
-                        <div class="ls-item-dot" :style="{ background: previewItem.primary }" />
-                        <span :style="{ color: previewItem.contentBg === '#ffffff' || previewItem.contentBg.startsWith('#f') ? '#374151' : '#e2e8f0', fontSize: '9px' }">{{ item }}</span>
+              <div class="modal-slide-preview-card">
+                <div class="msp-slide msp-slide--content" :style="{ background: previewItem.contentBg }">
+                  <div class="msp-content-header" :style="{ background: previewItem.primary }">
+                    <div class="msp-content-header-title" :style="{ color: '#fff' }">活动背景</div>
+                  </div>
+                  <div class="msp-content-body">
+                    <div class="msp-content-main" :style="{ color: previewItem.primary }">市场趋势与竞争格局</div>
+                    <div class="msp-content-lines">
+                      <div class="msp-line-full" :style="{ background: previewItem.primary + '15' }" />
+                      <div class="msp-line-full" :style="{ background: previewItem.primary + '15' }" />
+                      <div class="msp-line-partial" :style="{ background: previewItem.primary + '10' }" />
+                    </div>
+                    <div class="msp-content-chips">
+                      <div class="msp-chip" :style="{ background: previewItem.primary + '15', color: previewItem.primary }">关键数据</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="msp-label">内容页</div>
+              </div>
+              <div class="modal-slide-preview-card">
+                <div class="msp-slide msp-slide--content" :style="{ background: previewItem.contentBg }">
+                  <div class="msp-content-header" :style="{ background: previewItem.primary }">
+                    <div class="msp-content-header-title" :style="{ color: '#fff' }">目标受众</div>
+                  </div>
+                  <div class="msp-content-body">
+                    <div class="msp-two-col">
+                      <div class="msp-col-item" v-for="item in ['核心用户画像', '媒体邀请策略', 'KOL矩阵']" :key="item">
+                        <div class="msp-col-dot" :style="{ background: previewItem.primary }" />
+                        <div class="msp-col-line" :style="{ background: previewItem.primary + '20' }" />
                       </div>
                     </div>
-                    <div class="ls-content-chip" :style="{ background: previewItem.primary + '15', color: previewItem.primary }">关键要点</div>
                   </div>
                 </div>
-                <span class="slide-label">内容页</span>
+                <div class="msp-label">内容页</div>
               </div>
-
-              <div class="large-slide-wrap">
-                <div class="large-slide two-col" :style="{ background: previewItem.contentBg, border: '1px solid #e5e7eb' }">
-                  <div class="ls-col-left"  :style="{ background: previewItem.primary }">
-                    <div class="ls-col-label" :style="{ color: previewItem.titleColor }">数据</div>
-                    <div class="ls-col-num"  :style="{ color: previewItem.titleColor }">2,400+</div>
-                  </div>
-                  <div class="ls-col-right">
-                    <div class="ls-col-title" :style="{ color: previewItem.primary }">预算规划</div>
-                    <div class="ls-col-lines">
-                      <div class="ls-line" /><div class="ls-line short" /><div class="ls-line" />
+              <div class="modal-slide-preview-card">
+                <div class="msp-slide msp-slide--end" :style="{ background: previewItem.endBg }">
+                  <div class="msp-end-content">
+                    <div class="msp-end-circle" :style="{ borderColor: previewItem.titleColor + '30' }">
+                      <div class="msp-end-dot" :style="{ background: previewItem.titleColor }" />
                     </div>
+                    <div class="msp-end-title" :style="{ color: previewItem.titleColor }">感谢观看</div>
+                    <div class="msp-end-sub" :style="{ color: previewItem.titleColor + '60' }">THANK YOU</div>
+                    <div class="msp-end-contact" :style="{ color: previewItem.titleColor + '40' }">contact@brand.com</div>
                   </div>
                 </div>
-                <span class="slide-label">双栏页</span>
-              </div>
-
-              <div class="large-slide-wrap">
-                <div class="large-slide" :style="{ background: previewItem.endBg }">
-                  <div class="ls-end-content">
-                    <div class="ls-end-circle" :style="{ border: `2px solid ${previewItem.titleColor}35` }">
-                      <div class="ls-end-dot" :style="{ background: previewItem.titleColor }" />
-                    </div>
-                    <div class="ls-end-title" :style="{ color: previewItem.titleColor }">感谢观看</div>
-                    <div class="ls-end-sub"   :style="{ color: previewItem.titleColor + '60' }">THANK YOU</div>
-                    <div class="ls-end-contact" :style="{ color: previewItem.titleColor + '50' }">contact@brand.com</div>
-                  </div>
-                </div>
-                <span class="slide-label">结尾页</span>
+                <div class="msp-label">结尾页</div>
               </div>
             </div>
 
-            <div class="panel-section-title" style="margin-top:16px">配色方案</div>
-            <div class="palette-row">
-              <div v-for="(c, i) in previewItem.colors" :key="c" class="palette-chip" :style="{ background: c }">
-                <span class="palette-hex">{{ c }}</span>
-                <span class="palette-role">{{ ['主色', '深色', '浅色', '文字'][i] }}</span>
-              </div>
-            </div>
-
-            <div class="panel-section-title" style="margin-top:16px">排版规格</div>
-            <div class="typo-specs">
-              <div v-for="spec in previewItem.specs" :key="spec.label" class="typo-row">
-                <span class="typo-label">{{ spec.label }}</span>
-                <span class="typo-value">{{ spec.value }}</span>
+            <div class="modal-palette">
+              <div
+                v-for="(c, i) in previewItem.colors"
+                :key="c"
+                class="modal-palette-chip"
+                :style="{ background: c }"
+              >
+                <span class="modal-palette-hex">{{ c }}</span>
               </div>
             </div>
 
             <button
-              class="panel-use-btn"
+              class="modal-use-btn layout"
               :style="{ background: previewItem.primary }"
               @click="applyLayout(previewItem)"
             >
@@ -281,8 +305,8 @@
               {{ activeLayoutId === previewItem.id ? '已应用此风格' : '应用此风格' }}
             </button>
           </template>
-        </div>
-      </transition>
+        </template>
+      </a-modal>
     </div>
 
     <!-- Toast -->
@@ -312,8 +336,9 @@ const tabs = [
 const activeTab = ref('planning')
 
 const previewItem = shallowRef(null)
-function openPreview(tpl)  { previewItem.value = tpl }
-function closePreview()    { previewItem.value = null }
+const previewVisible = ref(false)
+function openPreview(tpl)  { previewItem.value = tpl; previewVisible.value = true }
+function closePreview()    { previewVisible.value = false }
 
 const SLIDE_TYPE_LABELS = {
   cover:      '封面',
@@ -494,124 +519,256 @@ const planningTemplates = [
 /* ─────────────── Layout Templates ─────────────── */
 const layoutTemplates = [
   {
-    id: 'tech-blue',
-    name: '科技蓝',
-    desc: '简洁科技感，蓝色渐变封面，适合发布会与科技产品',
-    primary: '#165dff',
-    bgColor: '#ffffff',
-    coverBg: 'linear-gradient(135deg, #165dff 0%, #0a2fa3 100%)',
-    contentBg: '#ffffff',
-    endBg: '#0d1a3f',
-    titleColor: '#ffffff',
-    colors: ['#165dff', '#0a2fa3', '#e8f0ff', '#1d2129'],
-    specs: [
-      { label: '字体', value: 'Outfit / PingFang SC' },
-      { label: '标题字号', value: '40px · 粗体' },
-      { label: '正文字号', value: '18px · 常规' },
-      { label: '行高', value: '1.65' },
-      { label: '封面排版', value: '左对齐大标题' },
-      { label: '内容版式', value: '顶部色条 + 正文区' },
-    ],
-  },
-  {
-    id: 'warm-orange',
-    name: '暖橙活力',
-    desc: '几何切割构图，橙调背景，适合消费品与品牌活动',
-    primary: '#ea580c',
-    bgColor: '#fef7f0',
-    coverBg: 'linear-gradient(135deg, #ea580c 0%, #c2410c 100%)',
-    contentBg: '#fff8f4',
-    endBg: '#7c2d12',
-    titleColor: '#ffffff',
-    colors: ['#ea580c', '#c2410c', '#fff1e6', '#1c0a00'],
-    specs: [
-      { label: '字体', value: 'Outfit / PingFang SC' },
-      { label: '标题字号', value: '38px · 粗体' },
-      { label: '正文字号', value: '17px · 常规' },
-      { label: '行高', value: '1.7' },
-      { label: '封面排版', value: '全出血渐变 + 居中标题' },
-      { label: '内容版式', value: '暖色底 + 橙色强调' },
-    ],
-  },
-  {
-    id: 'dark-minimal',
-    name: '深色极简',
-    desc: '全暗色底，大面积留白，高端路演与私募投资首选',
-    primary: '#e2e8f0',
-    bgColor: '#0f172a',
-    coverBg: 'linear-gradient(160deg, #0f172a 0%, #1e293b 100%)',
-    contentBg: '#1e293b',
-    endBg: '#020617',
-    titleColor: '#f1f5f9',
-    colors: ['#0f172a', '#334155', '#64748b', '#f1f5f9'],
-    specs: [
-      { label: '字体', value: 'Geist / PingFang SC' },
-      { label: '标题字号', value: '42px · 粗体' },
-      { label: '正文字号', value: '18px · 常规' },
-      { label: '行高', value: '1.6' },
-      { label: '封面排版', value: '深色全屏 + 左下角标题' },
-      { label: '内容版式', value: '深蓝卡片 + 细线分割' },
-    ],
-  },
-  {
-    id: 'gradient-violet',
-    name: '流体渐变',
-    desc: '紫蓝流体渐变背景，动感视觉，适合互联网与创意行业',
-    primary: '#7c3aed',
-    bgColor: '#faf5ff',
-    coverBg: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #a855f7 100%)',
-    contentBg: '#faf5ff',
-    endBg: '#2e1065',
-    titleColor: '#ffffff',
-    colors: ['#4f46e5', '#7c3aed', '#e9d5ff', '#1e1b4b'],
-    specs: [
-      { label: '字体', value: 'Satoshi / PingFang SC' },
-      { label: '标题字号', value: '40px · 粗体' },
-      { label: '正文字号', value: '17px · 常规' },
-      { label: '行高', value: '1.7' },
-      { label: '封面排版', value: '流体渐变背景 + 居中大标题' },
-      { label: '内容版式', value: '浅紫底 + 紫色强调色块' },
-    ],
-  },
-  {
-    id: 'business-classic',
-    name: '商务经典',
-    desc: '藏青金双色，分割构图，峰会论坛与政企汇报专用',
+    id: 'deep-blue-gold',
+    name: '深邃蓝金',
+    desc: '藏青与金色交织，高端峰会与颁奖典礼首选',
     primary: '#1e3a5f',
+    accent: '#d4af37',
     bgColor: '#f8fafc',
     coverBg: 'linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%)',
-    contentBg: '#f8fafc',
-    endBg: '#0f2744',
-    titleColor: '#f0c060',
-    colors: ['#1e3a5f', '#0f2744', '#f0c060', '#f8fafc'],
-    specs: [
-      { label: '字体', value: 'Outfit / 思源黑体' },
-      { label: '标题字号', value: '36px · 粗体' },
-      { label: '正文字号', value: '16px · 常规' },
-      { label: '行高', value: '1.65' },
-      { label: '封面排版', value: '左侧藏青色块 + 金色标题' },
-      { label: '内容版式', value: '白底 + 顶部藏青条 + 金色点缀' },
-    ],
+    contentBg: '#ffffff',
+    endBg: '#0a1929',
+    titleColor: '#d4af37',
+    colors: ['#1e3a5f', '#d4af37', '#f8fafc', '#0f2744'],
   },
   {
-    id: 'fresh-green',
-    name: '清新自然',
-    desc: '绿白大留白风格，轻质感排版，公益、教育与环保主题',
-    primary: '#16a34a',
+    id: 'minimal-white',
+    name: '极简白',
+    desc: '黑白极简主义，现代艺术与高端展览专用',
+    primary: '#18181b',
+    bgColor: '#ffffff',
+    coverBg: '#ffffff',
+    contentBg: '#ffffff',
+    endBg: '#09090b',
+    titleColor: '#18181b',
+    colors: ['#18181b', '#09090b', '#ffffff', '#71717a'],
+  },
+  {
+    id: 'cyber-orange',
+    name: '活力橙黑',
+    desc: '黑橙强对比，科技产品发布与创投活动专用',
+    primary: '#f97316',
+    bgColor: '#fff7ed',
+    coverBg: 'linear-gradient(135deg, #1c1917 0%, #292524 100%)',
+    contentBg: '#fff7ed',
+    endBg: '#1c1917',
+    titleColor: '#f97316',
+    colors: ['#f97316', '#1c1917', '#fff7ed', '#292524'],
+  },
+  {
+    id: 'nature-green',
+    name: '自然绿',
+    desc: '绿色渐变，健康公益与可持续发展主题活动',
+    primary: '#059669',
     bgColor: '#f0fdf4',
-    coverBg: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+    coverBg: 'linear-gradient(135deg, #059669 0%, #047857 100%)',
     contentBg: '#f0fdf4',
-    endBg: '#14532d',
+    endBg: '#064e3b',
     titleColor: '#ffffff',
-    colors: ['#16a34a', '#15803d', '#dcfce7', '#14532d'],
-    specs: [
-      { label: '字体', value: 'Outfit / PingFang SC' },
-      { label: '标题字号', value: '38px · 粗体' },
-      { label: '正文字号', value: '17px · 常规' },
-      { label: '行高', value: '1.75' },
-      { label: '封面排版', value: '绿色全出血 + 左对齐白字' },
-      { label: '内容版式', value: '浅绿底 + 大留白 + 绿色强调' },
-    ],
+    colors: ['#059669', '#047857', '#d1fae5', '#064e3b'],
+  },
+  {
+    id: 'elegant-purple',
+    name: '优雅紫',
+    desc: '紫粉渐变，时尚品牌与女性论坛活动',
+    primary: '#7c3aed',
+    bgColor: '#faf5ff',
+    coverBg: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)',
+    contentBg: '#faf5ff',
+    endBg: '#4c1d95',
+    titleColor: '#ffffff',
+    colors: ['#7c3aed', '#a855f7', '#faf5ff', '#4c1d95'],
+  },
+  {
+    id: 'red-gala',
+    name: '红色庆典',
+    desc: '深红金配色，年会颁奖与奢华庆典专用',
+    primary: '#dc2626',
+    accent: '#fbbf24',
+    bgColor: '#fef2f2',
+    coverBg: 'linear-gradient(135deg, #991b1b 0%, #dc2626 100%)',
+    contentBg: '#fef2f2',
+    endBg: '#450a0a',
+    titleColor: '#fbbf24',
+    colors: ['#dc2626', '#991b1b', '#fef2f2', '#fbbf24'],
+  },
+  {
+    id: 'space-gray',
+    name: '深空灰金',
+    desc: '深灰与金，低调奢华，投资路演与私募首选',
+    primary: '#64748b',
+    accent: '#fbbf24',
+    bgColor: '#f8fafc',
+    coverBg: 'linear-gradient(135deg, #334155 0%, #0f172a 100%)',
+    contentBg: '#f8fafc',
+    endBg: '#020617',
+    titleColor: '#fbbf24',
+    colors: ['#334155', '#0f172a', '#fbbf24', '#f8fafc'],
+  },
+  {
+    id: 'soft-pink',
+    name: '柔和粉',
+    desc: '粉色渐变，女性峰会、美妆与生活方式活动',
+    primary: '#ec4899',
+    bgColor: '#fdf2f8',
+    coverBg: 'linear-gradient(135deg, #ec4899 0%, #f472b6 100%)',
+    contentBg: '#fdf2f8',
+    endBg: '#831843',
+    titleColor: '#ffffff',
+    colors: ['#ec4899', '#f472b6', '#fdf2f8', '#831843'],
+  },
+  {
+    id: 'industrial',
+    name: '工业风',
+    desc: '水泥金属质感，创投论坛与建筑主题活动',
+    primary: '#78716c',
+    accent: '#f59e0b',
+    bgColor: '#fafaf9',
+    coverBg: 'linear-gradient(135deg, #44403c 0%, #292524 100%)',
+    contentBg: '#fafaf9',
+    endBg: '#1c1917',
+    titleColor: '#fafaf9',
+    accentColor: '#f59e0b',
+    colors: ['#44403c', '#292524', '#fafaf9', '#f59e0b'],
+  },
+  {
+    id: 'chinese-ink',
+    name: '水墨风',
+    desc: '黑白水墨意境，国潮文化与传统品牌活动',
+    primary: '#18181b',
+    bgColor: '#fafaf9',
+    coverBg: 'linear-gradient(180deg, #18181b 0%, #09090b 100%)',
+    contentBg: '#fafaf9',
+    endBg: '#0c0a09',
+    titleColor: '#18181b',
+    colors: ['#18181b', '#09090b', '#fafaf9', '#525252'],
+  },
+  {
+    id: 'ocean-blue',
+    name: '海洋蓝',
+    desc: '深海渐变，航海主题与海洋环保活动',
+    primary: '#0369a1',
+    bgColor: '#f0f9ff',
+    coverBg: 'linear-gradient(180deg, #0369a1 0%, #0c4a6e 100%)',
+    contentBg: '#f0f9ff',
+    endBg: '#082f49',
+    titleColor: '#ffffff',
+    colors: ['#0369a1', '#0c4a6e', '#e0f2fe', '#082f49'],
+  },
+  {
+    id: 'amber',
+    name: '琥珀色',
+    desc: '琥珀金调，高端酒会、威士忌与雪茄活动',
+    primary: '#b45309',
+    bgColor: '#fffbeb',
+    coverBg: 'linear-gradient(135deg, #92400e 0%, #b45309 100%)',
+    contentBg: '#fffbeb',
+    endBg: '#78350f',
+    titleColor: '#ffffff',
+    colors: ['#b45309', '#92400e', '#fffbeb', '#78350f'],
+  },
+  {
+    id: 'aurora',
+    name: '极光色',
+    desc: '青紫极光渐变，音乐节与电子科技活动',
+    primary: '#06b6d4',
+    accent: '#8b5cf6',
+    bgColor: '#f5f3ff',
+    coverBg: 'linear-gradient(135deg, #0891b2 0%, #7c3aed 50%, #db2777 100%)',
+    contentBg: '#f5f3ff',
+    endBg: '#4c1d95',
+    titleColor: '#ffffff',
+    colors: ['#06b6d4', '#8b5cf6', '#f5f3ff', '#4c1d95'],
+  },
+  {
+    id: 'marble',
+    name: '大理石白',
+    desc: '黑白大理石纹，奢侈品与高端珠宝活动',
+    primary: '#374151',
+    accent: '#d4af37',
+    bgColor: '#ffffff',
+    coverBg: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+    contentBg: '#ffffff',
+    endBg: '#030712',
+    titleColor: '#ffffff',
+    colors: ['#111827', '#374151', '#ffffff', '#d4af37'],
+  },
+  {
+    id: 'cyberpunk',
+    name: '赛博朋克',
+    desc: '霓虹深色，科技展会与游戏发布会',
+    primary: '#06b6d4',
+    accent: '#f0abfc',
+    bgColor: '#18181b',
+    coverBg: 'linear-gradient(135deg, #0c0a0f 0%, #1e1b4b 50%, #0c0a0f 100%)',
+    contentBg: '#18181b',
+    endBg: '#050508',
+    titleColor: '#06b6d4',
+    colors: ['#06b6d4', '#f0abfc', '#18181b', '#0c0a0f'],
+  },
+  {
+    id: 'morandi',
+    name: '莫兰迪',
+    desc: '低饱和莫兰迪色系，低调奢华与艺术活动',
+    primary: '#6b7280',
+    accent: '#a8a29e',
+    bgColor: '#f9fafb',
+    coverBg: 'linear-gradient(135deg, #6b7280 0%, #57534e 100%)',
+    contentBg: '#f9fafb',
+    endBg: '#44403c',
+    titleColor: '#fafaf9',
+    colors: ['#6b7280', '#57534e', '#f9fafb', '#a8a29e'],
+  },
+  {
+    id: 'vintage',
+    name: '复古风',
+    desc: '棕绿色复古调，老字号品牌与文化活动',
+    primary: '#78716c',
+    accent: '#166534',
+    bgColor: '#fef7ed',
+    coverBg: 'linear-gradient(135deg, #78716c 0%, #57534e 100%)',
+    contentBg: '#fef7ed',
+    endBg: '#292524',
+    titleColor: '#fef7ed',
+    colors: ['#78716c', '#57534e', '#fef7ed', '#166534'],
+  },
+  {
+    id: 'contemporary',
+    name: '当代艺术',
+    desc: '黑白红极简，当代艺术展与画廊活动',
+    primary: '#18181b',
+    accent: '#ef4444',
+    bgColor: '#ffffff',
+    coverBg: 'linear-gradient(135deg, #18181b 0%, #09090b 100%)',
+    contentBg: '#ffffff',
+    endBg: '#0c0a09',
+    titleColor: '#18181b',
+    colors: ['#18181b', '#09090b', '#ffffff', '#ef4444'],
+  },
+  {
+    id: 'nordic',
+    name: '北欧风',
+    desc: '蓝白北欧设计，家居品牌与极简生活活动',
+    primary: '#1e40af',
+    bgColor: '#f8fafc',
+    coverBg: 'linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%)',
+    contentBg: '#f8fafc',
+    endBg: '#1e3a8a',
+    titleColor: '#ffffff',
+    colors: ['#1e3a8a', '#1e40af', '#f8fafc', '#dbeafe'],
+  },
+  {
+    id: 'tropical',
+    name: '热带海岛',
+    desc: '青绿热带风情，海岛度假村与旅游推广活动',
+    primary: '#0891b2',
+    accent: '#84cc16',
+    bgColor: '#f0fdf4',
+    coverBg: 'linear-gradient(135deg, #0891b2 0%, #0e7490 50%, #84cc16 100%)',
+    contentBg: '#f0fdf4',
+    endBg: '#134e4a',
+    titleColor: '#ffffff',
+    colors: ['#0891b2', '#0e7490', '#f0fdf4', '#84cc16'],
   },
 ]
 
@@ -657,7 +814,7 @@ function clearSpotlight(e) {
   height: 100%;
   overflow: hidden;
   padding: 32px 36px 0;
-  background: #f5f6fa;
+  background: #faf9f7;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -668,45 +825,55 @@ function clearSpotlight(e) {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 16px;
+  gap: 24px;
   flex-shrink: 0;
 }
-.tpl-title  { margin: 0 0 4px; font-size: 22px; font-weight: 700; color: #111827; letter-spacing: -0.4px; }
-.tpl-subtitle { margin: 0; font-size: 13px; color: #9ca3af; }
+.tpl-category-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #44403c;
+  background: rgba(68,64,60,0.08);
+  padding: 4px 10px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+.tpl-title  { margin: 0 0 4px; font-size: 22px; font-weight: 700; color: #1c1917; letter-spacing: -0.4px; }
+.tpl-subtitle { margin: 0; font-size: 13px; color: #a8a29e; }
 
-.tpl-tabs { display: flex; gap: 4px; background: rgba(0,0,0,0.04); border-radius: 10px; padding: 3px; flex-shrink: 0; }
+.tpl-tabs { display: flex; gap: 4px; background: rgba(68,64,60,0.06); border-radius: 10px; padding: 3px; flex-shrink: 0; }
 .tab-pill {
   display: flex; align-items: center; gap: 5px; padding: 6px 14px;
   border: none; background: transparent; border-radius: 7px;
-  font-family: inherit; font-size: 13px; font-weight: 500; color: #6b7280;
+  font-family: inherit; font-size: 13px; font-weight: 500; color: #57534e;
   cursor: pointer; white-space: nowrap;
   transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
 }
-.tab-pill.active { background: #fff; color: #111827; box-shadow: 0 1px 4px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.04); }
+.tab-pill.active { background: #fff; color: #1c1917; box-shadow: 0 1px 4px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04); }
 
 /* ── Body ── */
 .tpl-body {
   flex: 1; overflow: hidden;
-  display: flex; gap: 16px; min-height: 0;
+  display: flex; flex-direction: column; min-height: 0;
 }
-.tpl-body > .planning-grid,
-.tpl-body > .layout-grid {
+.tpl-body > .fade-up {
   flex: 1; overflow-y: auto; padding-bottom: 32px; min-width: 0;
 }
 
 /* ── Planning grid ── */
-.planning-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px; align-content: start; }
-.span-7 { grid-column: span 7; }
-.span-5 { grid-column: span 5; }
-.span-6 { grid-column: span 6; }
+.planning-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-content: start; }
 
 .plan-card {
-  position: relative; background: #fff; border-radius: 16px;
+  position: relative; background: #fff; border-radius: 10px;
   border: 1.5px solid rgba(0,0,0,0.06); cursor: pointer; overflow: hidden;
   animation: card-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: calc(var(--index, 0) * 55ms);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   will-change: transform;
+  min-height: 180px;
 }
 .plan-card:hover  { border-color: rgba(0,0,0,0.1); box-shadow: 0 8px 32px rgba(0,0,0,0.07); transform: translateY(-2px); }
 .plan-card:active { transform: translateY(0) scale(0.99); }
@@ -717,33 +884,33 @@ function clearSpotlight(e) {
   background: radial-gradient(280px circle at var(--glow-x, -999px) var(--glow-y, -999px),
     color-mix(in srgb, var(--accent) 8%, transparent), transparent 65%);
 }
-.card-inner { position: relative; z-index: 1; padding: 20px 22px 18px; display: flex; flex-direction: column; gap: 14px; height: 100%; }
+.card-inner { position: relative; z-index: 1; padding: 20px 22px 18px; display: flex; flex-direction: column; gap: 12px; height: 100%; min-height: 160px; }
 .card-top { display: flex; align-items: center; justify-content: space-between; }
 .card-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.card-slides-badge { font-size: 11px; font-weight: 600; color: #9ca3af; background: #f3f4f6; padding: 3px 8px; border-radius: 20px; }
+.card-slides-badge { font-size: 11px; font-weight: 600; color: #a8a29e; background: rgba(68,64,60,0.06); padding: 3px 8px; border-radius: 10px; }
 .card-text { flex: 1; }
-.card-name { margin: 0 0 5px; font-size: 15px; font-weight: 700; color: #111827; letter-spacing: -0.2px; }
-.card-desc { margin: 0; font-size: 12.5px; color: #6b7280; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.outline-chips { display: flex; flex-wrap: wrap; gap: 5px; }
-.chip { font-size: 11px; font-weight: 500; color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
-.card-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 2px; border-top: 1px solid rgba(0,0,0,0.05); }
+.card-name { margin: 0 0 5px; font-size: 15px; font-weight: 700; color: #1c1917; letter-spacing: -0.2px; }
+.card-desc { margin: 0; font-size: 12.5px; color: #57534e; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.outline-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: auto; }
+.chip { font-size: 11px; font-weight: 500; color: var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); padding: 3px 9px; border-radius: 10px; white-space: nowrap; }
+.card-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 8px; border-top: 1px solid rgba(0,0,0,0.05); margin-top: auto; }
 .footer-tags { display: flex; gap: 4px; flex-wrap: wrap; }
-.tag { font-size: 10.5px; color: #9ca3af; background: #f3f4f6; padding: 2px 7px; border-radius: 20px; white-space: nowrap; }
+.tag { font-size: 10.5px; color: #a8a29e; background: rgba(68,64,60,0.06); padding: 2px 7px; border-radius: 10px; white-space: nowrap; }
 .preview-btn {
   display: flex; align-items: center; gap: 4px; padding: 5px 12px;
-  border: 1.5px solid rgba(0,0,0,0.1); background: transparent; color: #374151;
+  border: 1.5px solid rgba(68,64,60,0.15); background: transparent; color: #44403c;
   font-family: inherit; font-size: 11.5px; font-weight: 600; border-radius: 8px;
   cursor: pointer; white-space: nowrap; flex-shrink: 0;
   transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
 }
-.preview-btn:hover  { background: #f9fafb; border-color: rgba(0,0,0,0.18); }
+.preview-btn:hover  { background: rgba(68,64,60,0.04); border-color: rgba(68,64,60,0.25); }
 .preview-btn:active { transform: scale(0.96); }
 
 /* ── Layout grid ── */
-.layout-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-content: start; }
+.layout-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; align-content: start; }
 
 .layout-card {
-  position: relative; background: #fff; border-radius: 16px;
+  position: relative; background: #fff; border-radius: 10px;
   border: 1.5px solid rgba(0,0,0,0.07); cursor: pointer; overflow: hidden;
   animation: card-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: calc(var(--index, 0) * 60ms);
@@ -755,180 +922,544 @@ function clearSpotlight(e) {
 .layout-card.active, .layout-card.selected { border-color: #165dff; box-shadow: 0 0 0 3px rgba(22, 93, 255, 0.1); }
 .active-ring { pointer-events: none; position: absolute; inset: 0; border-radius: inherit; background: rgba(22,93,255,0.025); }
 
-.slide-strip { display: flex; gap: 6px; padding: 16px 16px 12px; background: #f9fafb; border-bottom: 1px solid rgba(0,0,0,0.05); }
-.mini-slide { flex: 1; aspect-ratio: 16/9; border-radius: 5px; overflow: hidden; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; }
-.ms-title-line { width: 55%; height: 4px; border-radius: 2px; opacity: 0.9; }
-.ms-sub-line   { width: 38%; height: 3px; border-radius: 2px; opacity: 0.6; }
-.ms-header-bar { position: absolute; top: 0; left: 0; right: 0; height: 6px; }
-.ms-content-lines { display: flex; flex-direction: column; gap: 3px; padding: 10px 6px 4px; width: 100%; }
-.ms-line { height: 2.5px; background: rgba(0,0,0,0.12); border-radius: 2px; }
-.ms-line.short { width: 60%; }
-.ms-end-dot  { width: 10px; height: 10px; border-radius: 50%; opacity: 0.85; }
-.ms-end-line { width: 36px; height: 2px; border-radius: 2px; }
+.slide-strip { display: flex; gap: 6px; padding: 14px 14px 12px; background: rgba(68,64,60,0.03); border-bottom: 1px solid rgba(0,0,0,0.05); }
+.mini-slide { flex: 1; aspect-ratio: 16/9; border-radius: 4px; overflow: hidden; position: relative; }
+.mini-slide--cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ms-cover {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 0 8px;
+  width: 100%;
+}
+.ms-cover-brand {
+  font-size: 5px;
+  font-weight: 500;
+}
+.ms-cover-title {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+.ms-cover-divider {
+  width: 16px;
+  height: 1.5px;
+  border-radius: 1px;
+  margin-top: 1px;
+}
+.mini-slide--content {
+  display: flex;
+  flex-direction: column;
+}
+.ms-content-header {
+  height: 5px;
+}
+.ms-content-body {
+  flex: 1;
+  padding: 5px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.ms-content-title {
+  font-size: 6px;
+  font-weight: 700;
+}
+.ms-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.ms-line-full {
+  height: 2px;
+  border-radius: 1px;
+}
+.ms-line-partial {
+  height: 2px;
+  border-radius: 1px;
+  width: 60%;
+}
+.mini-slide--end {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ms-end {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.ms-end-circle {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ms-end-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+}
+.ms-end-title {
+  font-size: 5px;
+  font-weight: 600;
+}
 
 .layout-meta { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; }
 .layout-name-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
-.layout-name { font-size: 14px; font-weight: 700; color: #111827; letter-spacing: -0.2px; }
-.active-badge { display: flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #165dff; background: rgba(22,93,255,0.08); padding: 2px 8px; border-radius: 20px; flex-shrink: 0; }
-.layout-desc { margin: 0; font-size: 12px; color: #9ca3af; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.layout-name { font-size: 14px; font-weight: 700; color: #1c1917; letter-spacing: -0.2px; }
+.active-badge { display: flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 600; color: #165dff; background: rgba(22,93,255,0.08); padding: 2px 8px; border-radius: 10px; flex-shrink: 0; }
+.layout-desc { margin: 0; font-size: 12px; color: #a8a29e; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .swatches { display: flex; gap: 5px; margin-top: 2px; }
 .swatch { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid rgba(255,255,255,0.7); box-shadow: 0 1px 3px rgba(0,0,0,0.15); display: inline-block; }
 
-/* ── Preview Panel ── */
-.preview-panel {
-  width: 340px; flex-shrink: 0;
-  background: #fff; border-radius: 18px; border: 1px solid rgba(0,0,0,0.07);
-  overflow-y: auto; padding: 24px 22px 32px;
-  position: relative; display: flex; flex-direction: column; gap: 0;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
-  margin-bottom: 32px;
+/* ── Modal ── */
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
 }
-.panel-close {
-  position: absolute; top: 16px; right: 16px;
-  width: 26px; height: 26px; border: none; background: #f3f4f6;
-  border-radius: 50%; cursor: pointer; color: #6b7280;
-  display: flex; align-items: center; justify-content: center;
-  transition: background 0.15s ease, color 0.15s ease;
+.modal-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
-.panel-close:hover { background: #e5e7eb; color: #111827; }
-
-.panel-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
-.panel-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.panel-color-dot { width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; }
-.panel-title { margin: 0 0 6px; font-size: 17px; font-weight: 700; color: #111827; letter-spacing: -0.3px; padding-right: 28px; }
-.panel-meta-row { display: flex; gap: 5px; flex-wrap: wrap; }
-.panel-badge { font-size: 11px; font-weight: 600; color: #6b7280; background: #f3f4f6; padding: 2px 8px; border-radius: 20px; }
-.panel-badge.active-text { color: #165dff; background: rgba(22,93,255,0.08); }
-.panel-desc { margin: 0 0 20px; font-size: 13px; color: #6b7280; line-height: 1.6; }
-.panel-section-title { font-size: 11px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
-
-/* ── Slide list ── */
-.slide-list { display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px; }
-
-.slide-row {
-  display: flex; align-items: flex-start; gap: 8px;
-  padding: 9px 10px; border-radius: 10px;
-  animation: card-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: var(--delay, 0ms);
-  transition: background 0.15s ease;
-  cursor: default;
+.modal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #44403c;
+  background: rgba(68,64,60,0.08);
+  padding: 5px 12px;
+  border-radius: 10px;
 }
-.slide-row:hover { background: #f9fafb; }
-
-.slide-row-left { display: flex; align-items: center; gap: 6px; flex-shrink: 0; padding-top: 2px; }
-
-.slide-num { font-size: 10px; font-weight: 700; color: #d1d5db; font-variant-numeric: tabular-nums; width: 16px; text-align: right; }
-
-.slide-type-dot {
-  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+.modal-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1c1917;
+  letter-spacing: -0.4px;
 }
-.type-cover    { background: #6366f1; }
-.type-toc      { background: #8b5cf6; }
-.type-content  { background: var(--accent, #165dff); opacity: 0.7; }
-.type-two_column { background: #0ea5e9; }
-.type-cards    { background: #10b981; }
-.type-timeline { background: #f59e0b; }
-.type-data     { background: #ef4444; }
-.type-end      { background: #6b7280; }
-
-.slide-row-body { flex: 1; min-width: 0; }
-.slide-row-title { font-size: 13px; font-weight: 600; color: #1f2937; line-height: 1.3; margin-bottom: 4px; }
-.slide-points { margin: 0; padding: 0 0 0 12px; display: flex; flex-direction: column; gap: 2px; }
-.slide-points li { font-size: 11.5px; color: #6b7280; line-height: 1.4; }
-.slide-note { font-size: 11.5px; color: #9ca3af; line-height: 1.4; font-style: italic; }
-
-.slide-type-label {
-  font-size: 9.5px; font-weight: 600; color: #9ca3af;
-  background: #f3f4f6; padding: 2px 6px; border-radius: 6px;
-  white-space: nowrap; flex-shrink: 0; margin-top: 2px;
+.modal-meta {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.modal-badge-tag {
+  font-size: 11px;
+  font-weight: 500;
+  color: #57534e;
+  background: rgba(68,64,60,0.06);
+  padding: 3px 10px;
+  border-radius: 10px;
+}
+.modal-badge-tag.active {
+  color: #165dff;
+  background: rgba(22,93,255,0.08);
+}
+.modal-icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.modal-color-swatch {
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.modal-color-swatch-lg {
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
 }
 
-/* Prompt */
-.prompt-preview { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #374151; line-height: 1.5; margin-bottom: 8px; }
-.prompt-cursor { display: inline-block; color: #165dff; font-weight: 700; animation: blink 1.1s step-end infinite; margin-left: 1px; }
+.layout-style-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* Slide preview */
+.modal-slides-preview {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.modal-slide-preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.msp-slide {
+  aspect-ratio: 16/10;
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.msp-slide--cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.msp-cover-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 0 14px;
+  width: 100%;
+}
+.msp-cover-brand {
+  font-size: 6px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+.msp-cover-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+}
+.msp-cover-divider {
+  width: 24px;
+  height: 2px;
+  border-radius: 1px;
+  margin: 2px 0;
+}
+.msp-cover-info {
+  font-size: 6px;
+}
+.msp-slide--content {
+  display: flex;
+  flex-direction: column;
+}
+.msp-content-header {
+  padding: 6px 10px;
+}
+.msp-content-header-title {
+  font-size: 8px;
+  font-weight: 600;
+}
+.msp-content-body {
+  flex: 1;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.msp-content-main {
+  font-size: 7px;
+  font-weight: 700;
+}
+.msp-content-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.msp-line-full {
+  height: 3px;
+  border-radius: 2px;
+}
+.msp-line-partial {
+  height: 3px;
+  border-radius: 2px;
+  width: 65%;
+}
+.msp-content-chips {
+  margin-top: 2px;
+}
+.msp-chip {
+  font-size: 6px;
+  font-weight: 600;
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+.msp-two-col {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.msp-col-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.msp-col-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.msp-col-line {
+  height: 4px;
+  flex: 1;
+  border-radius: 2px;
+}
+.msp-slide--end {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.msp-end-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+.msp-end-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.msp-end-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.msp-end-title {
+  font-size: 8px;
+  font-weight: 700;
+}
+.msp-end-sub {
+  font-size: 5px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+.msp-end-contact {
+  font-size: 5px;
+  margin-top: 1px;
+}
+.msp-label {
+  font-size: 9px;
+  color: #a8a29e;
+  text-align: center;
+}
+.style-tag {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  background: #fafaf9;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.04);
+  min-width: 100px;
+}
+.style-tag-label {
+  font-size: 10px;
+  color: #a8a29e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.style-tag-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #44403c;
+}
+.modal-desc {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: #57534e;
+  line-height: 1.5;
+}
+.modal-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #44403c;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 10px;
+}
+
+/* Document outline */
+.modal-doc-outline {
+  display: flex;
+  flex-direction: column;
+  background: #fafaf9;
+  border-radius: 10px;
+  max-height: 280px;
+  overflow-y: auto;
+}
+.doc-item {
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.04);
+}
+.doc-item:last-child {
+  border-bottom: none;
+}
+.doc-item-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.doc-num {
+  font-size: 10px;
+  font-weight: 600;
+  color: #a8a29e;
+  font-variant-numeric: tabular-nums;
+  width: 18px;
+  flex-shrink: 0;
+}
+.doc-title {
+  font-size: 12px;
+  color: #1c1917;
+  font-weight: 500;
+}
+.doc-points {
+  margin: 2px 0 0 28px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.doc-points li {
+  font-size: 11px;
+  color: #57534e;
+  line-height: 1.4;
+}
+
+/* Modal footer */
+.modal-footer {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 12px;
+  background: #fff;
+  border-top: 1px solid rgba(0,0,0,0.06);
+}
+
+/* Prompt preview */
+.modal-prompt-section {
+  margin-top: 12px;
+}
+.modal-prompt-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(68,64,60,0.03) 0%, rgba(68,64,60,0.06) 100%);
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.prompt-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(68,64,60,0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #44403c;
+  flex-shrink: 0;
+}
+.prompt-content {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+.prompt-text {
+  font-size: 12px;
+  color: #44403c;
+  line-height: 1.5;
+}
+.prompt-cursor {
+  color: #44403c;
+  font-weight: 700;
+  animation: blink 1.1s step-end infinite;
+}
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-.prompt-hint { margin: 0 0 16px; font-size: 11.5px; color: #9ca3af; line-height: 1.5; }
-.panel-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 20px; }
-
-/* Large slides */
-.large-slides { display: flex; flex-direction: column; gap: 12px; margin-bottom: 4px; }
-.large-slide-wrap { display: flex; flex-direction: column; gap: 5px; }
-.large-slide { width: 100%; aspect-ratio: 16/9; border-radius: 10px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
-.large-slide.two-col { display: grid; grid-template-columns: 1fr 1fr; }
-
-.ls-cover-content { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; padding: 0 18px; width: 100%; }
-.ls-cover-tag   { font-size: 8px; font-weight: 700; padding: 2px 7px; border-radius: 20px; letter-spacing: 0.4px; text-transform: uppercase; }
-.ls-cover-title { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; line-height: 1.2; }
-.ls-cover-sub   { font-size: 9px; font-weight: 400; }
-.ls-cover-line  { width: 36px; height: 2px; border-radius: 2px; margin: 2px 0; }
-.ls-cover-org   { font-size: 8px; }
-
-.ls-content-top { position: absolute; top: 0; left: 0; right: 0; height: 5px; }
-.ls-content-body { padding: 14px 16px 10px; width: 100%; }
-.ls-content-title { font-size: 11px; font-weight: 700; margin-bottom: 8px; }
-.ls-content-items { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
-.ls-content-item { display: flex; align-items: center; gap: 5px; }
-.ls-item-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
-.ls-content-chip { display: inline-block; font-size: 8px; font-weight: 700; padding: 2px 7px; border-radius: 20px; margin-top: 4px; }
-.ls-line { height: 2.5px; background: rgba(0,0,0,0.1); border-radius: 2px; margin-bottom: 4px; }
-.ls-line.short { width: 55%; }
-
-.ls-col-left { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
-.ls-col-label { font-size: 8px; font-weight: 600; opacity: 0.8; }
-.ls-col-num { font-size: 16px; font-weight: 800; letter-spacing: -0.5px; }
-.ls-col-right { padding: 12px; display: flex; flex-direction: column; justify-content: center; }
-.ls-col-title { font-size: 10px; font-weight: 700; margin-bottom: 8px; }
-.ls-col-lines { display: flex; flex-direction: column; gap: 4px; }
-
-.ls-end-content { display: flex; flex-direction: column; align-items: center; gap: 5px; }
-.ls-end-circle { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-.ls-end-dot { width: 9px; height: 9px; border-radius: 50%; }
-.ls-end-title { font-size: 11px; font-weight: 700; }
-.ls-end-sub { font-size: 7px; font-weight: 600; letter-spacing: 1.5px; }
-.ls-end-contact { font-size: 7px; margin-top: 2px; }
-
-.slide-label { font-size: 11px; color: #9ca3af; font-weight: 500; padding-left: 2px; }
-
-/* Palette */
-.palette-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
-.palette-chip { flex: 1; min-width: 60px; border-radius: 8px; padding: 10px 8px 8px; display: flex; flex-direction: column; gap: 3px; }
-.palette-hex  { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.85); text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
-.palette-role { font-size: 8.5px; color: rgba(255,255,255,0.6); text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
-
-/* Typo specs */
-.typo-specs { display: flex; flex-direction: column; gap: 0; margin-bottom: 20px; }
-.typo-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #f3f4f6; }
-.typo-row:last-child { border-bottom: none; }
-.typo-label { font-size: 12px; color: #9ca3af; font-weight: 500; }
-.typo-value { font-size: 12px; color: #374151; font-weight: 600; }
-
-/* CTA */
-.panel-use-btn {
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  width: 100%; padding: 11px 16px; border: none; color: #fff;
-  font-family: inherit; font-size: 13px; font-weight: 700; border-radius: 11px;
-  cursor: pointer; margin-top: auto;
+.prompt-hint {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #a8a29e;
+}
+.modal-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.modal-tag {
+  font-size: 11px;
+  color: #57534e;
+  background: rgba(68,64,60,0.06);
+  padding: 4px 10px;
+  border-radius: 10px;
+}
+.modal-use-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: none;
+  color: #fff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
-.panel-use-btn:hover  { opacity: 0.88; }
-.panel-use-btn:active { transform: scale(0.98); }
+.modal-use-btn:hover { opacity: 0.88; }
+.modal-use-btn:active { transform: scale(0.97); }
+.modal-use-btn.layout { width: 100%; justify-content: center; margin-top: 24px; }
+
+.modal-palette {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.modal-palette-chip {
+  flex: 1;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-palette-hex {
+  font-size: 8px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
 
 /* Toast */
 .toast {
   position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
   display: flex; align-items: center; gap: 6px; padding: 9px 18px;
-  background: #111827; color: #fff; font-size: 13px; font-weight: 500;
+  background: #1c1917; color: #fff; font-size: 13px; font-weight: 500;
   border-radius: 100px; box-shadow: 0 4px 20px rgba(0,0,0,0.22);
   white-space: nowrap; z-index: 200; pointer-events: none;
 }
 
 /* Transitions */
 @keyframes card-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-.panel-slide-enter-active { transition: opacity 0.28s ease, transform 0.32s cubic-bezier(0.16, 1, 0.3, 1); }
-.panel-slide-leave-active { transition: opacity 0.18s ease, transform 0.2s ease; }
-.panel-slide-enter-from   { opacity: 0; transform: translateX(20px); }
-.panel-slide-leave-to     { opacity: 0; transform: translateX(16px); }
 
 .fade-up-enter-active { transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1); }
 .fade-up-leave-active { transition: opacity 0.14s ease, transform 0.14s ease; }
@@ -939,4 +1470,33 @@ function clearSpotlight(e) {
 .toast-slide-leave-active { transition: opacity 0.18s ease, transform 0.18s ease; }
 .toast-slide-enter-from   { opacity: 0; transform: translateX(-50%) translateY(10px); }
 .toast-slide-leave-to     { opacity: 0; transform: translateX(-50%) translateY(6px); }
+</style>
+
+<style>
+/* Modal customization - Arco Design override */
+.tpl-preview-modal .arco-modal {
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 60px;
+  margin-bottom: 60px;
+}
+.tpl-preview-modal .arco-modal-header {
+  display: none;
+}
+.tpl-preview-modal .arco-modal-content {
+  padding: 24px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.tpl-preview-modal .arco-modal-footer {
+  display: none;
+}
+.tpl-preview-modal .arco-modal-close-icon {
+  color: #57534e;
+}
+.tpl-preview-modal .arco-modal-close-icon:hover {
+  color: #1c1917;
+}
 </style>

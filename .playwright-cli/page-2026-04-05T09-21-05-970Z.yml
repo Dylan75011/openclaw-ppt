@@ -1,0 +1,169 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e226]
+      - button [ref=e10] [cursor=pointer]:
+        - img [ref=e11]
+    - navigation [ref=e14]:
+      - button [ref=e230] [cursor=pointer]:
+        - img [ref=e17]
+      - button [ref=e231] [cursor=pointer]:
+        - img [ref=e24]
+      - button [ref=e232] [cursor=pointer]:
+        - img [ref=e31]
+      - button [ref=e233] [cursor=pointer]:
+        - img [ref=e38]
+  - generic [ref=e44]:
+    - complementary [ref=e45]:
+      - generic [ref=e46]:
+        - generic [ref=e48]:
+          - generic [ref=e49]: 当前空间
+          - generic "华为" [ref=e50] [cursor=pointer]:
+            - textbox "选择工作空间"
+            - generic [ref=e51]: 华为
+            - img [ref=e54]
+        - button "+" [ref=e56] [cursor=pointer]
+      - generic [ref=e57]:
+        - generic [ref=e58]: 历史对话
+        - generic [ref=e60]:
+          - img [ref=e62]
+          - textbox "搜索历史对话" [ref=e64]
+        - generic [ref=e66]:
+          - generic [ref=e67]: 今天
+          - generic [ref=e68]:
+            - button "我们这边最近要给一个手机新品做线下预热活动，先不用太正式。领导想 16 条消息 · 1 分钟前 •••" [ref=e363] [cursor=pointer]:
+              - generic [ref=e100]:
+                - generic [ref=e101]: 我们这边最近要给一个手机新品做线下预热活动，先不用太正式。领导想
+                - generic [ref=e102]: 16 条消息 · 1 分钟前
+              - generic [ref=e103]: •••
+            - button "新对话 11 分钟前 •••" [ref=e362] [cursor=pointer]:
+              - generic [ref=e70]:
+                - generic [ref=e71]: 新对话
+                - generic [ref=e72]: 11 分钟前
+              - generic [ref=e73]: •••
+            - button "可以开始生成 PPT 19 分钟前 •••" [ref=e364] [cursor=pointer]:
+              - generic [ref=e75]:
+                - generic [ref=e76]: 可以开始生成 PPT
+                - generic [ref=e77]: 19 分钟前
+              - generic [ref=e78]: •••
+    - button "‹" [ref=e79] [cursor=pointer]
+    - generic [ref=e80]:
+      - generic [ref=e81]:
+        - generic [ref=e108]: 我们这边最近要给一个手机新品做线下预热活动，先不用太正式。领导想要年轻一点、能出片一点，但预算不会特别高。你先别急着出整套方案，先帮我想方向。
+        - generic [ref=e121]:
+          - paragraph [ref=e122]: 明白，想先聊方向。
+          - paragraph [ref=e123]: 给手机新品做年轻、出片、预算友好的预热，我这边方向上没问题，但得先问一下——这次是哪个品牌的手机？不同品牌调性不同，给到的方向贴合度也会不一样。
+        - paragraph [ref=e126]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e146]: 先按问界这边理解吧，但别写得太像正式发布会。场地大概率还是商场中庭或者购物中心，卖点会更偏拍照，尤其是夜景和人像。我们也不想做成太网红打卡那种，你先帮我收两个稳一点的方向。
+        - generic [ref=e159]:
+          - paragraph [ref=e176]: 好，按你的要求收两个方向：
+          - paragraph [ref=e177]: "---"
+          - paragraph [ref=e178]:
+            - strong [ref=e179]: 方向一：暗夜艺术馆
+          - paragraph [ref=e180]: 核心思路是借势夜景卖点，做一个暗场沉浸空间。
+          - paragraph [ref=e181]: 具体形式：用灯光装置+暗色主调墙面，构建几个不同氛围的微光场景（比如霓虹雨夜、烛光晚宴、星空天台），让用户拿手机直接拍。区别于网红打卡那种"背景板+字"的俗套，这里更偏"装置艺术"的质感——灯光变化、场景叙事都有，体验完能感受到手机夜景拍摄的层次感。
+          - paragraph [ref=e182]: 适合问界的点在于，它把"拍照能力"变成了"艺术体验"，不会显得太功利，但又把卖点融进去了。预算主要在灯光和搭建，商场中庭容易实现。
+          - paragraph [ref=e183]: "---"
+          - paragraph [ref=e184]:
+            - strong [ref=e185]: 方向二：人像摄影棚
+          - paragraph [ref=e186]: 这个更偏人像，直接在商场放一个专业摄影棚风格的体验区。
+          - paragraph [ref=e187]: 有专业灯光、简单布景、还有镜子/道具之类的，用户可以自己拍或让工作人员帮拍。重点是成片要能看出手机在人像模式下的人物主体清晰、背景虚化自然、肤色还原好——拍完直接发朋友圈那种。
+          - paragraph [ref=e188]: 之所以说"稳"，是因为这类摄影棚形式在手机预热里很常见，但我们可以把细节做扎实：灯光显色指数要高、场景布置有格调（不要那种粉色泡泡池），让"出片"和"专业感"能兼顾。问界做这个不会low，但也不会太重。
+          - paragraph [ref=e189]: "---"
+          - paragraph [ref=e190]: 两个方向，一个偏夜景氛围体验，一个偏人像直拍转化。你倾向于哪个方向深挖，或者想混搭也行？
+        - paragraph [ref=e193]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e214]: 名字先别定得这么文艺，领导大概率会觉得有点虚。两个方向我觉得可以揉一下，保留夜景和人像，但要更像商场里能落地的活动，不要做成纯艺术展。你先别急着写 final 方案，先补一轮更贴近商场快闪和手机拍照体验的案例，再帮我收一个总概念。
+        - paragraph [ref=e237]: 明白，补案例再收概念。
+        - generic [ref=e239]:
+          - generic [ref=e240]:
+            - generic [ref=e241]: 🔍
+            - generic [ref=e242]:
+              - generic [ref=e243]: 搜索：手机新品 商场快闪 拍照体验 活动案例 2024
+              - generic [ref=e244]: 找到 8 条结果（minimax）
+          - generic [ref=e245]:
+            - generic [ref=e246]: 找到 8 条搜索结果（minimax）
+            - button "查看详情" [ref=e247] [cursor=pointer]
+        - generic [ref=e249] [cursor=pointer]:
+          - generic [ref=e250]:
+            - img [ref=e252]
+            - generic [ref=e254]:
+              - generic [ref=e255]: 搜索研究
+              - generic [ref=e256]: 搜索研究：手机新品 商场快闪 拍照体验 活动案例 2024
+          - generic [ref=e257]: 【Galaxy S24系列快闪店】武汉快闪体验 - 盖乐世社区 - 三星手机官方粉丝论坛；2024年商场快闪方案.docx-原创力文档；二十城Pop-up联动,一加 Ace 3快闪活动现场火爆-太平洋科技
+          - generic [ref=e259]: 在右侧查看
+        - generic [ref=e261]:
+          - generic [ref=e262]:
+            - generic [ref=e263]: 🔍
+            - generic [ref=e264]:
+              - generic [ref=e265]: 搜索：华为手机 线下体验 商场 拍照 快闪活动 案例
+              - generic [ref=e266]: 找到 6 条结果（minimax）
+          - generic [ref=e267]:
+            - generic [ref=e268]: 找到 6 条搜索结果（minimax）
+            - button "查看详情" [ref=e269] [cursor=pointer]
+        - generic [ref=e271] [cursor=pointer]:
+          - generic [ref=e272]:
+            - img [ref=e274]
+            - generic [ref=e276]:
+              - generic [ref=e277]: 搜索研究
+              - generic [ref=e278]: 搜索研究：华为手机 线下体验 商场 拍照 快闪活动 案例
+          - generic [ref=e279]: 折叠万象,宝盒秘境:华为P50 Pocket线下快闪空间亮相成都春熙路diy_网易订阅；华为nova13系列中庭快闪活动火热开启现场... 来自新浪宁波 - 微博；#快闪店活动策划#华为nova10系列及全场景新... 来自会展活动策划网 - 微博
+          - generic [ref=e281]: 在右侧查看
+        - generic [ref=e320]:
+          - paragraph [ref=e321]: 明白了，补一轮案例。
+          - paragraph [ref=e322]: 从几个近期手机快闪案例里提取了几个能借鉴的点：
+          - list [ref=e323]:
+            - listitem [ref=e324]:
+              - strong [ref=e325]: 华为nova10上海环球港
+              - text: ：设置了五大体验专区（人像追焦、时尚大片、超级快充、全场景体验等），分区清晰，用户可以逐个体验，最后打卡分享。分区式动线对商场中庭很友好。
+            - listitem [ref=e326]:
+              - strong [ref=e327]: 华为nova13宁波中庭
+              - text: ：直接在中庭做快闪，打卡送代言人周边（海报、穿戴甲、手提包），门槛低、传播快，现场人气很高。
+            - listitem [ref=e328]:
+              - strong [ref=e329]: 一加Ace 3二十城联动
+              - text: ：城市联动造势，现场有互动和礼品机制，引流到店的同时给到"参与感"。
+          - paragraph [ref=e330]:
+            - text: 这些案例的共性是：
+            - strong [ref=e331]: 分区体验+打卡传播+轻互动
+            - text: ，不会做成纯艺术展，但又比单纯摆摊有体验感。
+          - paragraph [ref=e332]: "---"
+          - paragraph [ref=e333]:
+            - strong [ref=e334]: 收一个总概念方向：
+          - paragraph [ref=e335]:
+            - strong [ref=e336]: "\"夜色人像实验室\""
+          - paragraph [ref=e337]: 在商场中庭设两个核心体验区：
+          - list [ref=e338]:
+            - listitem [ref=e339]:
+              - strong [ref=e340]: 暗光人像区
+              - text: ——模拟夜间户外场景（路灯、夜市灯箱、霓虹），用户现场拍人像，看手机在暗光下的主体突出和虚化效果
+            - listitem [ref=e341]:
+              - strong [ref=e342]: 场景拍照区
+              - text: ——放几个不同风格的夜景布置（街道感、艺术感、生活感），用户边拍边体验夜景模式
+          - paragraph [ref=e343]: 动线上是"先人像后夜景"，两个区可以分别打卡，最后领个小礼品（手机支架、拍照手册之类）。整体调性偏"技术展示+轻体验"，不会太网红，但出片效果能感知到。
+          - paragraph [ref=e344]: "---"
+          - paragraph [ref=e345]: 这个名字和形式更接地气，领导应该不会有"虚"的感觉。要继续往方案深推吗？
+        - paragraph [ref=e348]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e367]: 可以，先按这个方向往下推吧。你直接给我整理成一版能内部过会的策划方案，至少要有活动主题、核心创意、现场分区、互动玩法、传播点和基础执行口径。
+      - generic [ref=e84]:
+        - textbox "描述需求、上传策划方案文档，或输入 @ 引用空间文档..." [active] [ref=e86]
+        - button [ref=e373] [cursor=pointer]:
+          - img [ref=e374]
+    - button "›" [ref=e295] [cursor=pointer]
+    - generic [ref=e297]:
+      - generic [ref=e298]:
+        - generic [ref=e299]:
+          - img [ref=e300]
+          - generic [ref=e302]: 搜索研究：华为手机 线下体验 商场 拍照 快闪活动 案例
+        - button "保存" [ref=e304] [cursor=pointer]
+      - generic [ref=e305]:
+        - generic [ref=e306]:
+          - generic [ref=e307]: 研究主题
+          - generic [ref=e308]: 华为手机 线下体验 商场 拍照 快闪活动 案例
+        - generic [ref=e309]:
+          - generic [ref=e310]: 摘要
+          - generic [ref=e311]: 折叠万象,宝盒秘境:华为P50 Pocket线下快闪空间亮相成都春熙路diy_网易订阅；华为nova13系列中庭快闪活动火热开启现场... 来自新浪宁波 - 微博；#快闪店活动策划#华为nova10系列及全场景新... 来自会展活动策划网 - 微博
+        - generic [ref=e312]:
+          - generic [ref=e313]: 关键发现
+          - list [ref=e314]:
+            - listitem [ref=e315]: 12月28日,继华为举办冬季旗舰新品发布会之后,【“折叠万象,宝盒秘境”华为P50 Pocket线下快闪空间】正式落地成都春熙路红星广场,空间以本次华为冬季发布会发布的首款纵向折叠旗舰手机华为P50 Pocket(华为P50宝盒)为设计灵感,在“宝盒”般的立方体空间内,折叠式地收容各种关于华为P50 Pocket的设计灵感和语言,使到访者可以如同身临“秘境”一般,由此开启探索一场阅览“万象灵感”的奇幻之旅｡
+            - listitem [ref=e316]: "华为nova13系列中庭快闪活动火热开启🔛现场打卡可有机会赢取代言人海报､穿戴甲､手提包等礼品,礼品数量有限,先到先得! 位置:宁波环球银泰城1号门华为授权体验店旁中庭 时间:11月8日~11月10日 还没有人评论,赶快抢个沙发 新浪宁波官方微博,新浪看点宁波站官方微博 3 公司 浙江新浪传媒有限公司 Ü 简介:"
+            - listitem [ref=e317]: "#快闪店活动策划#华为nova10系列及全场景新品“限时快闪”正式登陆上海环球港!精致且具有未来轻科技感的时尚空间,展陈新品nova10系列｡本次限时快闪打造了一个时尚空间,以第10代nova为设计灵感,将功能体验､技术展示､互动打卡､品牌传播等融于一体,金色线条混搭银白色空间,充满未来轻科技感｡为用户创造了全新的产品体验与时空之旅,短短数天时间引得众多用户打卡并进行分享｡nova10展区共设置了五大体验专区,其中全场景体验区让游客感受Harmony OS2.0智慧互联｡｢人像追焦体验区｣闪耀“10”分光芒的背景墙,nova标志点缀､HUAWEI nova 10系列,为主角打造而成的展示台,让你即刻成为焦点中心｡｢超级快充体验区｣动画影像将超级快充的极速感,生动“上演”,一目了然,也能上手体验电量极速充满的安全感,手机星人和电量焦虑说拜拜｡｢全场景体验区｣超级快充区的对面墙上摆放着华为全场景产品,手机､电脑､家用产品……在华为世界里,感受未来科技生活｡｢时尚大片体验区｣成为时尚大片主角,不再是梦想,星光熠熠的时尚舞台,只等你尽情展现魅力,万人迷主角,即将出道｡挑选一件拥有HUAWEI nova 10系列,经典10号色的靓衣上身,明星范儿十足,记录星味儿高光时刻,现场还能打印照片,定格人生大片｡｢主角vlog体验区｣想变身人气Vlog主角,免费妆扮,出彩造型,再用全焦段变焦,你的美近在眼前,即使是局部特写,依旧捕捉到你的美!"

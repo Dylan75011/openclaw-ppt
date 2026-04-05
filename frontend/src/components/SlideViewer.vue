@@ -28,7 +28,7 @@
         </a-button>
         <a-button v-if="showSave && !isBuilding" size="small" status="success" @click="$emit('save')">
           <template #icon><icon-save /></template>
-          保存到文档空间
+          保存到策划空间
         </a-button>
         <a-button v-if="downloadUrl && !isBuilding" size="small" type="primary" @click="download">
           <template #icon><icon-download /></template>

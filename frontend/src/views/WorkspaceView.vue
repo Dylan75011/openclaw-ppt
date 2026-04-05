@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="page-header">
       <div class="page-header-inner">
-        <div class="page-title">文档空间</div>
+        <div class="page-title">策划空间</div>
         <div class="page-subtitle">管理活动策划文档与生成的 PPT 方案</div>
       </div>
     </div>
@@ -403,6 +403,7 @@ async function onWordFileSelected(e) {
       const nodeId  = created.node?.id || created.id
       const result  = await workspaceApi.importWord(nodeId, file)
       await workspaceApi.saveContent(nodeId, result.html, 'legacy-html')
+      Message.remove('word-import')
       Message.success({ content: `已导入到「${docName}」`, id: 'word-import' })
       await loadTree()
       selectedKeys.value  = [nodeId]
@@ -414,6 +415,7 @@ async function onWordFileSelected(e) {
       const result = await workspaceApi.importWord(node.key, file)
       await workspaceApi.saveContent(node.key, result.html, 'legacy-html')
       if (currentNodeId === node.key) docContent.value = result.html
+      Message.remove('word-import')
       Message.success({ content: '已导入 Word 内容', id: 'word-import' })
     }
   } catch (err) {

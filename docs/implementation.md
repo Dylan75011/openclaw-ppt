@@ -3,7 +3,7 @@
 ## 项目结构
 
 ```
-openclaw-ppt/
+luna-ppt/
 ├── src/                          # 后端
 │   ├── agents/
 │   │   ├── baseAgent.js          # Agent 基类（callLLMJson / callLLMStream）

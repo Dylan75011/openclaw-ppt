@@ -1,4 +1,4 @@
-// OpenClaw PPT 生成服务
+// Luna PPT 生成服务
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -46,7 +46,7 @@ app.listen(PORT, () => {
   console.log(`
 ╔═══════════════════════════════════════════════╗
 ║                                               ║
-║   OpenClaw PPT 服务已启动                      ║
+║   Luna PPT 服务已启动                      ║
 ║                                               ║
 ║   本地访问: http://localhost:${PORT}             ║
 ║   API状态:  http://localhost:${PORT}/api/health ║

@@ -42,7 +42,7 @@ function checkServer() {
 }
 
 async function runTest() {
-  console.log('🚀 启动 OpenClaw PPT 服务...');
+  console.log('🚀 启动 Luna PPT 服务...');
   const server = await startServer();
 
   console.log('✅ 服务已启动，等待健康检查...');

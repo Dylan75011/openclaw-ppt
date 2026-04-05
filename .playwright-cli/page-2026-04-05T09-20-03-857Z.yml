@@ -1,0 +1,85 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: Luna
+        - generic [ref=e9]: 活动策划助手
+      - button [ref=e10] [cursor=pointer]:
+        - img [ref=e11]
+    - navigation [ref=e14]:
+      - button "策划空间" [ref=e15] [cursor=pointer]:
+        - img [ref=e17]
+        - generic [ref=e21]: 策划空间
+      - button "智能助手" [ref=e22] [cursor=pointer]:
+        - img [ref=e24]
+        - generic [ref=e28]: 智能助手
+      - button "模版中心" [ref=e29] [cursor=pointer]:
+        - img [ref=e31]
+        - generic [ref=e35]: 模版中心
+      - button "配置中心" [ref=e36] [cursor=pointer]:
+        - img [ref=e38]
+        - generic [ref=e42]: 配置中心
+  - generic [ref=e44]:
+    - complementary [ref=e45]:
+      - generic [ref=e46]:
+        - generic [ref=e48]:
+          - generic [ref=e49]: 当前空间
+          - generic "华为" [ref=e50] [cursor=pointer]:
+            - textbox "选择工作空间"
+            - generic [ref=e51]: 华为
+            - img [ref=e54]
+        - button "+" [ref=e56] [cursor=pointer]
+      - generic [ref=e57]:
+        - generic [ref=e58]: 历史对话
+        - generic [ref=e60]:
+          - img [ref=e62]
+          - textbox "搜索历史对话" [ref=e64]
+        - generic [ref=e66]:
+          - generic [ref=e67]: 今天
+          - generic [ref=e68]:
+            - button "我们这边最近要给一个手机新品做线下预热活动，先不用太正式。领导想 8 条消息 · 1 分钟前 •••" [ref=e210] [cursor=pointer]:
+              - generic [ref=e100]:
+                - generic [ref=e101]: 我们这边最近要给一个手机新品做线下预热活动，先不用太正式。领导想
+                - generic [ref=e102]: 8 条消息 · 1 分钟前
+              - generic [ref=e103]: •••
+            - button "新对话 10 分钟前 •••" [ref=e157] [cursor=pointer]:
+              - generic [ref=e70]:
+                - generic [ref=e71]: 新对话
+                - generic [ref=e72]: 10 分钟前
+              - generic [ref=e73]: •••
+            - button "可以开始生成 PPT 18 分钟前 •••" [ref=e211] [cursor=pointer]:
+              - generic [ref=e75]:
+                - generic [ref=e76]: 可以开始生成 PPT
+                - generic [ref=e77]: 18 分钟前
+              - generic [ref=e78]: •••
+    - button "‹" [ref=e79] [cursor=pointer]
+    - generic [ref=e80]:
+      - generic [ref=e81]:
+        - generic [ref=e108]: 我们这边最近要给一个手机新品做线下预热活动，先不用太正式。领导想要年轻一点、能出片一点，但预算不会特别高。你先别急着出整套方案，先帮我想方向。
+        - generic [ref=e121]:
+          - paragraph [ref=e122]: 明白，想先聊方向。
+          - paragraph [ref=e123]: 给手机新品做年轻、出片、预算友好的预热，我这边方向上没问题，但得先问一下——这次是哪个品牌的手机？不同品牌调性不同，给到的方向贴合度也会不一样。
+        - paragraph [ref=e126]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e146]: 先按问界这边理解吧，但别写得太像正式发布会。场地大概率还是商场中庭或者购物中心，卖点会更偏拍照，尤其是夜景和人像。我们也不想做成太网红打卡那种，你先帮我收两个稳一点的方向。
+        - generic [ref=e159]:
+          - paragraph [ref=e176]: 好，按你的要求收两个方向：
+          - paragraph [ref=e177]: "---"
+          - paragraph [ref=e178]:
+            - strong [ref=e179]: 方向一：暗夜艺术馆
+          - paragraph [ref=e180]: 核心思路是借势夜景卖点，做一个暗场沉浸空间。
+          - paragraph [ref=e181]: 具体形式：用灯光装置+暗色主调墙面，构建几个不同氛围的微光场景（比如霓虹雨夜、烛光晚宴、星空天台），让用户拿手机直接拍。区别于网红打卡那种"背景板+字"的俗套，这里更偏"装置艺术"的质感——灯光变化、场景叙事都有，体验完能感受到手机夜景拍摄的层次感。
+          - paragraph [ref=e182]: 适合问界的点在于，它把"拍照能力"变成了"艺术体验"，不会显得太功利，但又把卖点融进去了。预算主要在灯光和搭建，商场中庭容易实现。
+          - paragraph [ref=e183]: "---"
+          - paragraph [ref=e184]:
+            - strong [ref=e185]: 方向二：人像摄影棚
+          - paragraph [ref=e186]: 这个更偏人像，直接在商场放一个专业摄影棚风格的体验区。
+          - paragraph [ref=e187]: 有专业灯光、简单布景、还有镜子/道具之类的，用户可以自己拍或让工作人员帮拍。重点是成片要能看出手机在人像模式下的人物主体清晰、背景虚化自然、肤色还原好——拍完直接发朋友圈那种。
+          - paragraph [ref=e188]: 之所以说"稳"，是因为这类摄影棚形式在手机预热里很常见，但我们可以把细节做扎实：灯光显色指数要高、场景布置有格调（不要那种粉色泡泡池），让"出片"和"专业感"能兼顾。问界做这个不会low，但也不会太重。
+          - paragraph [ref=e189]: "---"
+          - paragraph [ref=e190]: 两个方向，一个偏夜景氛围体验，一个偏人像直拍转化。你倾向于哪个方向深挖，或者想混搭也行？
+        - paragraph [ref=e193]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e214]: 名字先别定得这么文艺，领导大概率会觉得有点虚。两个方向我觉得可以揉一下，保留夜景和人像，但要更像商场里能落地的活动，不要做成纯艺术展。你先别急着写 final 方案，先补一轮更贴近商场快闪和手机拍照体验的案例，再帮我收一个总概念。
+      - generic [ref=e84]:
+        - textbox "描述需求、上传策划方案文档，或输入 @ 引用空间文档..." [active] [ref=e86]
+        - button [ref=e220] [cursor=pointer]:
+          - img [ref=e221]

@@ -8,6 +8,7 @@ const { strategize, critique, writeDoc } = require('../skills');
 const { generatePPT } = require('./pptGenerator');
 const { renderToHtml } = require('./previewRenderer');
 const config = require('../config');
+const wm = require('./workspaceManager');
 
 // ── OpenAI function calling 工具定义 ────────────────────────────
 
@@ -153,6 +154,52 @@ const TOOL_DEFINITIONS = [
   {
     type: 'function',
     function: {
+      name: 'read_workspace_doc',
+      description: '读取当前工作空间中某份文档的完整内容。适合继承历史策划方案、参考过去案例、了解品牌背景信息。文档 ID 可从系统提示词的文档列表中获取。',
+      parameters: {
+        type: 'object',
+        properties: {
+          doc_id: { type: 'string', description: '文档 ID，格式如 doc_abc123' },
+          focus: { type: 'string', description: '可选：本次读取重点关注的方向，例如"品牌调性"、"活动亮点"、"预算规模"' }
+        },
+        required: ['doc_id']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'save_to_workspace',
+      description: '把当前生成的内容（策划文档、分析报告、创意提案等）保存为工作空间中的一份新文档。PPT 会在生成后自动保存，无需手动调用。',
+      parameters: {
+        type: 'object',
+        properties: {
+          title: { type: 'string', description: '文档标题' },
+          content: { type: 'string', description: '文档内容（markdown 格式）' }
+        },
+        required: ['title', 'content']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'update_workspace_doc',
+      description: '更新工作空间中已有文档的内容。适合在已有策划文档基础上追加新内容、修改方向或补充细节，而不是创建新文档。',
+      parameters: {
+        type: 'object',
+        properties: {
+          doc_id: { type: 'string', description: '要更新的文档 ID' },
+          content: { type: 'string', description: '新的完整文档内容（会完全替换原内容）' },
+          title: { type: 'string', description: '可选：同时修改文档标题' }
+        },
+        required: ['doc_id', 'content']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
       name: 'ask_user',
       description: '暂停当前任务，向用户提出一个问题并等待回答。只在以下情况使用：(1) 缺少品牌/项目名称这类无法假设的信息；(2) 用户需要在两个截然不同的方向中做选择；(3) 需要用户确认策划文档才能进入下一步。禁止在可以合理假设的情况下使用（如受众、预算、风格等）。每次只问一个问题，用自然口语而非表单语气。',
       parameters: {
@@ -199,6 +246,12 @@ async function executeTool(toolName, args, session, onEvent) {
       return execRunStrategy(args, session, onEvent);
     case 'build_ppt':
       return execBuildPpt(args, session, onEvent);
+    case 'read_workspace_doc':
+      return execReadWorkspaceDoc(args, session, onEvent);
+    case 'save_to_workspace':
+      return execSaveToWorkspace(args, session, onEvent);
+    case 'update_workspace_doc':
+      return execUpdateWorkspaceDoc(args, session, onEvent);
     default:
       throw new Error(`未知工具：${toolName}`);
   }
@@ -468,6 +521,20 @@ async function execRunStrategy(args, session, onEvent) {
     score: bestScore
   });
 
+  // 自动保存策划文档到工作空间
+  if (session.spaceId && html) {
+    try {
+      const docTitle = bestPlan?.planTitle || `${userInput.brand || ''}策划方案`;
+      const node = wm.createNode({ parentId: session.spaceId, name: docTitle, type: 'document', docType: 'document' });
+      wm.saveContent(node.id, html, 'legacy-html');
+      // 刷新空间上下文，让后续工具调用能看到新文档
+      try { session.spaceContext = wm.getSpaceContext(session.spaceId); } catch {}
+      onEvent('workspace_updated', { spaceId: session.spaceId, docId: node.id, docName: docTitle, docType: 'document' });
+    } catch (e) {
+      console.warn('[run_strategy] 自动保存策划文档失败:', e.message);
+    }
+  }
+
   // 返回摘要给 brain（不返回完整 plan，节省 token）
   return {
     success: true,
@@ -535,11 +602,128 @@ async function execBuildPpt(args, session, onEvent) {
     const downloadUrl = result.path;
     const previewSlides = renderToHtml(pptData);
 
+    // 自动保存 PPT 到工作空间
+    if (session.spaceId) {
+      try {
+        const brand = session.brief?.brand || session.userInput?.brand || 'PPT';
+        const dateStr = new Date().toLocaleDateString('zh-CN', { month: '2-digit', day: '2-digit' }).replace('/', '-');
+        const pptName = `${brand}_${dateStr}.pptx`;
+        const savedNode = wm.savePptToSpace({
+          spaceId: session.spaceId,
+          name: pptName,
+          pptData,
+          downloadUrl,
+          previewSlides
+        });
+        try { session.spaceContext = wm.getSpaceContext(session.spaceId); } catch {}
+        onEvent('workspace_updated', { spaceId: session.spaceId, docId: savedNode.id, docName: pptName, docType: 'ppt' });
+      } catch (e) {
+        console.warn('[build_ppt] 自动保存 PPT 失败:', e.message);
+      }
+    }
+
     onEvent('done', { filename: result.filename, downloadUrl, previewSlides, previewData: pptData });
 
     return { success: true, downloadUrl, pageCount: pptData?.pages?.length || 0 };
   } catch (err) {
     throw new Error(`PPT 生成失败：${err.message}`);
+  }
+}
+
+async function execReadWorkspaceDoc(args, session, onEvent) {
+  const docId = String(args.doc_id || '').trim();
+  if (!docId) return { success: false, error: '请指定 doc_id' };
+
+  try {
+    const data = wm.getContent(docId);
+    const rawContent = data.content;
+
+    // 提取纯文本（兼容 tiptap-json / legacy-html / markdown）
+    let text = '';
+    if (typeof rawContent === 'string') {
+      text = rawContent
+        .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+        .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    } else if (rawContent && typeof rawContent === 'object') {
+      const extract = (node) => {
+        if (!node) return '';
+        if (typeof node.text === 'string') return node.text;
+        if (Array.isArray(node.content)) return node.content.map(extract).join(' ');
+        return '';
+      };
+      text = extract(rawContent).replace(/\s+/g, ' ').trim();
+    }
+
+    const MAX_CHARS = 8000;
+    const truncated = text.length > MAX_CHARS;
+    const displayText = truncated ? text.slice(0, MAX_CHARS) + '\n...[内容较长，已截断至前段]' : text;
+
+    onEvent('tool_progress', { message: `已读取文档：${data.name || docId}` });
+
+    return {
+      success: true,
+      doc_id: docId,
+      name: data.name || '',
+      docType: data.docType || 'document',
+      updatedAt: data.updatedAt || '',
+      focus: args.focus || '',
+      content: displayText || '（文档内容为空）'
+    };
+  } catch (e) {
+    return { success: false, error: `读取失败：${e.message}` };
+  }
+}
+
+async function execUpdateWorkspaceDoc(args, session, onEvent) {
+  const docId = String(args.doc_id || '').trim();
+  const content = String(args.content || '').trim();
+  if (!docId) return { success: false, error: '请指定 doc_id' };
+  if (!content) return { success: false, error: '内容不能为空' };
+
+  try {
+    // 检查文档存在且属于当前空间
+    const data = wm.getContent(docId);
+    wm.saveContent(docId, content, 'legacy-html');
+
+    // 如果需要重命名
+    if (args.title && String(args.title).trim() && String(args.title).trim() !== data.name) {
+      wm.renameNode(docId, String(args.title).trim());
+    }
+
+    // 刷新空间上下文
+    try { session.spaceContext = wm.getSpaceContext(session.spaceId); } catch {}
+
+    const displayName = args.title || data.name || docId;
+    onEvent('tool_progress', { message: `已更新文档：${displayName}` });
+    onEvent('workspace_updated', { spaceId: session.spaceId, docId, docName: displayName, docType: 'document', action: 'update' });
+
+    return { success: true, doc_id: docId, name: displayName };
+  } catch (e) {
+    return { success: false, error: `更新失败：${e.message}` };
+  }
+}
+
+async function execSaveToWorkspace(args, session, onEvent) {
+  if (!session.spaceId) return { success: false, error: '当前没有选中工作空间，无法保存' };
+
+  const title = String(args.title || '').trim() || `AI生成文档_${new Date().toLocaleDateString('zh-CN')}`;
+  const content = String(args.content || '').trim();
+  if (!content) return { success: false, error: '内容不能为空' };
+
+  try {
+    const node = wm.createNode({ parentId: session.spaceId, name: title, type: 'document', docType: 'document' });
+    wm.saveContent(node.id, content, 'legacy-html');
+    // 刷新空间上下文
+    try { session.spaceContext = wm.getSpaceContext(session.spaceId); } catch {}
+    onEvent('tool_progress', { message: `已保存到工作空间：${title}` });
+    onEvent('workspace_updated', { spaceId: session.spaceId, docId: node.id, docName: title, docType: 'document' });
+
+    return { success: true, doc_id: node.id, name: title };
+  } catch (e) {
+    return { success: false, error: `保存失败：${e.message}` };
   }
 }
 
@@ -554,6 +738,9 @@ function getToolDisplay(toolName, args) {
     case 'web_fetch':  return `读取页面：${(args.url || '').replace(/https?:\/\//, '').slice(0, 50)}`;
     case 'run_strategy': return `制定策划方案：${args.brand || ''}`;
     case 'build_ppt':  return args.note ? `生成 PPT（${args.note}）` : '生成 PPT';
+    case 'read_workspace_doc':    return `读取文档：${args.doc_id || ''}${args.focus ? `（${args.focus}）` : ''}`;
+    case 'save_to_workspace':     return `保存到空间：${(args.title || '').slice(0, 24)}`;
+    case 'update_workspace_doc':  return `更新文档：${args.doc_id || ''}${args.title ? `→${args.title}` : ''}`;
     default: return toolName;
   }
 }

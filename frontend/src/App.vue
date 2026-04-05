@@ -13,12 +13,17 @@
       <!-- Logo -->
       <div class="sider-logo">
         <span class="logo-mark" v-show="collapsed">
-          <PhSparkle :size="28" weight="duotone" />
+          <PhSparkle :size="22" weight="duotone" />
         </span>
         <span class="logo-text-group" v-show="!collapsed">
           <span class="logo-text">Luna</span>
           <span class="logo-sub">活动策划助手</span>
         </span>
+        <a-tooltip :content="collapsed ? '展开侧栏' : '收起侧栏'" position="right">
+          <button class="collapse-btn" @click="collapsed = !collapsed">
+            <PhCaretLeft :size="14" weight="bold" :class="{ 'rotated': collapsed }" />
+          </button>
+        </a-tooltip>
       </div>
 
       <!-- 自定义导航列表，绕过 Arco 图标字体限制 -->
@@ -36,16 +41,6 @@
           <span class="nav-label" v-show="!collapsed">{{ item.label }}</span>
         </button>
       </nav>
-
-      <!-- 底部：折叠按钮 + 版本 -->
-      <div class="sider-footer">
-        <a-tooltip :content="collapsed ? '展开侧栏' : '收起侧栏'" position="right">
-          <button class="collapse-btn" @click="collapsed = !collapsed">
-            <PhCaretLeft :size="14" weight="bold" :class="{ 'rotated': collapsed }" />
-          </button>
-        </a-tooltip>
-        <span v-show="!collapsed" class="sider-version">v2.0</span>
-      </div>
     </a-layout-sider>
 
     <!-- 右侧内容 -->
@@ -76,8 +71,8 @@ const route  = useRoute()
 const APP_SIDER_COLLAPSED_KEY = 'oc_app_sider_collapsed'
 
 const navItems = [
-  { path: '/workspace', label: '文档空间', icon: PhFolderOpen },
-  { path: '/agent',     label: '智能体',   icon: PhRobot      },
+  { path: '/workspace', label: '策划空间', icon: PhFolderOpen },
+  { path: '/agent',     label: '智能助手', icon: PhRobot      },
   { path: '/templates', label: '模版中心', icon: PhLayout     },
   { path: '/settings',  label: '配置中心', icon: PhSliders    },
 ]
@@ -113,10 +108,10 @@ body {
 
 /* ── Sider ── */
 .app-sider {
-  background: #f7f8fa !important;
+  background: #faf9f7 !important;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #e5e7eb !important;
+  border-right: 1px solid rgba(0,0,0,0.06) !important;
 }
 
 .app-sider :deep(.arco-layout-sider-children) {
@@ -130,9 +125,9 @@ body {
   height: 72px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 18px;
-  border-bottom: 1px solid #e5e7eb;
+  gap: 10px;
+  padding: 0 16px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
   flex-shrink: 0;
   user-select: none;
   overflow: hidden;
@@ -147,7 +142,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #e8732a;
+  color: #44403c;
 }
 
 .logo-text-group {
@@ -161,16 +156,15 @@ body {
   font-family: 'Satisfy', cursive;
   font-size: 22px;
   font-weight: 400;
-  color: #e8732a;
+  color: #44403c;
   white-space: nowrap;
   line-height: 1.2;
-  text-shadow: 0 1px 3px rgba(232,115,42,0.18);
 }
 
 .logo-sub {
   font-size: 11px;
   font-weight: 400;
-  color: #a3a3a3;
+  color: #a8a29e;
   white-space: nowrap;
   letter-spacing: 0.1px;
 }
@@ -196,7 +190,7 @@ body {
   background: transparent;
   border-radius: 8px;
   cursor: pointer;
-  color: #525252;
+  color: #57534e;
   font-family: inherit;
   font-size: 13.5px;
   font-weight: 500;
@@ -210,22 +204,22 @@ body {
 }
 
 .nav-item:hover:not(.active) {
-  background: rgba(232,115,42,0.06);
-  color: #e8732a;
+  background: rgba(68,64,60,0.06);
+  color: #44403c;
   transform: translateX(2px);
 }
 
 /* Active: full-width left bar 指示器 */
 .nav-item.active {
-  background: rgba(232,115,42,0.08);
-  color: #e8732a;
+  background: rgba(68,64,60,0.08);
+  color: #1c1917;
   font-weight: 600;
   width: calc(100% - 8px);
   margin-left: 0;
   margin-right: 8px;
   border-radius: 0 8px 8px 0;
   padding-left: 18px;
-  box-shadow: inset 3px 0 0 0 #e8732a;
+  box-shadow: inset 3px 0 0 0 #44403c;
 }
 
 .nav-icon {
@@ -248,17 +242,8 @@ body {
   text-overflow: ellipsis;
 }
 
-/* ── Footer ── */
-.sider-footer {
-  padding: 10px 12px;
-  border-top: 1px solid #e5e7eb;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .collapse-btn {
+  margin-left: auto;
   flex-shrink: 0;
   width: 28px;
   height: 28px;
@@ -266,7 +251,7 @@ body {
   background: transparent;
   border-radius: 6px;
   cursor: pointer;
-  color: #a3a3a3;
+  color: #a8a29e;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -274,8 +259,8 @@ body {
 }
 
 .collapse-btn:hover {
-  background: rgba(232,115,42,0.08);
-  color: #e8732a;
+  background: rgba(68,64,60,0.08);
+  color: #44403c;
 }
 
 .collapse-btn svg {
@@ -286,18 +271,11 @@ body {
   transform: rotate(180deg);
 }
 
-.sider-version {
-  font-size: 11px;
-  color: #d4d4d4;
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
 /* ── Content ── */
 .app-content {
   flex: 1;
   overflow: hidden;
-  background: #f9fafb;
+  background: #fff;
   display: flex;
   flex-direction: column;
 }

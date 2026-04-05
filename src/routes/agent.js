@@ -8,6 +8,41 @@ const agentSession = require('../services/agentSession');
 const brainAgent   = require('../agents/brainAgent');
 const { executeTool } = require('../services/toolRegistry');
 const { parseUploadedDocuments } = require('../services/documentParser');
+const wm = require('../services/workspaceManager');
+
+// 从工作空间读取被引用文档的内容
+function resolveWorkspaceDocs(refIds = []) {
+  if (!Array.isArray(refIds) || !refIds.length) return [];
+  return refIds.map(id => {
+    try {
+      const data = wm.getContent(String(id));
+      const raw = data.content;
+      let text = '';
+      if (typeof raw === 'string') {
+        text = raw.replace(/<style[\s\S]*?<\/style>/gi, ' ')
+          .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ').trim();
+      } else if (raw && typeof raw === 'object') {
+        const extract = (node) => {
+          if (!node) return '';
+          if (typeof node.text === 'string') return node.text;
+          if (Array.isArray(node.content)) return node.content.map(extract).join(' ');
+          return '';
+        };
+        text = extract(raw).replace(/\s+/g, ' ').trim();
+      }
+      return {
+        id: data.id || id,
+        name: data.name || id,
+        docType: data.docType || 'document',
+        text: text.slice(0, 8000) + (text.length > 8000 ? '\n...[内容已截断]' : '')
+      };
+    } catch {
+      return null;
+    }
+  }).filter(Boolean);
+}
 
 const ALLOWED_MIMES = [
   'image/png', 'image/jpeg', 'image/webp',
@@ -146,8 +181,10 @@ router.post('/start', upload.array('images', 5), async (req, res) => {
     const restoreSession = safeJsonParse(req.body.restoreSession, null);
     const attachments = await persistUploadedImages(req.files || []);
     const documents = await parseUploadedDocuments(req.files || []);
+    const workspaceRefIds = safeJsonParse(req.body.workspaceRefs, []);
+    const workspaceDocs = resolveWorkspaceDocs(workspaceRefIds);
 
-    if ((!message || !message.trim()) && attachments.length === 0 && documents.length === 0) {
+    if ((!message || !message.trim()) && attachments.length === 0 && documents.length === 0 && workspaceDocs.length === 0) {
       return res.status(400).json({ success: false, message: '消息或文件不能为空' });
     }
 
@@ -194,7 +231,7 @@ router.post('/start', upload.array('images', 5), async (req, res) => {
       session.stopRequested = false;
       session.doneEmitted = false;
     } else {
-      brainAgent.run(session, message?.trim() || '', onEvent, { attachments, documents }).catch(err => {
+      brainAgent.run(session, message?.trim() || '', onEvent, { attachments, documents, workspaceDocs }).catch(err => {
         console.error('[agent/start] error:', err);
         agentSession.pushEvent(session.sessionId, 'error', { message: err.message });
         session.status = 'failed';
@@ -255,6 +292,8 @@ router.post('/:sessionId/reply', upload.array('images', 5), async (req, res) => 
     const apiKeys = safeJsonParse(req.body.apiKeys, {});
     const attachments = await persistUploadedImages(req.files || []);
     const documents = await parseUploadedDocuments(req.files || []);
+    const workspaceRefIds = safeJsonParse(req.body.workspaceRefs, []);
+    const workspaceDocs = resolveWorkspaceDocs(workspaceRefIds);
 
     const session = agentSession.getSession(sessionId);
     if (!session) {
@@ -263,7 +302,7 @@ router.post('/:sessionId/reply', upload.array('images', 5), async (req, res) => 
     if (session.status !== 'waiting_for_user') {
       return res.status(400).json({ success: false, message: `会话状态不正确：${session.status}` });
     }
-    if ((!reply || !reply.trim()) && attachments.length === 0 && documents.length === 0) {
+    if ((!reply || !reply.trim()) && attachments.length === 0 && documents.length === 0 && workspaceDocs.length === 0) {
       return res.status(400).json({ success: false, message: '回复或文件不能为空' });
     }
 
@@ -277,7 +316,7 @@ router.post('/:sessionId/reply', upload.array('images', 5), async (req, res) => 
       agentSession.pushEvent(sessionId, eventType, data);
     };
 
-    brainAgent.resume(session, reply?.trim() || '', onEvent, { attachments, documents }).catch(err => {
+    brainAgent.resume(session, reply?.trim() || '', onEvent, { attachments, documents, workspaceDocs }).catch(err => {
       console.error('[agent/reply] error:', err);
       agentSession.pushEvent(sessionId, 'error', { message: err.message });
       session.status = 'failed';

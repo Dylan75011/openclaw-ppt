@@ -24,14 +24,41 @@
         ]
       },
       {
-        "type": "paragraph",
-        "attrs": {
-          "textAlign": null
-        },
+        "type": "bulletList",
         "content": [
           {
-            "type": "text",
-            "text": "/"
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "attrs": {
+                  "textAlign": null
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "12"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "attrs": {
+                  "textAlign": null
+                },
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "现在编辑器用的是什么"
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
@@ -39,17 +66,41 @@
         "type": "paragraph",
         "attrs": {
           "textAlign": null
-        },
-        "content": [
-          {
-            "type": "text",
-            "text": "/"
-          }
-        ]
+        }
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": null
+        }
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": null
+        }
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": null
+        }
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": null
+        }
+      },
+      {
+        "type": "paragraph",
+        "attrs": {
+          "textAlign": null
+        }
       }
     ]
   },
   "createdAt": "2026-03-28T15:44:28.056Z",
-  "updatedAt": "2026-04-05T03:12:52.485Z",
+  "updatedAt": "2026-04-05T10:15:38.710Z",
   "contentFormat": "tiptap-json"
 }

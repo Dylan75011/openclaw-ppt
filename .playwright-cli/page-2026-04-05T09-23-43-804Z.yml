@@ -1,0 +1,453 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e226]
+      - button [ref=e10] [cursor=pointer]:
+        - img [ref=e11]
+    - navigation [ref=e14]:
+      - button [ref=e230] [cursor=pointer]:
+        - img [ref=e17]
+      - button [ref=e231] [cursor=pointer]:
+        - img [ref=e24]
+      - button [ref=e232] [cursor=pointer]:
+        - img [ref=e31]
+      - button [ref=e233] [cursor=pointer]:
+        - img [ref=e38]
+  - generic [ref=e44]:
+    - complementary [ref=e45]:
+      - generic [ref=e57]:
+        - button "夜" [ref=e446] [cursor=pointer]
+        - button "新" [ref=e447] [cursor=pointer]
+        - button "可" [ref=e448] [cursor=pointer]
+    - button "›" [ref=e449] [cursor=pointer]
+    - generic [ref=e80]:
+      - generic [ref=e81]:
+        - generic [ref=e108]: 我们这边最近要给一个手机新品做线下预热活动，先不用太正式。领导想要年轻一点、能出片一点，但预算不会特别高。你先别急着出整套方案，先帮我想方向。
+        - generic [ref=e121]:
+          - paragraph [ref=e122]: 明白，想先聊方向。
+          - paragraph [ref=e123]: 给手机新品做年轻、出片、预算友好的预热，我这边方向上没问题，但得先问一下——这次是哪个品牌的手机？不同品牌调性不同，给到的方向贴合度也会不一样。
+        - paragraph [ref=e126]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e146]: 先按问界这边理解吧，但别写得太像正式发布会。场地大概率还是商场中庭或者购物中心，卖点会更偏拍照，尤其是夜景和人像。我们也不想做成太网红打卡那种，你先帮我收两个稳一点的方向。
+        - generic [ref=e159]:
+          - paragraph [ref=e176]: 好，按你的要求收两个方向：
+          - paragraph [ref=e177]: "---"
+          - paragraph [ref=e178]:
+            - strong [ref=e179]: 方向一：暗夜艺术馆
+          - paragraph [ref=e180]: 核心思路是借势夜景卖点，做一个暗场沉浸空间。
+          - paragraph [ref=e181]: 具体形式：用灯光装置+暗色主调墙面，构建几个不同氛围的微光场景（比如霓虹雨夜、烛光晚宴、星空天台），让用户拿手机直接拍。区别于网红打卡那种"背景板+字"的俗套，这里更偏"装置艺术"的质感——灯光变化、场景叙事都有，体验完能感受到手机夜景拍摄的层次感。
+          - paragraph [ref=e182]: 适合问界的点在于，它把"拍照能力"变成了"艺术体验"，不会显得太功利，但又把卖点融进去了。预算主要在灯光和搭建，商场中庭容易实现。
+          - paragraph [ref=e183]: "---"
+          - paragraph [ref=e184]:
+            - strong [ref=e185]: 方向二：人像摄影棚
+          - paragraph [ref=e186]: 这个更偏人像，直接在商场放一个专业摄影棚风格的体验区。
+          - paragraph [ref=e187]: 有专业灯光、简单布景、还有镜子/道具之类的，用户可以自己拍或让工作人员帮拍。重点是成片要能看出手机在人像模式下的人物主体清晰、背景虚化自然、肤色还原好——拍完直接发朋友圈那种。
+          - paragraph [ref=e188]: 之所以说"稳"，是因为这类摄影棚形式在手机预热里很常见，但我们可以把细节做扎实：灯光显色指数要高、场景布置有格调（不要那种粉色泡泡池），让"出片"和"专业感"能兼顾。问界做这个不会low，但也不会太重。
+          - paragraph [ref=e189]: "---"
+          - paragraph [ref=e190]: 两个方向，一个偏夜景氛围体验，一个偏人像直拍转化。你倾向于哪个方向深挖，或者想混搭也行？
+        - paragraph [ref=e193]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e214]: 名字先别定得这么文艺，领导大概率会觉得有点虚。两个方向我觉得可以揉一下，保留夜景和人像，但要更像商场里能落地的活动，不要做成纯艺术展。你先别急着写 final 方案，先补一轮更贴近商场快闪和手机拍照体验的案例，再帮我收一个总概念。
+        - paragraph [ref=e237]: 明白，补案例再收概念。
+        - generic [ref=e239]:
+          - generic [ref=e240]:
+            - generic [ref=e241]: 🔍
+            - generic [ref=e242]:
+              - generic [ref=e243]: 搜索：手机新品 商场快闪 拍照体验 活动案例 2024
+              - generic [ref=e244]: 找到 8 条结果（minimax）
+          - generic [ref=e245]:
+            - generic [ref=e246]: 找到 8 条搜索结果（minimax）
+            - button "查看详情" [ref=e247] [cursor=pointer]
+        - generic [ref=e249] [cursor=pointer]:
+          - generic [ref=e250]:
+            - img [ref=e252]
+            - generic [ref=e254]:
+              - generic [ref=e255]: 搜索研究
+              - generic [ref=e256]: 搜索研究：手机新品 商场快闪 拍照体验 活动案例 2024
+          - generic [ref=e257]: 【Galaxy S24系列快闪店】武汉快闪体验 - 盖乐世社区 - 三星手机官方粉丝论坛；2024年商场快闪方案.docx-原创力文档；二十城Pop-up联动,一加 Ace 3快闪活动现场火爆-太平洋科技
+          - generic [ref=e259]: 在右侧查看
+        - generic [ref=e261]:
+          - generic [ref=e262]:
+            - generic [ref=e263]: 🔍
+            - generic [ref=e264]:
+              - generic [ref=e265]: 搜索：华为手机 线下体验 商场 拍照 快闪活动 案例
+              - generic [ref=e266]: 找到 6 条结果（minimax）
+          - generic [ref=e267]:
+            - generic [ref=e268]: 找到 6 条搜索结果（minimax）
+            - button "查看详情" [ref=e269] [cursor=pointer]
+        - generic [ref=e271] [cursor=pointer]:
+          - generic [ref=e272]:
+            - img [ref=e274]
+            - generic [ref=e276]:
+              - generic [ref=e277]: 搜索研究
+              - generic [ref=e278]: 搜索研究：华为手机 线下体验 商场 拍照 快闪活动 案例
+          - generic [ref=e279]: 折叠万象,宝盒秘境:华为P50 Pocket线下快闪空间亮相成都春熙路diy_网易订阅；华为nova13系列中庭快闪活动火热开启现场... 来自新浪宁波 - 微博；#快闪店活动策划#华为nova10系列及全场景新... 来自会展活动策划网 - 微博
+          - generic [ref=e281]: 在右侧查看
+        - generic [ref=e320]:
+          - paragraph [ref=e321]: 明白了，补一轮案例。
+          - paragraph [ref=e322]: 从几个近期手机快闪案例里提取了几个能借鉴的点：
+          - list [ref=e323]:
+            - listitem [ref=e324]:
+              - strong [ref=e325]: 华为nova10上海环球港
+              - text: ：设置了五大体验专区（人像追焦、时尚大片、超级快充、全场景体验等），分区清晰，用户可以逐个体验，最后打卡分享。分区式动线对商场中庭很友好。
+            - listitem [ref=e326]:
+              - strong [ref=e327]: 华为nova13宁波中庭
+              - text: ：直接在中庭做快闪，打卡送代言人周边（海报、穿戴甲、手提包），门槛低、传播快，现场人气很高。
+            - listitem [ref=e328]:
+              - strong [ref=e329]: 一加Ace 3二十城联动
+              - text: ：城市联动造势，现场有互动和礼品机制，引流到店的同时给到"参与感"。
+          - paragraph [ref=e330]:
+            - text: 这些案例的共性是：
+            - strong [ref=e331]: 分区体验+打卡传播+轻互动
+            - text: ，不会做成纯艺术展，但又比单纯摆摊有体验感。
+          - paragraph [ref=e332]: "---"
+          - paragraph [ref=e333]:
+            - strong [ref=e334]: 收一个总概念方向：
+          - paragraph [ref=e335]:
+            - strong [ref=e336]: "\"夜色人像实验室\""
+          - paragraph [ref=e337]: 在商场中庭设两个核心体验区：
+          - list [ref=e338]:
+            - listitem [ref=e339]:
+              - strong [ref=e340]: 暗光人像区
+              - text: ——模拟夜间户外场景（路灯、夜市灯箱、霓虹），用户现场拍人像，看手机在暗光下的主体突出和虚化效果
+            - listitem [ref=e341]:
+              - strong [ref=e342]: 场景拍照区
+              - text: ——放几个不同风格的夜景布置（街道感、艺术感、生活感），用户边拍边体验夜景模式
+          - paragraph [ref=e343]: 动线上是"先人像后夜景"，两个区可以分别打卡，最后领个小礼品（手机支架、拍照手册之类）。整体调性偏"技术展示+轻体验"，不会太网红，但出片效果能感知到。
+          - paragraph [ref=e344]: "---"
+          - paragraph [ref=e345]: 这个名字和形式更接地气，领导应该不会有"虚"的感觉。要继续往方案深推吗？
+        - paragraph [ref=e348]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e367]: 可以，先按这个方向往下推吧。你直接给我整理成一版能内部过会的策划方案，至少要有活动主题、核心创意、现场分区、互动玩法、传播点和基础执行口径。
+        - generic [ref=e380]:
+          - generic [ref=e381]:
+            - generic [ref=e382]: 🔧
+            - generic [ref=e384]: 整理任务简报
+          - generic [ref=e385]:
+            - generic [ref=e386]: 已整理任务简报：问界
+            - button "查看详情" [ref=e387] [cursor=pointer]
+        - generic [ref=e389] [cursor=pointer]:
+          - generic [ref=e390]:
+            - img [ref=e392]
+            - generic [ref=e394]:
+              - generic [ref=e395]: 任务理解
+              - generic [ref=e396]: 任务理解：问界
+          - generic [ref=e397]: 新品线下预热，提升关注度，吸引到店体验
+          - generic [ref=e398]:
+            - generic [ref=e399]: product_launch
+            - generic [ref=e400]: 商场中庭/购物中心
+          - generic [ref=e402]: 在右侧查看
+        - generic [ref=e404]:
+          - generic [ref=e405]:
+            - generic [ref=e406]: 🔧
+            - generic [ref=e408]: 整理任务简报
+          - generic [ref=e409]:
+            - generic [ref=e410]: 已整理任务简报：问界
+            - button "查看详情" [ref=e411] [cursor=pointer]
+        - generic [ref=e413] [cursor=pointer]:
+          - generic [ref=e414]:
+            - img [ref=e416]
+            - generic [ref=e418]:
+              - generic [ref=e419]: 任务理解
+              - generic [ref=e420]: 任务理解：问界
+          - generic [ref=e421]: 新品线下预热，提升关注度，吸引到店体验，传递夜景+人像拍照卖点
+          - generic [ref=e422]:
+            - generic [ref=e423]: product_launch
+            - generic [ref=e424]: 商场中庭/购物中心，3-5天
+            - generic [ref=e425]: 50-80万
+          - generic [ref=e427]: 在右侧查看
+        - generic [ref=e429]:
+          - generic [ref=e430]:
+            - generic [ref=e431]: 📋
+            - generic [ref=e432]:
+              - generic [ref=e433]: 制定策划方案：问界
+              - generic [ref=e434]: 正在整理策划文档...
+          - generic [ref=e522]:
+            - generic [ref=e523]: 方案已形成，评分 7.4
+            - button "查看详情" [ref=e524] [cursor=pointer]
+        - generic [ref=e451] [cursor=pointer]:
+          - generic [ref=e452]:
+            - img [ref=e454]
+            - generic [ref=e456]:
+              - generic [ref=e457]: 方案草稿
+              - generic [ref=e458]: 方案草稿：「夜色人像实验室」问界新品快闪体验空间
+          - generic [ref=e459]: 把商场中庭变成一个可走进的'暗光影像实验室'，让用户在真实夜景场景中体验新品拍照能力，用出片效果驱动自然传播，避免自嗨式展示
+          - generic [ref=e460]:
+            - generic [ref=e461]: 国内首个商场实景暗光人像实验室：在15米挑高中庭搭建3米高暗箱结构，内部模拟城市夜景/星空/霓虹三种真实暗光环境
+            - generic [ref=e462]: "'before-after'对比出片机制：现场用问界新机直出 vs 他牌拍摄，现场投屏对比，用真实效果说服"
+            - generic [ref=e463]: 暗光人像区配置专业补光团队：每区域安排专业人像摄影师+华为体验顾问，用户体验后现场导出发朋友圈
+          - generic [ref=e465]: 在右侧查看
+        - generic [ref=e526] [cursor=pointer]:
+          - generic [ref=e527]:
+            - img [ref=e529]
+            - generic [ref=e531]:
+              - generic [ref=e532]: 策划文档
+              - generic [ref=e533]: 策划文档：「夜色人像实验室」问界新品快闪体验空间
+          - generic [ref=e534]: 把商场中庭变成一个可走进的'暗光影像实验室'，让用户在真实夜景场景中体验新品拍照能力，用出片效果驱动自然传播，避免自嗨式展示
+          - generic [ref=e535]:
+            - generic [ref=e536]: 国内首个商场实景暗光人像实验室：在15米挑高中庭搭建3米高暗箱结构，内部模拟城市夜景/星空/霓虹三种真实暗光环境
+            - generic [ref=e537]: "'before-after'对比出片机制：现场用问界新机直出 vs 他牌拍摄，现场投屏对比，用真实效果说服"
+            - generic [ref=e538]: 暗光人像区配置专业补光团队：每区域安排专业人像摄影师+华为体验顾问，用户体验后现场导出发朋友圈
+          - generic [ref=e540]: 在右侧查看
+        - paragraph [ref=e543]: 策划文档我已经整理好了。你先看方案本身是否满意；如果方向对了，直接在对话里回复“可以开始生成 PPT”，我会按这版继续往下做。如果还想调整，也直接告诉我改哪里。
+        - generic [ref=e545]:
+          - paragraph [ref=e546]: 好，方案已生成，整理成内部过会版：
+          - paragraph [ref=e547]: "---"
+          - heading "问界新品预热快闪活动策划案" [level=1] [ref=e548]
+          - paragraph [ref=e549]:
+            - strong [ref=e550]: 「夜色人像实验室」
+          - paragraph [ref=e551]: "---"
+          - heading "一、活动主题" [level=2] [ref=e552]
+          - paragraph [ref=e553]:
+            - strong [ref=e554]: 「夜景人像实验室」——问界新品暗光拍照体验空间
+          - paragraph [ref=e555]: 主题说明：把商场中庭变成一个可走进的"暗光影像实验室"，让用户在真实夜景场景中体验新品拍照能力，用出片效果驱动自然传播。
+          - paragraph [ref=e556]: "---"
+          - heading "二、核心创意" [level=2] [ref=e557]
+          - paragraph [ref=e558]:
+            - strong [ref=e559]: "\"用效果说话，而不是用PPT说话\""
+          - list [ref=e560]:
+            - listitem [ref=e561]: 区别于传统手机体验摆摊，做成专业摄影棚级别的暗光场景
+            - listitem [ref=e562]:
+              - text: 现场设置
+              - strong [ref=e563]: before-after 对比出片机制
+              - text: ：用户可以用问界新机直出，也可以用自己手机拍摄，现场投屏对比，用真实效果打动用户
+            - listitem [ref=e564]: 不做网红打卡点的炫目感，而是摄影棚级别的暗调质感——黑色主调+精准光束，营造"专业实验室"氛围
+          - paragraph [ref=e565]: "---"
+          - heading "三、现场分区" [level=2] [ref=e566]
+          - paragraph [ref=e567]:
+            - text: 整个活动空间分为
+            - strong [ref=e568]: 三大体验区
+            - text: （参考华为nova10环球港分区动线）：
+          - paragraph [ref=e569]:
+            - text: "| 区域 | 内容 | 核心体验 |<br />|------|------|----------|<br />|"
+            - strong [ref=e570]: 暗光人像区
+            - text: "| 模拟城市夜景/星空/霓虹三种真实暗光环境（3米高暗箱结构） | 用户现场拍摄人像，体验暗光下的主体突出和背景虚化 |<br />|"
+            - strong [ref=e571]: 场景拍照区
+            - text: "| 放置不同风格夜景布景（街道感、艺术感、生活感） | 体验夜景模式的层次感、亮度和色彩还原 |<br />|"
+            - strong [ref=e572]: 成片对比区
+            - text: "| 现场投屏对比区 + 打印输出区 | 用 before-after 对比直观展示差异，支持现场打印带走 |"
+          - paragraph [ref=e573]: "---"
+          - heading "四、互动玩法" [level=2] [ref=e574]
+          - list [ref=e575]:
+            - listitem [ref=e576]:
+              - strong [ref=e577]: 分区打卡集章
+              - text: ：每体验完一个区域可获得一枚印章，集齐三枚兑换限量周边（手机支架、拍照手册等）
+            - listitem [ref=e578]:
+              - strong [ref=e579]: Before-After 对比
+              - text: ：用户用自己手机和问界新机分别拍摄同一场景，现场投屏对比
+            - listitem [ref=e580]:
+              - strong [ref=e581]: 专业摄影师驻场
+              - text: ：每个区域配置专业人像摄影师+华为体验顾问，用户体验后可现场导出发朋友圈
+            - listitem [ref=e582]:
+              - strong [ref=e583]: 打卡分享礼
+              - text: ：拍照分享至朋友圈/小红书，可额外领取定制周边（帆布袋、明信片等）
+          - paragraph [ref=e584]: "---"
+          - heading "五、传播点" [level=2] [ref=e585]
+          - list [ref=e586]:
+            - listitem [ref=e587]:
+              - strong [ref=e588]: 用户自发传播
+              - text: ：出片效果好 + 对比机制有话题点，用户主动分享
+            - listitem [ref=e589]:
+              - strong [ref=e590]: 对比视频素材
+              - text: ：现场对比素材可剪辑成短视频，在官方账号二次传播
+            - listitem [ref=e591]:
+              - strong [ref=e592]: KOL探店
+              - text: ：邀请本地摄影/数码类KOL现场体验，产出图文/视频内容
+            - listitem [ref=e593]:
+              - strong [ref=e594]: 话题标签
+              - text: "：#夜景人像实验室 #问界新机体验 #商场拍照新地标"
+          - paragraph [ref=e595]: "---"
+          - heading "六、执行口径" [level=2] [ref=e596]
+          - paragraph [ref=e597]:
+            - text: "| 项目 | 建议 |<br />|------|------|<br />|"
+            - strong [ref=e598]: 活动周期
+            - text: "| 3-5天 |<br />|"
+            - strong [ref=e599]: 选址
+            - text: "| 一线/新一线城市核心商场中庭（挑高15米以上最佳） |<br />|"
+            - strong [ref=e600]: 预算
+            - text: "| 50-80万（搭建+物料+人力+传播） |<br />|"
+            - strong [ref=e601]: 物料清单
+            - text: "| 场景搭建、灯光设备、对比展示屏、打卡集章册、周边礼品 |<br />|"
+            - strong [ref=e602]: 人员配置
+            - text: "| 每区域1名专业摄影师+1名华为体验顾问+1名指引人员 |<br />|"
+            - strong [ref=e603]: 风险控制
+            - text: "| 暗光场景注意地面防滑、用电安全；备选方案应对天气影响 |"
+          - paragraph [ref=e604]: "---"
+          - paragraph [ref=e605]:
+            - text: 这版方案核心亮点：
+            - strong [ref=e606]: before-after 对比机制
+            - text: 把"拍照卖点"变成"可感知的体验"，不是空对空讲参数。分区动线清晰，执行口径也有落地参考。
+          - paragraph [ref=e607]: 要继续细化某一板块（比如详细搭建方案、传播排期、预算拆分），还是可以直接出一版 PPT给领导汇报？
+        - paragraph [ref=e610]: 方案方向已经整理完了。是否进入 PPT，我会在对话里和你确认；如果这版还不够满意，也可以继续让我改。
+        - generic [ref=e785]: 先别生成 PPT，继续优化方案
+      - generic [ref=e84]:
+        - textbox "描述需求、上传策划方案文档，或输入 @ 引用空间文档..." [ref=e86]
+        - button [ref=e791] [cursor=pointer]:
+          - img [ref=e792]
+    - button "›" [ref=e295] [cursor=pointer]
+    - generic [ref=e625]:
+      - generic [ref=e627]:
+        - generic [ref=e628]:
+          - generic [ref=e629]: 策划文档
+          - generic [ref=e630]: 「夜色人像实验室」问界新品快闪体验空间
+        - generic [ref=e631]: 先在对话里确认这版方案是否满意，右侧只用来查看和核对内容。
+      - textbox [ref=e635]:
+        - heading "问界新车型暗光人像实验室快闪活动策划方案" [level=1] [ref=e636]
+        - heading "方案核心结论" [level=2] [ref=e637]
+        - paragraph [ref=e638]:
+          - strong [ref=e639]: 我们判断：这是问界新品上市期间最具转化潜力的线下体验方案。
+        - paragraph [ref=e640]:
+          - text: 在50-80万预算约束下，这个方案能在5天内完成三个核心目标：
+          - strong [ref=e641]: 3000-5000人现场体验、60%以上到店转化率、2000+条自然社交传播
+          - text: 。核心逻辑不是做一个漂亮的网红打卡点，而是让用户在真实暗光环境中对比体验新品拍照能力——用出片效果说服用户，而非用话术说服用户。
+        - paragraph [ref=e642]: "---"
+        - heading "一、策略洞察：为什么这个方案值得做" [level=2] [ref=e643]
+        - heading "1.1 核心挑战：如何在商场中庭让人真正感受到新品拍照能力？" [level=3] [ref=e644]
+        - paragraph [ref=e645]: 商场中庭是寸土寸金的空间，但环境复杂、光线不可控。普通快闪的做法是做一个漂亮的打卡点让人拍照发朋友圈，但这对汽车这种高卷入度产品远远不够。用户可以为了一个好看的背景去网红咖啡馆打卡，但不会因为一个漂亮的快闪就买一台20万的车。
+        - paragraph [ref=e646]:
+          - text: 我们的洞察是：
+          - strong [ref=e647]: 用户需要被"说服"，而不是被"邀请"。
+        - heading "1.2 策略定位：把快闪做成\"实验室\"，而非\"打卡点\"" [level=3] [ref=e648]
+        - paragraph [ref=e649]: "\"实验室\"三个字本身就是专业感的表达，比\"体验馆\"\"打卡点\"更有说服力，也规避了网红感的陷阱。"
+        - paragraph [ref=e650]: 核心策略不是展示新品，而是让用户体验新品在真实暗光场景中的拍照能力。用户在现场的对比体验+现场出片，会形成强烈的"这就是我想要的感觉"——这才是驱动到店甚至下单的关键。
+        - paragraph [ref=e651]:
+          - strong [ref=e652]: 快闪是前站，目标是引流到店形成完整体验闭环。
+        - paragraph [ref=e653]: "---"
+        - heading "二、活动创意：暗光影像实验室" [level=2] [ref=e654]
+        - heading "2.1 国内首个商场实景暗光人像实验室" [level=3] [ref=e655]
+        - paragraph [ref=e656]: 我们在15米挑高商场中庭搭建3米高、占地60㎡的"暗箱实验室"——这个体量在商场中庭足够醒目，又不会过度遮挡动线。
+        - paragraph [ref=e657]:
+          - strong [ref=e658]: 暗箱内部设置三个独立暗光场景区：
+        - paragraph [ref=e659]: 场景区环境模拟核心体验城市夜景区霓虹灯下的街拍场景复杂光源下的人像表现星空人像区极暗环境下的星空人像极限暗光拍照能力光影人像区单一光源营造戏剧感专业光影人像效果
+        - heading "2.2 \"Before-After\"对比出片机制" [level=3] [ref=e660]
+        - paragraph [ref=e661]:
+          - text: 每个暗光场景区安装投屏电视，用户拍摄后立即展示对比效果。现场用问界新机直出 vs 用户自己手机拍摄，现场投屏对比——
+          - strong [ref=e662]: 用真实效果说服，而非用话术说服
+          - text: 。
+        - heading "2.3 专业人像摄影指导是核心差异点" [level=3] [ref=e663]
+        - paragraph [ref=e664]: 每个区域安排专业人像摄影师+华为体验顾问，用户体验后现场导出发朋友圈。活动不设置网红来打卡，而是设置"出片引导员"——帮助用户找到最好的拍摄角度和光线。当场导出的高清照片+水印，用户自然愿意发朋友圈。
+        - paragraph [ref=e665]: "---"
+        - heading "三、空间规划与动线设计" [level=2] [ref=e666]
+        - heading "3.1 整体空间布局" [level=3] [ref=e667]
+        - paragraph [ref=e668]: "```"
+        - paragraph [ref=e669]: 入口引导区 → 暗光人像实验室（3个场景区） → 场景拍照区（移动光源矩阵） → 出口转化区
+        - paragraph [ref=e670]: "```"
+        - heading "3.2 功能分区说明" [level=3] [ref=e671]
+        - paragraph [ref=e672]:
+          - strong [ref=e673]: 入口引导区
+        - list [ref=e674]:
+          - listitem [ref=e675]:
+            - paragraph [ref=e676]: 引导用户了解活动机制
+          - listitem [ref=e677]:
+            - paragraph [ref=e678]: 发放体验须知和预约排队
+        - paragraph [ref=e679]:
+          - strong [ref=e680]: 暗光人像实验室（核心体验区）
+        - list [ref=e681]:
+          - listitem [ref=e682]:
+            - paragraph [ref=e683]: 3个独立暗箱场景，模拟真实夜景人像环境
+          - listitem [ref=e684]:
+            - paragraph [ref=e685]: 每区域配置专业补光设备+投屏电视
+          - listitem [ref=e686]:
+            - paragraph [ref=e687]: 专业人像摄影师驻场指导
+        - paragraph [ref=e688]:
+          - strong [ref=e689]: 场景拍照区（补充体验区）
+        - list [ref=e690]:
+          - listitem [ref=e691]:
+            - paragraph [ref=e692]: 12个可变色温/亮度的球泡灯组成"移动光源矩阵"
+          - listitem [ref=e693]:
+            - paragraph [ref=e694]: 用户自主调控光影参数，设计专属光影人像
+          - listitem [ref=e695]:
+            - paragraph [ref=e696]: 这个过程本身就是内容创作
+        - paragraph [ref=e697]:
+          - strong [ref=e698]: 出口转化区
+        - list [ref=e699]:
+          - listitem [ref=e700]:
+            - paragraph [ref=e701]: 扫码领取"问界新机深度体验卡"
+          - listitem [ref=e702]:
+            - paragraph [ref=e703]: 指引用户前往附近门店完成72小时深度试驾
+          - listitem [ref=e704]:
+            - paragraph [ref=e705]: 领取到店礼
+        - paragraph [ref=e706]: "---"
+        - heading "四、传播机制：用对比体验制造传播势能" [level=2] [ref=e707]
+        - heading "4.1 传播逻辑：不依赖网红，用真实对比驱动自然传播" [level=3] [ref=e708]
+        - paragraph [ref=e709]: 很多品牌快闪的误区是花大钱请一堆网红来打卡，然后期望带动素人跟风——但对汽车这种产品，这种逻辑很难传导到目标用户。
+        - paragraph [ref=e710]:
+          - text: 我们设计的传播逻辑是：
+          - strong [ref=e711]: 用真实的对比体验制造"Wow Moment"。
+        - heading "4.2 传播物料设计" [level=3] [ref=e712]
+        - paragraph [ref=e713]: 不印空洞slogan，而是设计几组有视觉冲击力的对比图：
+        - list [ref=e714]:
+          - listitem [ref=e715]:
+            - paragraph [ref=e716]: "\"普通模式 vs 夜景模式\""
+          - listitem [ref=e717]:
+            - paragraph [ref=e718]: "\"他牌拍摄 vs 问界拍摄\""
+        - paragraph [ref=e719]: 让路人看了一眼就想知道这是怎么回事。
+        - heading "4.3 现场内容产出机制" [level=3] [ref=e720]
+        - list [ref=e721]:
+          - listitem [ref=e722]:
+            - paragraph [ref=e723]: 用户拍摄的高质量照片就是最好的传播素材
+          - listitem [ref=e724]:
+            - paragraph [ref=e725]: 设置差异化激励机制，引导现场创作而非简单打卡
+          - listitem [ref=e726]:
+            - paragraph [ref=e727]: 水印模板方便社交传播
+        - paragraph [ref=e728]: "---"
+        - heading "五、预算分配与资源配置" [level=2] [ref=e729]
+        - heading "5.1 预算分配总表" [level=3] [ref=e730]
+        - paragraph [ref=e731]: 品类金额占比说明空间搭建350,00045%主结构+三场景区+地台+门头，商场中庭无法依托现有物，必须自建人工团队120,00015%人像摄影师+体验顾问+搭建团队+执行团队传播推广100,00013%朋友圈精准投放+现场直播+KOL探店传播物料80,00010%到店体验卡+定制周边+现场物料+水印模板设备租赁80,00010%专业补光设备+投屏电视+音响+拍摄设备风险备用70,0007%临时保电、加时审批、客流调控等突发费用
+        - heading "5.2 预算策略解读" [level=3] [ref=e732]
+        - paragraph [ref=e733]:
+          - strong [ref=e734]: 空间搭建是最大单项：占比45%，但必须做出彩否则全盘失色。
+          - text: 商场中庭的硬装限制决定了必须自己搭结构，这个预算要做出品质感同时控制风险。
+        - paragraph [ref=e735]:
+          - strong [ref=e736]: 专业人像摄影师是关键差异化：占比15%。
+          - text: 12万请3位专业人像摄影师全程驻场（每天4小时轮班），用户拍摄后现场修片+投屏对比，这个服务在商场快闪里几乎没有，是我们的体验差异点。
+        - paragraph [ref=e737]:
+          - strong [ref=e738]: 传播费用精准投放：占比13%。
+          - text: 不投大众媒体，只投本地25-35岁年轻群体的朋友圈精准广告，5天持续曝光。
+        - paragraph [ref=e739]: "---"
+        - heading "六、执行节奏与时间规划" [level=2] [ref=e740]
+        - heading "6.1 整体时间表（6周）" [level=3] [ref=e741]
+        - paragraph [ref=e742]: 阶段周次核心任务启动期第一周方案确定+场馆确认：确定商场中庭场地，签署合作协议，确认活动档期准备期第二周设计深化+物料制作：完成空间设计深化、施工图确认，启动定制物料制作报审期第三周搭建准备+消防报审：完成消防报审，启动搭建材料采购，确认设备租赁，确认摄影师档期搭建期第四周搭建进场+设备调试：搭建进场，设备安装调试，灯光效果校准，完成整体验收活动期第五周5天正式活动：每日运营+人流引导+体验拍摄+对比展示+到店导流+数据记录复盘期第六周数据复盘：到店转化率、单日客流、社交传播量，总结经验
+        - heading "6.2 关键节点把控" [level=3] [ref=e743]
+        - list [ref=e744]:
+          - listitem [ref=e745]:
+            - paragraph [ref=e746]:
+              - strong [ref=e747]: 消防报审
+              - text: ：必须提前45天启动报审，准备简化版方案作为备选
+          - listitem [ref=e748]:
+            - paragraph [ref=e749]:
+              - strong [ref=e750]: 摄影师档期
+              - text: ：提前确认3位人像摄影师档期，避免活动临近无人可用
+          - listitem [ref=e751]:
+            - paragraph [ref=e752]:
+              - strong [ref=e753]: 商场排他条款
+              - text: ：启动时即与商场签署排他条款，明确活动期间同楼层无同类品牌快闪
+        - paragraph [ref=e754]: "---"
+        - heading "七、风险管控与应对策略" [level=2] [ref=e755]
+        - heading "7.1 核心风险清单" [level=3] [ref=e756]
+        - paragraph [ref=e757]: 风险类型风险描述应对策略**消防审批**商场中庭属消防严控区，暗箱结构+灯光设备+人员聚集需单独报审提前45天启动报审，准备简化版方案作为备选**天气客流**工作日白天商场客流较低，极端天气影响自然客流设置预约制分流，每时段限量名额（30人），傍晚+周末集中发力**体验品质**用户自行拍摄可能出片质量参差不齐安排专业摄影师现场指导，确保每人都能带走一张满意照片**竞品分流**同楼层同期如有其他品牌快闪会被分流与商场签署排他条款，明确活动期间无同类品牌**安全责任**暗箱环境+灯光设备存在安全隐患全流程配置安保人员，购买活动保险，配备应急医护
+        - heading "7.2 应急预案" [level=3] [ref=e758]
+        - list [ref=e759]:
+          - listitem [ref=e760]:
+            - paragraph [ref=e761]:
+              - strong [ref=e762]: 备用方案
+              - text: ：准备简化版暗箱结构（无封闭空间，仅搭建背景板），消防审批遇阻时启用
+          - listitem [ref=e763]:
+            - paragraph [ref=e764]:
+              - strong [ref=e765]: 人流调控
+              - text: ：预约已满时设置排队叫号系统，等候区提供饮品和互动
+          - listitem [ref=e766]:
+            - paragraph [ref=e767]:
+              - strong [ref=e768]: 设备故障
+              - text: ：备用补光设备现场待命，设备供应商驻场值守
+        - paragraph [ref=e769]: "---"
+        - heading "八、效果预期与核心KPI" [level=2] [ref=e770]
+        - heading "8.1 核心KPI指标" [level=3] [ref=e771]
+        - paragraph [ref=e772]: 指标目标值说明**现场体验人数**3000-5000人5天活动，平均每天600-1000人进店体验**到店体验卡领取率**60%以上现场体验用户60%以上扫码领取到店体验卡**社交传播量**2000+条现场拍摄高质量照片的用户自发分享**预估曝光量**50万+朋友圈+小红书+抖音内容曝光**线索成本（CPL）**100元以内50-80万总预算，目标收集5000条以上到店线索
+        - heading "8.2 后续转化追踪" [level=3] [ref=e773]
+        - list [ref=e774]:
+          - listitem [ref=e775]:
+            - paragraph [ref=e776]: 到店体验卡领取后7天内到店试驾的比例，作为后续销售跟进的核心指标
+          - listitem [ref=e777]:
+            - paragraph [ref=e778]: 72小时深度试驾转化率，作为活动最终 ROI 评估依据
+        - heading "8.3 效果预期总结" [level=3] [ref=e779]
+        - paragraph [ref=e780]:
+          - strong [ref=e781]: 这个方案的核心竞争力不是"看起来很酷"，而是"体验后立刻想下单"。
+        - paragraph [ref=e782]: 在50-80万预算下，我们用专业对比体验替代网红打卡，用到店转化替代数据好看，用真实出片效果替代话术说服——这才是汽车新品上市该做的快闪。

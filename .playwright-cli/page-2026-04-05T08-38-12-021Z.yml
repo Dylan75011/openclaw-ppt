@@ -1,0 +1,44 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: Luna
+        - generic [ref=e9]: 活动策划助手
+      - button [ref=e10] [cursor=pointer]:
+        - img [ref=e11]
+    - navigation [ref=e14]:
+      - button "策划空间" [ref=e15] [cursor=pointer]:
+        - img [ref=e17]
+        - generic [ref=e21]: 策划空间
+      - button "智能助手" [ref=e22] [cursor=pointer]:
+        - img [ref=e24]
+        - generic [ref=e28]: 智能助手
+      - button "模版中心" [ref=e29] [cursor=pointer]:
+        - img [ref=e31]
+        - generic [ref=e35]: 模版中心
+      - button "配置中心" [ref=e36] [cursor=pointer]:
+        - img [ref=e38]
+        - generic [ref=e42]: 配置中心
+  - generic [ref=e44]:
+    - complementary [ref=e45]:
+      - generic [ref=e46]:
+        - generic [ref=e48]:
+          - generic [ref=e49]: 当前空间
+          - generic "华为" [ref=e50] [cursor=pointer]:
+            - textbox "选择工作空间"
+            - generic [ref=e51]: 华为
+            - img [ref=e54]
+        - button "+" [ref=e56] [cursor=pointer]
+      - generic [ref=e57]:
+        - generic [ref=e58]: 历史对话
+        - generic [ref=e59]:
+          - generic [ref=e60]: 暂无对话
+          - generic [ref=e61]: 新建后，后续策划过程会自动按当前空间保存。
+    - button "‹" [ref=e62] [cursor=pointer]
+    - generic [ref=e66]:
+      - textbox "描述活动需求，如：帮我为小米做一个大型新品发布会..." [ref=e68]
+      - generic [ref=e69]:
+        - button [ref=e70] [cursor=pointer]:
+          - img [ref=e71]
+        - button [disabled] [ref=e73]:
+          - img [ref=e74]

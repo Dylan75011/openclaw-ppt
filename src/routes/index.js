@@ -19,7 +19,7 @@ router.use('/agent', agentRouter);
 router.get('/health', (req, res) => {
   res.json({
     success: true,
-    message: 'OpenClaw PPT服务运行中',
+    message: 'Luna PPT服务运行中',
     version: '1.0.0'
   });
 });

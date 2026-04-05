@@ -3,6 +3,7 @@ const { callMinimaxWithToolsStream } = require('../services/llmClients');
 const { TOOL_DEFINITIONS, executeTool, getToolDisplay } = require('../services/toolRegistry');
 const { analyzeAgentImages } = require('../services/visionMcp');
 const { buildBrainSystemPrompt } = require('../prompts/brain');
+const wm = require('../services/workspaceManager');
 
 const MAX_TURNS = 15;
 
@@ -121,7 +122,7 @@ function stripThinkingBlocks(text) {
 }
 
 function buildMessages(session) {
-  const systemPrompt = buildBrainSystemPrompt();
+  const systemPrompt = buildBrainSystemPrompt(session.spaceContext || null);
 
   // 第一步：对每条 tool 消息的 content 做截断，防止搜索/抓取结果撑爆 token
   const trimmed = session.messages.map((message) => {
@@ -224,7 +225,18 @@ function buildDocumentContextBlock(documents = []) {
   ].join('\n\n---\n\n');
 }
 
-async function prepareUserInputMessage(text, attachments = [], documents = [], session, onEvent) {
+function buildWorkspaceDocContextBlock(workspaceDocs = []) {
+  if (!workspaceDocs || !workspaceDocs.length) return '';
+  const parts = workspaceDocs.map((doc, index) =>
+    `[空间文档${index + 1}：${doc.name}（${doc.docType === 'ppt' ? 'PPT' : '文档'}）]\n${doc.text || '（内容为空）'}`
+  );
+  return [
+    '以下是用户从工作空间中引用的文档，作为本次任务的背景上下文：',
+    ...parts
+  ].join('\n\n---\n\n');
+}
+
+async function prepareUserInputMessage(text, attachments = [], documents = [], session, onEvent, workspaceDocs = []) {
   const normalizedText = String(text || '').trim();
   const parts = [];
 
@@ -241,6 +253,9 @@ async function prepareUserInputMessage(text, attachments = [], documents = [], s
     const docContext = buildDocumentContextBlock(documents);
     if (docContext) parts.push(docContext);
 
+    const wsContext = buildWorkspaceDocContextBlock(workspaceDocs);
+    if (wsContext) parts.push(wsContext);
+
     return {
       content: parts.join('\n\n') || '用户上传了图片，请结合图片内容理解需求并作答。',
       attachments: toPublicAttachments(analyzedAttachments)
@@ -250,12 +265,19 @@ async function prepareUserInputMessage(text, attachments = [], documents = [], s
   if (normalizedText) parts.push(normalizedText);
 
   if (documents.length) {
+    parts.push('用户本轮上传了文档。若用户意图是基于这份文档继续完善方案或直接生成 PPT，请优先把文档内容视为当前任务依据。');
     const docContext = buildDocumentContextBlock(documents);
     if (docContext) parts.push(docContext);
   }
 
+  if (workspaceDocs.length) {
+    const wsContext = buildWorkspaceDocContextBlock(workspaceDocs);
+    if (wsContext) parts.push(wsContext);
+  }
+
+  const hasContent = normalizedText || documents.length || workspaceDocs.length;
   return {
-    content: parts.join('\n\n') || (documents.length ? '用户上传了文档，请结合文档内容理解需求并作答。' : ''),
+    content: parts.join('\n\n') || (hasContent ? '用户引用了文档，请结合文档内容理解需求并作答。' : ''),
     attachments: []
   };
 }
@@ -264,7 +286,16 @@ async function prepareUserInputMessage(text, attachments = [], documents = [], s
  * 收到用户新消息，启动/继续 Brain 循环
  */
 async function run(session, userMessage, onEvent, options = {}) {
-  const prepared = await prepareUserInputMessage(userMessage, options.attachments || [], options.documents || [], session, onEvent);
+  // 首次启动时加载空间上下文，注入文档列表
+  if (session.spaceId && !session.spaceContext) {
+    try {
+      session.spaceContext = wm.getSpaceContext(session.spaceId);
+    } catch (e) {
+      console.warn('[BrainAgent] 获取空间上下文失败:', e.message);
+    }
+  }
+
+  const prepared = await prepareUserInputMessage(userMessage, options.attachments || [], options.documents || [], session, onEvent, options.workspaceDocs || []);
   appendSessionAttachments(session, prepared.attachments);
   session.messages.push({
     role: 'user',
@@ -281,7 +312,7 @@ async function run(session, userMessage, onEvent, options = {}) {
  * 用户回答了 ask_user 的问题，恢复循环
  */
 async function resume(session, userReply, onEvent, options = {}) {
-  const prepared = await prepareUserInputMessage(userReply, options.attachments || [], options.documents || [], session, onEvent);
+  const prepared = await prepareUserInputMessage(userReply, options.attachments || [], options.documents || [], session, onEvent, options.workspaceDocs || []);
   appendSessionAttachments(session, prepared.attachments);
   // 把用户回答作为 tool result 补回去
   if (session.pendingToolCallId) {
@@ -558,6 +589,33 @@ function buildToolResultEvent(toolName, toolResult) {
         summary: safeResult.success
           ? `PPT 已生成，共 ${safeResult.pageCount || 0} 页`
           : (safeResult.error || 'PPT 生成失败'),
+        details
+      };
+    case 'read_workspace_doc':
+      return {
+        tool: toolName,
+        ok: !!safeResult.success,
+        summary: safeResult.success
+          ? `已读取：${safeResult.name || safeResult.doc_id}`
+          : (safeResult.error || '读取失败'),
+        details
+      };
+    case 'save_to_workspace':
+      return {
+        tool: toolName,
+        ok: !!safeResult.success,
+        summary: safeResult.success
+          ? `已保存到空间：${safeResult.name}`
+          : (safeResult.error || '保存失败'),
+        details
+      };
+    case 'update_workspace_doc':
+      return {
+        tool: toolName,
+        ok: !!safeResult.success,
+        summary: safeResult.success
+          ? `已更新文档：${safeResult.name}`
+          : (safeResult.error || '更新失败'),
         details
       };
     default:
