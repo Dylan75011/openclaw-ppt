@@ -1,11 +1,9 @@
 /**
- * Word (.docx) ↔ HTML 双向转换服务
+ * Word (.docx) 导出服务
  *
- * 导入：mammoth  (.docx → HTML)
  * 导出：html-to-docx  (HTML → .docx Buffer)
  */
 
-const mammoth   = require('mammoth');
 const HTMLtoDOCX = require('html-to-docx');
 
 // ─── Tiptap JSON → HTML（服务端轻量转换，供导出使用）─────────────────
@@ -91,28 +89,6 @@ function contentToHtml(content, contentFormat) {
   return '<p></p>';
 }
 
-// ─── 导入：.docx Buffer → HTML 字符串 ───────────────────────────────
-async function docxToHtml(buffer) {
-  const result = await mammoth.convertToHtml(
-    { buffer },
-    {
-      styleMap: [
-        "p[style-name='Heading 1'] => h1:fresh",
-        "p[style-name='Heading 2'] => h2:fresh",
-        "p[style-name='Heading 3'] => h3:fresh",
-        "p[style-name='标题 1']   => h1:fresh",
-        "p[style-name='标题 2']   => h2:fresh",
-        "p[style-name='标题 3']   => h3:fresh"
-      ]
-    }
-  );
-  if (result.messages && result.messages.length) {
-    const warns = result.messages.filter(m => m.type === 'warning');
-    if (warns.length) console.warn('[wordConverter] mammoth warnings:', warns.map(m => m.message));
-  }
-  return result.value;
-}
-
 // ─── 导出：HTML → .docx Buffer ──────────────────────────────────────
 async function htmlToDocx(html, title = '策划文档') {
   const fullHtml = `
@@ -138,4 +114,4 @@ async function htmlToDocx(html, title = '策划文档') {
   return buffer;
 }
 
-module.exports = { docxToHtml, htmlToDocx, contentToHtml, tiptapJsonToHtml };
+module.exports = { htmlToDocx, contentToHtml, tiptapJsonToHtml };
