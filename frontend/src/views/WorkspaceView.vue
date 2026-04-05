@@ -2,7 +2,7 @@
   <div class="page-layout">
     <!-- Header -->
     <div class="page-header">
-      <div>
+      <div class="page-header-inner">
         <div class="page-title">文档空间</div>
         <div class="page-subtitle">管理活动策划文档与生成的 PPT 方案</div>
       </div>
@@ -15,9 +15,9 @@
         <div class="tree-toolbar">
           <span class="tree-panel-title">工作空间</span>
           <a-tooltip content="新建空间">
-            <a-button size="mini" @click="showNewSpaceModal = true">
-              <template #icon><icon-plus /></template>
-            </a-button>
+            <button class="tree-add-btn" @click="showNewSpaceModal = true">
+              <PhPlus :size="13" weight="bold" />
+            </button>
           </a-tooltip>
         </div>
 
@@ -34,17 +34,16 @@
                 <span class="tree-node-label">{{ node.title }}</span>
                 <a-dropdown trigger="click" position="br" @select="(key) => onNodeAction(key, node)">
                   <span class="tree-node-more" @click.stop>
-                    <icon-more />
+                    <PhDotsThree :size="15" weight="bold" />
                   </span>
                   <template #content>
-                    <!-- space / folder 特有操作 -->
-                    <template v-if="node.nodeType === 'space' || node.nodeType === 'folder'">
+                    <template v-if="node.nType === 'space' || node.nType === 'folder'">
                       <a-doption value="new-folder">
                         <template #icon><icon-folder-add /></template>
                         新建文件夹
                       </a-doption>
                       <a-doption value="new-doc">
-                        <template #icon><icon-file-add /></template>
+                        <template #icon><icon-file /></template>
                         新建文档
                       </a-doption>
                       <a-doption value="import-word">
@@ -53,7 +52,6 @@
                       </a-doption>
                       <a-divider style="margin:4px 0" />
                     </template>
-                    <!-- document 特有操作 -->
                     <template v-if="node.docType === 'document'">
                       <a-doption value="import-word">
                         <template #icon><icon-upload /></template>
@@ -78,41 +76,46 @@
               </div>
             </template>
             <template #icon="node">
-              <icon-layers   v-if="node.nodeType === 'space'" />
-              <icon-folder   v-else-if="node.nodeType === 'folder'" />
-              <icon-file-pdf v-else-if="node.docType === 'ppt'" />
-              <icon-file     v-else />
+              <PhStack       v-if="node.nType === 'space'"    :size="14" weight="duotone" />
+              <PhFolder      v-else-if="node.nType === 'folder'" :size="14" weight="duotone" />
+              <PhFilePdf     v-else-if="node.docType === 'ppt'"  :size="14" weight="duotone" />
+              <PhFileText    v-else                              :size="14" weight="duotone" />
             </template>
           </a-tree>
         </div>
 
         <div v-else class="tree-empty">
-          <p>暂无工作空间</p>
-          <a-button size="small" type="outline" @click="showNewSpaceModal = true">新建空间</a-button>
+          <PhFolderSimpleDashed :size="32" weight="thin" class="tree-empty-icon" />
+          <p class="tree-empty-text">暂无工作空间</p>
+          <button class="tree-empty-btn" @click="showNewSpaceModal = true">新建空间</button>
         </div>
       </div>
 
       <!-- 右侧内容区 -->
       <div class="ws-content-panel" ref="contentPanelRef">
+
         <!-- 空状态 -->
         <div v-if="!selectedNode" class="ws-empty">
-          <icon-folder-add style="font-size:48px;color:var(--color-fill-4)" />
-          <div class="ws-empty-title">选择或新建文档</div>
-          <div class="ws-empty-desc">从左侧选择节点，或点击 ＋ 新建工作空间</div>
+          <div class="ws-empty-art">
+            <PhPresentationChart :size="40" weight="thin" />
+          </div>
+          <div class="ws-empty-title">从左侧选择文档</div>
+          <div class="ws-empty-desc">或点击 + 新建一个工作空间开始策划</div>
         </div>
 
         <!-- Space / Folder 选中 -->
-        <template v-else-if="selectedNode.nodeType === 'space' || selectedNode.nodeType === 'folder'">
+        <template v-else-if="selectedNode.nType === 'space' || selectedNode.nType === 'folder'">
           <div class="content-header">
             <span class="content-title">
-              <icon-layers v-if="selectedNode.nodeType === 'space'" style="margin-right:6px" />
-              <icon-folder v-else style="margin-right:6px" />
+              <PhStack   v-if="selectedNode.nType === 'space'" :size="16" weight="duotone" style="margin-right:7px;vertical-align:-2px" />
+              <PhFolder  v-else                                 :size="16" weight="duotone" style="margin-right:7px;vertical-align:-2px" />
               {{ selectedNode.title }}
             </span>
           </div>
           <div class="ws-empty" style="flex:1">
+            <div class="ws-empty-art"><PhFolder :size="40" weight="thin" /></div>
             <div class="ws-empty-title">{{ selectedNode.title }}</div>
-            <div class="ws-empty-desc">右键节点可新建子文件夹或文档</div>
+            <div class="ws-empty-desc">点击节点右侧的 ··· 可新建子文件夹或文档</div>
           </div>
         </template>
 
@@ -121,14 +124,16 @@
           <div class="doc-page-shell">
             <div class="doc-page-meta">
               <div class="doc-page-breadcrumb">
-                <icon-file style="margin-right:6px" />
+                <PhFileText :size="13" weight="duotone" style="margin-right:5px;vertical-align:-1px" />
                 <span>活动文档</span>
               </div>
-              <span class="save-status">{{ saveStatus }}</span>
+              <span class="save-status" :class="{ visible: saveStatus }">{{ saveStatus }}</span>
             </div>
 
             <div class="doc-page-header">
-              <div class="doc-page-icon">📝</div>
+              <div class="doc-page-icon">
+                <PhNotePencil :size="22" weight="duotone" />
+              </div>
               <input
                 v-model="docTitle"
                 class="doc-page-title"
@@ -154,6 +159,7 @@
             :show-save="false"
           />
           <div v-else class="ws-empty">
+            <div class="ws-empty-art"><PhPresentationChart :size="40" weight="thin" /></div>
             <div class="ws-empty-title">暂无预览</div>
             <div class="ws-empty-desc">该 PPT 文档没有可用的幻灯片数据</div>
           </div>
@@ -163,7 +169,7 @@
 
     <!-- 新建空间 Modal -->
     <a-modal v-model:visible="showNewSpaceModal" title="新建工作空间" @ok="createSpace" @cancel="newSpaceName=''">
-      <a-form layout="vertical">
+      <a-form :model="{ name: newSpaceName }" layout="vertical">
         <a-form-item label="空间名称">
           <a-input v-model="newSpaceName" placeholder="如：小米 2025 / 大疆品牌展" autofocus @keyup.enter="createSpace" />
         </a-form-item>
@@ -175,14 +181,7 @@
       <a-input v-model="renameValue" autofocus @keyup.enter="doRename" />
     </a-modal>
 
-    <!-- 导入 Word：隐藏 file input，由 JS 触发 -->
-    <input
-      ref="wordFileInput"
-      type="file"
-      accept=".docx"
-      style="display:none"
-      @change="onWordFileSelected"
-    />
+    <input ref="wordFileInput" type="file" accept=".docx" style="display:none" @change="onWordFileSelected" />
   </div>
 </template>
 
@@ -195,6 +194,12 @@ import NotionEditor from '../components/NotionEditor.vue'
 import {
   IconMore, IconDownload, IconUpload
 } from '@arco-design/web-vue/es/icon'
+import {
+  PhPlus, PhDotsThree,
+  PhStack, PhFolder, PhFilePdf, PhFileText,
+  PhFolderSimpleDashed, PhPresentationChart,
+  PhNotePencil,
+} from '@phosphor-icons/vue'
 
 // ── 树形数据 ─────────────────────────────────────────────────────
 const rawTree     = ref({ spaces: [] })
@@ -202,16 +207,13 @@ const treeData    = computed(() => buildArcoTree(rawTree.value.spaces || []))
 const selectedKeys = ref([])
 const selectedNode = ref(null)
 
-// nodeIcon removed — icons now rendered as components in template
-
 function buildArcoTree(spaces) {
   function buildNode(n) {
     const node = {
       key:      n.id,
       title:    n.name,
-      nodeType: n.type,
+      nType:    n.type,
       docType:  n.docType,
-      // raw data
       raw: n,
       selectable: true,
       draggable: false
@@ -249,20 +251,15 @@ let   renameTimer    = null
 const contentPanelRef = ref(null)
 
 function createEmptyDoc() {
-  return {
-    type: 'doc',
-    content: [{ type: 'paragraph' }]
-  }
+  return { type: 'doc', content: [{ type: 'paragraph' }] }
 }
 
 function normalizeDocContent(raw, contentFormat) {
   if (!raw) return createEmptyDoc()
   if (typeof raw === 'object' && raw.type === 'doc') return raw
-
   if (typeof raw === 'string') {
     const trimmed = raw.trim()
     if (!trimmed) return createEmptyDoc()
-
     if (contentFormat === 'tiptap-json' || trimmed.startsWith('{')) {
       try {
         const parsed = JSON.parse(trimmed)
@@ -270,11 +267,9 @@ function normalizeDocContent(raw, contentFormat) {
         if (parsed?.ops) return createEmptyDoc()
       } catch {}
     }
-
     if (trimmed.includes('"ops"')) return createEmptyDoc()
     return trimmed
   }
-
   return createEmptyDoc()
 }
 
@@ -289,7 +284,7 @@ async function onTreeSelect(keys, { node }) {
   docTitle.value     = ''
   currentNodeId      = null
 
-  if (!node || node.nodeType === 'space' || node.nodeType === 'folder') return
+  if (!node || node.nType === 'space' || node.nType === 'folder') return
 
   try {
     const res = await workspaceApi.getContent(node.key)
@@ -298,14 +293,13 @@ async function onTreeSelect(keys, { node }) {
       pptSlides.value      = doc.previewSlides || []
       pptDownloadUrl.value = doc.downloadUrl   || ''
     } else {
-      currentNodeId = node.key
-      docTitle.value = node.title || doc.name || ''
+      currentNodeId    = node.key
+      docTitle.value   = node.title || doc.name || ''
       docContent.value = normalizeDocContent(doc.content, doc.contentFormat)
     }
   } catch { Message.error('加载文档失败') }
 }
 
-// 防抖自动保存
 function onDocChange(content) {
   saveStatus.value = '编辑中...'
   clearTimeout(saveTimer)
@@ -330,9 +324,7 @@ function onDocTitleInput() {
       saveStatus.value = '已保存'
       await loadTree()
       setTimeout(() => { saveStatus.value = '' }, 1500)
-    } catch {
-      saveStatus.value = '标题保存失败'
-    }
+    } catch { saveStatus.value = '标题保存失败' }
   }, 500)
 }
 
@@ -343,7 +335,7 @@ const newSpaceName      = ref('')
 const renameValue       = ref('')
 let   actionNode        = ref(null)
 const wordFileInput     = ref(null)
-let   importTargetNode  = null   // 触发导入时记录目标节点
+let   importTargetNode  = null
 
 async function createSpace() {
   if (!newSpaceName.value.trim()) return
@@ -364,31 +356,25 @@ async function onNodeAction(action, node) {
     await workspaceApi.createFolder(node.key, name)
     Message.success('文件夹已创建')
     await loadTree()
-  }
-  else if (action === 'new-doc') {
+  } else if (action === 'new-doc') {
     const name = prompt('文档名称：')
     if (!name) return
     await workspaceApi.createDocument(node.key, name, 'document')
     Message.success('文档已创建')
     await loadTree()
-  }
-  else if (action === 'rename') {
+  } else if (action === 'rename') {
     renameValue.value = node.title
     showRenameModal.value = true
-  }
-  else if (action === 'import-word') {
-    // 对 space/folder：先在其下建新文档，再导入；对 document：直接替换内容
+  } else if (action === 'import-word') {
     importTargetNode = node
     if (wordFileInput.value) {
-      wordFileInput.value.value = ''   // 清空，确保同一文件可重复选
+      wordFileInput.value.value = ''
       wordFileInput.value.click()
     }
-  }
-  else if (action === 'export-word') {
+  } else if (action === 'export-word') {
     const url = workspaceApi.exportWordUrl(node.key)
     window.open(url, '_blank')
-  }
-  else if (action === 'delete') {
+  } else if (action === 'delete') {
     Modal.warning({
       title: '确认删除',
       content: `确定删除「${node.title}」？此操作不可撤销。`,
@@ -403,21 +389,15 @@ async function onNodeAction(action, node) {
   }
 }
 
-// ── Word 导入处理 ────────────────────────────────────────────────
 async function onWordFileSelected(e) {
   const file = e.target.files?.[0]
   if (!file || !importTargetNode) return
-
   const node = importTargetNode
   importTargetNode = null
-
   try {
     Message.loading({ content: '正在解析 Word 文件...', duration: 0, id: 'word-import' })
-
-    const isFolder = node.nodeType === 'space' || node.nodeType === 'folder'
-
+    const isFolder = node.nType === 'space' || node.nType === 'folder'
     if (isFolder) {
-      // 在 space/folder 下新建文档，再写入内容
       const docName = file.name.replace(/\.docx?$/i, '') || '导入文档'
       const created = await workspaceApi.createDocument(node.key, docName, 'document')
       const nodeId  = created.node?.id || created.id
@@ -425,20 +405,15 @@ async function onWordFileSelected(e) {
       await workspaceApi.saveContent(nodeId, result.html, 'legacy-html')
       Message.success({ content: `已导入到「${docName}」`, id: 'word-import' })
       await loadTree()
-      // 自动选中新节点（刷新树后选中）
       selectedKeys.value  = [nodeId]
       currentNodeId       = nodeId
       docTitle.value      = docName
       docContent.value    = result.html
-      selectedNode.value  = { key: nodeId, title: docName, nodeType: 'document', docType: 'document' }
+      selectedNode.value  = { key: nodeId, title: docName, nType: 'document', docType: 'document' }
     } else {
-      // document 节点：直接覆盖内容（先上传解析）
       const result = await workspaceApi.importWord(node.key, file)
       await workspaceApi.saveContent(node.key, result.html, 'legacy-html')
-      // 刷新当前编辑器内容
-      if (currentNodeId === node.key) {
-        docContent.value = result.html
-      }
+      if (currentNodeId === node.key) docContent.value = result.html
       Message.success({ content: '已导入 Word 内容', id: 'word-import' })
     }
   } catch (err) {
@@ -462,6 +437,16 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ── 调色板 ──────────────────────────────────────────────────────
+   tree-bg:   #faf9f7  暖奶油
+   content:   #ffffff  纯白
+   accent:    #44403c  暖炭色（克制，不刺眼）
+   border:    rgba(0,0,0,0.06)
+   text-1:    #1c1917
+   text-2:    #57534e
+   text-3:    #a8a29e
+─────────────────────────────────────────────────────────────── */
+
 .page-layout {
   height: 100%;
   display: flex;
@@ -469,33 +454,48 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
+/* ── Header ── */
 .page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 24px;
   background: #fff;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   flex-shrink: 0;
+  padding: 0 24px;
 }
 
-.page-title   { font-size: 17px; font-weight: 700; color: var(--color-text-1); }
-.page-subtitle { font-size: 13px; color: var(--color-text-3); margin-top: 2px; }
+.page-header-inner {
+  height: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 
-/* Body */
+.page-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1c1917;
+  letter-spacing: -0.2px;
+}
+
+.page-subtitle {
+  font-size: 12px;
+  color: #a8a29e;
+  margin-top: 1px;
+}
+
+/* ── Body ── */
 .ws-body {
   flex: 1;
   display: flex;
   overflow: hidden;
 }
 
-/* Tree panel */
+/* ── Tree panel ── */
 .ws-tree-panel {
-  width: 260px;
-  min-width: 200px;
+  width: 240px;
+  min-width: 180px;
   flex-shrink: 0;
-  background: #fff;
-  border-right: 1px solid var(--color-border);
+  background: #faf9f7;
+  border-right: 1px solid rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -505,47 +505,82 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--color-border);
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
   flex-shrink: 0;
 }
 
 .tree-panel-title {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--color-text-3);
+  color: #a8a29e;
 }
 
+.tree-add-btn {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: transparent;
+  border-radius: 5px;
+  cursor: pointer;
+  color: #a8a29e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.tree-add-btn:hover {
+  background: rgba(68, 64, 60, 0.08);
+  color: #44403c;
+}
+
+/* ── Tree scroll ── */
 .tree-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 4px;
+  padding: 6px 6px;
 }
 
-.tree-empty {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  color: var(--color-text-3);
-  font-size: 13px;
+.tree-scroll::-webkit-scrollbar { width: 4px; }
+.tree-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 2px; }
+
+/* ── Arco tree overrides ── */
+:deep(.arco-tree-node) {
+  border-radius: 6px;
+  transition: background 0.15s ease;
 }
 
-/* Tree node custom */
-
-/* 让 Arco Tree 的 title slot 撑满全行，right-align 才生效 */
 :deep(.arco-tree-node-title) {
   flex: 1;
   overflow: hidden;
   display: flex;
   align-items: center;
   min-width: 0;
+  border-radius: 6px;
+  transition: background 0.15s ease;
 }
 
+:deep(.arco-tree-node-title:hover) {
+  background: rgba(68, 64, 60, 0.05) !important;
+}
+
+:deep(.arco-tree-node-selected > .arco-tree-node-title) {
+  background: rgba(68, 64, 60, 0.08) !important;
+}
+
+:deep(.arco-tree-node-selected .arco-tree-node-title-text) {
+  color: #1c1917 !important;
+  font-weight: 600;
+}
+
+:deep(.arco-tree-node-icon) {
+  color: #78716c;
+}
+
+/* ── Tree node row ── */
 .tree-node-row {
   display: flex;
   align-items: center;
@@ -560,6 +595,11 @@ onUnmounted(() => {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 13px;
+  color: #57534e;
+}
+
+:deep(.arco-tree-node-selected) .tree-node-label {
+  color: #1c1917;
 }
 
 .tree-node-more {
@@ -567,123 +607,189 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 4px;
   cursor: pointer;
-  color: var(--color-text-3);
+  color: #a8a29e;
   flex-shrink: 0;
-  margin-left: 4px;
-  transition: opacity 0.15s, background 0.1s;
+  margin-left: 2px;
+  transition: opacity 0.15s, background 0.12s;
 }
 
 :deep(.arco-tree-node:hover) .tree-node-more,
 :deep(.arco-tree-node-selected) .tree-node-more { opacity: 1; }
-.tree-node-more:hover { background: var(--color-fill-3); color: var(--color-text-1); }
+.tree-node-more:hover { background: rgba(68, 64, 60, 0.1); color: #44403c; }
 
-:deep(.danger-option) { color: rgb(var(--red-6)) !important; }
-
-/* Content panel */
-.ws-content-panel {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: #fafafa;
-}
-
-.ws-empty {
+/* ── Tree empty ── */
+.tree-empty {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  color: var(--color-text-3);
+  padding: 24px 16px;
 }
 
-.ws-empty-title { font-size: 16px; font-weight: 600; color: var(--color-text-2); }
-.ws-empty-desc  { font-size: 13px; }
+.tree-empty-icon { color: #d6d3d1; }
+.tree-empty-text { font-size: 13px; color: #a8a29e; margin: 0; }
 
+.tree-empty-btn {
+  padding: 5px 14px;
+  border: 1px solid rgba(68, 64, 60, 0.2);
+  background: transparent;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12.5px;
+  color: #57534e;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.tree-empty-btn:hover {
+  background: rgba(68, 64, 60, 0.06);
+  border-color: rgba(68, 64, 60, 0.35);
+}
+
+:deep(.danger-option) { color: rgb(var(--red-6)) !important; }
+
+/* ── Content panel ── */
+.ws-content-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* ── Empty state ── */
+.ws-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #a8a29e;
+}
+
+.ws-empty-art {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: #f5f5f4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c4c0bb;
+  margin-bottom: 4px;
+}
+
+.ws-empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #57534e;
+}
+
+.ws-empty-desc {
+  font-size: 13px;
+  color: #a8a29e;
+}
+
+/* ── Folder/Space header ── */
 .content-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
+  padding: 0 24px;
+  height: 52px;
   background: #fff;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   flex-shrink: 0;
 }
 
-.content-title { font-size: 15px; font-weight: 600; color: var(--color-text-1); }
-.save-status   { font-size: 12px; color: var(--color-text-3); }
+.content-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1c1917;
+  display: flex;
+  align-items: center;
+}
 
-/* Document page */
+/* ── Document page ── */
 .doc-page-shell {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background:
-    linear-gradient(180deg, #fcfcfd 0%, #ffffff 120px);
+  background: #fff;
 }
 
 .doc-page-meta {
-  max-width: 920px;
+  max-width: 860px;
   width: 100%;
   margin: 0 auto;
-  padding: 18px 24px 6px;
+  padding: 16px 32px 4px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  color: var(--color-text-3);
-  font-size: 12px;
 }
 
 .doc-page-breadcrumb {
   display: inline-flex;
   align-items: center;
-  color: var(--color-text-3);
+  font-size: 12px;
+  color: #a8a29e;
 }
 
+.save-status {
+  font-size: 11.5px;
+  color: #a8a29e;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.save-status.visible { opacity: 1; }
+
 .doc-page-header {
-  max-width: 920px;
+  max-width: 860px;
   width: 100%;
   margin: 0 auto;
-  padding: 6px 24px 0;
+  padding: 8px 32px 0;
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: 14px;
 }
 
 .doc-page-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: #f7f8fa;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: #f5f5f4;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  color: #78716c;
   flex-shrink: 0;
+  margin-top: 4px;
 }
 
 .doc-page-title {
-  width: 100%;
+  flex: 1;
   border: none;
   background: transparent;
   outline: none;
-  font-size: 42px;
-  line-height: 1.15;
+  font-size: 38px;
+  line-height: 1.2;
   font-weight: 700;
-  color: #111827;
+  color: #1c1917;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+  letter-spacing: -0.5px;
   padding: 2px 0 0;
 }
 
-.doc-page-title::placeholder {
-  color: #c4cad4;
-}
+.doc-page-title::placeholder { color: #d6d3d1; }
 
 .doc-editor-area {
   flex: 1;
@@ -696,17 +802,5 @@ onUnmounted(() => {
   max-width: none;
   width: 100%;
   margin: 0 auto;
-}
-
-@media (max-width: 768px) {
-  .doc-page-meta,
-  .doc-page-header {
-    padding-left: 24px;
-    padding-right: 24px;
-  }
-
-  .doc-page-title {
-    font-size: 32px;
-  }
 }
 </style>

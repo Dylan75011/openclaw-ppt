@@ -18,6 +18,11 @@ function esc(str) {
 
 function normalizeImageUrl(imagePath) {
   if (!imagePath) return '';
+  if (typeof imagePath === 'object') {
+    imagePath = imagePath.localPath || imagePath.path || imagePath.url || '';
+  }
+  imagePath = String(imagePath || '').trim();
+  if (!imagePath) return '';
   if (imagePath.startsWith('/output/')) return imagePath;
   if (path.isAbsolute(imagePath)) {
     return toOutputUrl(imagePath);
@@ -26,6 +31,10 @@ function normalizeImageUrl(imagePath) {
 }
 
 function buildImageDataUrl(imagePath) {
+  if (typeof imagePath === 'object') {
+    imagePath = imagePath.localPath || imagePath.path || imagePath.url || '';
+  }
+  imagePath = String(imagePath || '').trim();
   const ext = path.extname(imagePath).toLowerCase();
   const mime = ext === '.png'
     ? 'image/png'
@@ -355,9 +364,12 @@ function renderToHtml(pptData) {
  */
 function wrapForScreenshot(htmlFragment, bgImagePath = null) {
   let html = htmlFragment;
-  if (bgImagePath) {
-    const imageUrl = normalizeImageUrl(bgImagePath);
-    const dataUrl = buildImageDataUrl(bgImagePath);
+  const normalizedImagePath = bgImagePath && typeof bgImagePath === 'object'
+    ? (bgImagePath.localPath || bgImagePath.path || bgImagePath.url || '')
+    : bgImagePath;
+  if (normalizedImagePath) {
+    const imageUrl = normalizeImageUrl(normalizedImagePath);
+    const dataUrl = buildImageDataUrl(normalizedImagePath);
     // 替换 output 静态 URL 为内联 data URL，避免 about:blank + file:// 加载限制
     html = html.replace(
       new RegExp(imageUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),

@@ -3,12 +3,29 @@ const { v4: uuidv4 } = require('uuid');
 
 const sessions = new Map();
 
+const SESSION_TTL_MS = 2 * 60 * 60 * 1000; // 2 小时无活动后清理
+const MAX_SESSIONS   = 200;                  // 最多同时保留 200 个 session
+
 /**
  * 创建新会话
- * @param {{ apiKeys, spaceId }} opts
+ * @param {{ apiKeys, spaceId, sessionId }} opts
  */
-function createSession({ apiKeys = {}, spaceId = '' } = {}) {
-  const sessionId = `sess_${Date.now()}_${uuidv4().slice(0, 6)}`;
+function createSession({ apiKeys = {}, spaceId = '', sessionId: providedSessionId = '' } = {}) {
+  // 容量保护：超过上限时逐出最旧的 idle/failed session
+  if (sessions.size >= MAX_SESSIONS) {
+    const evictable = [...sessions.entries()]
+      .filter(([, s]) => ['idle', 'failed', 'completed'].includes(s.status))
+      .sort((a, b) => a[1].updatedAt - b[1].updatedAt);
+    if (evictable.length > 0) {
+      const [evictId, evictSession] = evictable[0];
+      for (const res of evictSession.sseClients) {
+        try { res.end(); } catch {}
+      }
+      sessions.delete(evictId);
+    }
+  }
+
+  const sessionId = providedSessionId || `sess_${Date.now()}_${uuidv4().slice(0, 6)}`;
   const session = {
     sessionId,
     spaceId,
@@ -85,4 +102,28 @@ function pushEvent(sessionId, eventType, data) {
   }
 }
 
-module.exports = { createSession, getSession, updateSession, addSseClient, removeSseClient, pushEvent };
+function deleteSession(sessionId) {
+  const session = sessions.get(sessionId);
+  if (!session) return;
+  for (const res of session.sseClients) {
+    try { res.end(); } catch {}
+  }
+  sessions.delete(sessionId);
+}
+
+// 每 10 分钟清理超时且已结束的 session
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, session] of sessions) {
+    const expired = now - session.updatedAt > SESSION_TTL_MS;
+    const inactive = ['idle', 'failed', 'completed'].includes(session.status);
+    if (expired && inactive) {
+      for (const res of session.sseClients) {
+        try { res.end(); } catch {}
+      }
+      sessions.delete(id);
+    }
+  }
+}, 10 * 60 * 1000).unref(); // unref 使定时器不阻止进程退出
+
+module.exports = { createSession, getSession, updateSession, deleteSession, addSseClient, removeSseClient, pushEvent };

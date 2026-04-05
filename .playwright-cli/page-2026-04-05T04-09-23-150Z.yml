@@ -1,0 +1,62 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e8]
+      - generic [ref=e12]: Luna
+    - navigation [ref=e13]:
+      - button "文档空间" [ref=e14] [cursor=pointer]:
+        - img [ref=e16]
+        - generic [ref=e20]: 文档空间
+      - button "智能体" [ref=e21] [cursor=pointer]:
+        - img [ref=e23]
+        - generic [ref=e27]: 智能体
+      - button "模版中心" [ref=e28] [cursor=pointer]:
+        - img [ref=e30]
+        - generic [ref=e34]: 模版中心
+      - button "配置中心" [ref=e35] [cursor=pointer]:
+        - img [ref=e37]
+        - generic [ref=e41]: 配置中心
+    - generic [ref=e42]:
+      - button [ref=e43] [cursor=pointer]:
+        - img [ref=e44]
+      - generic [ref=e47]: v2.0
+  - generic [ref=e110]:
+    - complementary [ref=e111]:
+      - generic [ref=e112]:
+        - generic [ref=e114]:
+          - generic [ref=e115]: 当前空间
+          - generic "华为" [ref=e116] [cursor=pointer]:
+            - textbox "选择工作空间"
+            - generic [ref=e117]: 华为
+            - img [ref=e120]
+        - button "+" [active] [ref=e122] [cursor=pointer]
+      - generic [ref=e123]:
+        - generic [ref=e124]: 历史对话
+        - generic [ref=e126]:
+          - img [ref=e128]
+          - textbox "搜索历史对话" [ref=e130]
+        - generic [ref=e132]:
+          - generic [ref=e133]: 今天
+          - generic [ref=e134]:
+            - button "新对话 1 分钟前 •••" [ref=e167] [cursor=pointer]:
+              - generic [ref=e168]:
+                - generic [ref=e169]: 新对话
+                - generic [ref=e170]: 1 分钟前
+              - generic [ref=e171]: •••
+            - button "华为智界新车发布会 3 条消息 · 49 分钟前 •••" [ref=e166] [cursor=pointer]:
+              - generic [ref=e136]:
+                - generic [ref=e137]: 华为智界新车发布会
+                - generic [ref=e138]: 3 条消息 · 49 分钟前
+              - generic [ref=e139]: •••
+            - button "华为 PPT 40 条消息 · 59 分钟前 •••" [ref=e140] [cursor=pointer]:
+              - generic [ref=e141]:
+                - generic [ref=e142]: 华为 PPT
+                - generic [ref=e143]: 40 条消息 · 59 分钟前
+              - generic [ref=e144]: •••
+    - button "‹" [ref=e145] [cursor=pointer]
+    - generic [ref=e158]:
+      - textbox "描述活动需求，如：帮我为小米做一个大型新品发布会..." [ref=e160]: 我们这边最近要提一个线下活动方案，先不用太正式。大概是给一个手机新品做预热，领导想要年轻一点、能出片一点，但预算应该不会特别高。你先别急着写整套方案，先帮我想想方向。
+      - generic [ref=e161]:
+        - button "附件" [ref=e162] [cursor=pointer]
+        - button [ref=e163] [cursor=pointer]:
+          - img [ref=e164]

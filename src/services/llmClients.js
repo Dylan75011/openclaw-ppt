@@ -75,4 +75,68 @@ async function callMinimaxWithTools(messages, tools, options = {}) {
   return response.choices[0]; // { message, finish_reason }
 }
 
-module.exports = { callMinimax, callDeepseekReasoner, callMinimaxWithTools };
+/**
+ * 调用 MiniMax，支持 function calling + 流式输出
+ * @param {Array}    messages
+ * @param {Array}    tools
+ * @param {object}   options  - { runtimeKey, minimaxModel, temperature, maxTokens, tool_choice, extra }
+ * @param {Function} onChunk  - ({ type: 'text_delta', delta: string }) => void
+ * @returns {{ message: { role, content, tool_calls }, finish_reason }}
+ */
+async function callMinimaxWithToolsStream(messages, tools, options = {}, onChunk = () => {}) {
+  const client = createMinimaxClient(options.runtimeKey);
+  const model = options.minimaxModel || config.minimaxModel;
+
+  const stream = await client.chat.completions.create({
+    model,
+    messages,
+    tools,
+    tool_choice: options.tool_choice || 'auto',
+    temperature: options.temperature ?? 0.7,
+    max_tokens: options.maxTokens ?? 4096,
+    stream: true,
+    ...(options.extra || {})
+  });
+
+  let fullContent = '';
+  const toolCallsMap = {};
+  let finishReason = null;
+
+  for await (const chunk of stream) {
+    const choice = chunk.choices[0];
+    if (!choice) continue;
+    if (choice.finish_reason) finishReason = choice.finish_reason;
+
+    const delta = choice.delta;
+
+    // 文字内容：实时回调
+    if (delta?.content) {
+      fullContent += delta.content;
+      onChunk({ type: 'text_delta', delta: delta.content });
+    }
+
+    // 工具调用：按 index 累积（流式下分片到达）
+    if (delta?.tool_calls) {
+      for (const tc of delta.tool_calls) {
+        const idx = tc.index ?? 0;
+        if (!toolCallsMap[idx]) {
+          toolCallsMap[idx] = { id: '', type: 'function', function: { name: '', arguments: '' } };
+        }
+        if (tc.id) toolCallsMap[idx].id = tc.id;
+        if (tc.function?.name)      toolCallsMap[idx].function.name      += tc.function.name;
+        if (tc.function?.arguments) toolCallsMap[idx].function.arguments += tc.function.arguments;
+      }
+    }
+  }
+
+  const toolCalls = Object.keys(toolCallsMap).length > 0
+    ? Object.values(toolCallsMap)
+    : undefined;
+
+  return {
+    message: { role: 'assistant', content: fullContent || null, tool_calls: toolCalls },
+    finish_reason: finishReason
+  };
+}
+
+module.exports = { callMinimax, callDeepseekReasoner, callMinimaxWithTools, callMinimaxWithToolsStream };

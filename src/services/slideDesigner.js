@@ -482,6 +482,7 @@ function chooseListVariant(page, block) {
   if (role === 'cover') return count <= 3 ? 'quiet-lines' : 'side-notes';
   if (role === 'manifesto') return longest > 28 ? 'compact-notes' : 'side-notes';
   if (role === 'highlights') return 'floating-tags';
+  if (role === 'closing') return 'quiet-lines';
   if (role === 'section' && count <= 4) return longest > 26 ? 'compact-notes' : 'side-notes';
   if (role === 'toc' || role === 'comparison') return 'editorial-list';
   return longest > 28 ? 'compact-notes' : 'editorial-list';
@@ -632,6 +633,9 @@ function chooseRegionStyle(page, region, blocks) {
   if (role === 'highlights' || role === 'metrics') {
     return { surface: 'none', padding: 0 };
   }
+  if (role === 'timeline') {
+    return { surface: 'rule', padding: 0 };
+  }
   return { surface: 'ghost', padding: 0 };
 }
 
@@ -648,7 +652,7 @@ function renderStructuredBlock(block, style, page = {}) {
     case 'body':
       return `<div class="sc-block" style="font-size:${block.size || typeSize}px;line-height:${block.lineHeight || 1.75};color:${block.strong ? 'var(--text)' : 'var(--text-muted)'};max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:${block.clamp || 6};-webkit-box-orient:vertical;overflow:hidden;">${esc(block.text)}</div>`;
     case 'quote':
-      return `<div class="sc-block" style="padding-left:18px;border-left:2px solid ${accent};font-size:${block.size || typeSize}px;line-height:${block.lineHeight || 1.42};color:#fff;text-wrap:balance;">${esc(block.text)}</div>`;
+      return `<div class="sc-block" style="padding-left:18px;border-left:2px solid ${accent};font-size:${block.size || typeSize}px;line-height:${block.lineHeight || 1.42};color:#fff;text-wrap:balance;display:-webkit-box;-webkit-line-clamp:${block.clamp || 5};-webkit-box-orient:vertical;overflow:hidden;">${esc(block.text)}</div>`;
     case 'fact-list': {
       const variant = block.variant || chooseListVariant(page, block);
       const factSize = block.size || typeSize;
@@ -673,11 +677,12 @@ function renderStructuredBlock(block, style, page = {}) {
           </div>`).join('')}`;
       }
       if (variant === 'floating-tags') {
-        return `<div class="sc-block" style="display:flex;flex-wrap:wrap;gap:10px 12px;align-content:flex-start;">
+        const columns = (block.items || []).length >= 5 ? 3 : 2;
+        return `<div class="sc-block" style="display:grid;grid-template-columns:repeat(${columns},minmax(0,1fr));gap:20px 24px;align-content:flex-start;width:100%;">
           ${(block.items || []).map((item, index) => `
-            <div style="display:inline-flex;align-items:flex-start;gap:8px;padding:8px 0;max-width:46%;">
-              <span style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:${accent};flex-shrink:0;">${String(index + 1).padStart(2, '0')}</span>
-              <span style="font-size:${factSize}px;line-height:${block.lineHeight || 1.5};color:var(--text);display:-webkit-box;-webkit-line-clamp:${block.clamp || 2};-webkit-box-orient:vertical;overflow:hidden;">${esc(item)}</span>
+            <div style="display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;padding-top:${index < columns ? '0' : '8px'};border-top:${index < columns ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(255,255,255,0.08)'};">
+              <span style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:${accent};padding-top:2px;flex-shrink:0;">${String(index + 1).padStart(2, '0')}</span>
+              <span style="font-size:${factSize + 1}px;line-height:${block.lineHeight || 1.55};color:var(--text);display:-webkit-box;-webkit-line-clamp:${block.clamp || 3};-webkit-box-orient:vertical;overflow:hidden;">${esc(item)}</span>
             </div>`).join('')}
         </div>`;
       }
@@ -713,10 +718,12 @@ function renderStructuredBlock(block, style, page = {}) {
       if (variant === 'editorial-steps') {
         return `<div class="sc-block" style="display:flex;flex-direction:column;gap:10px;width:100%;">
           ${(block.items || []).map((item, index) => `
-            <div style="display:grid;grid-template-columns:64px 1fr;gap:16px;padding:12px 0;border-top:${index === 0 ? '1px solid rgba(255,255,255,0.14)' : '1px solid rgba(255,255,255,0.08)'};">
-              <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:${accent};padding-top:4px;">${esc(item.date || `Step ${index + 1}`)}</div>
+            <div style="display:grid;grid-template-columns:124px 138px 1fr;gap:16px;padding:12px 0;border-top:${index === 0 ? '1px solid rgba(255,255,255,0.14)' : '1px solid rgba(255,255,255,0.08)'};align-items:start;">
+              <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:${accent};padding-top:5px;line-height:1.65;word-break:keep-all;overflow-wrap:normal;">${esc(item.date || `Step ${index + 1}`)}</div>
               <div>
-                <div style="font-size:18px;line-height:1.2;font-weight:var(--weight-bold);color:var(--text);margin-bottom:6px;">${esc(item.name || '')}</div>
+                <div style="font-size:15px;line-height:1.22;font-weight:var(--weight-bold);color:var(--text);margin-bottom:0;">${esc(item.name || '')}</div>
+              </div>
+              <div>
                 ${(item.tasks || []).map(task => `<div style="font-size:13px;line-height:1.6;color:var(--text-muted);">${esc(task)}</div>`).join('')}
               </div>
             </div>`).join('')}

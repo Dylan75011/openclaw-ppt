@@ -7,11 +7,28 @@ const multer = require('multer');
 const agentSession = require('../services/agentSession');
 const brainAgent   = require('../agents/brainAgent');
 const { executeTool } = require('../services/toolRegistry');
+const { parseUploadedDocuments } = require('../services/documentParser');
+
+const ALLOWED_MIMES = [
+  'image/png', 'image/jpeg', 'image/webp',
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+];
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 12 * 1024 * 1024, files: 4 }
+  limits: { fileSize: 20 * 1024 * 1024, files: 5 },
+  fileFilter(req, file, cb) {
+    const ok = ALLOWED_MIMES.includes(file.mimetype)
+      || file.originalname?.toLowerCase().endsWith('.pdf')
+      || file.originalname?.toLowerCase().endsWith('.docx');
+    cb(null, ok);
+  }
 });
+
+function isMockHoldMode() {
+  return process.env.OPENCLAW_MOCK_AGENT_HOLD === '1';
+}
 
 function safeJsonParse(value, fallback = {}) {
   if (!value) return fallback;
@@ -21,6 +38,55 @@ function safeJsonParse(value, fallback = {}) {
   } catch {
     return fallback;
   }
+}
+
+function normalizeRestoreMessages(messages = []) {
+  if (!Array.isArray(messages)) return [];
+  return messages
+    .filter(item => item && ['user', 'assistant', 'tool'].includes(item.role))
+    .map((item) => {
+      const next = {
+        role: item.role,
+        content: typeof item.content === 'string' ? item.content : ''
+      };
+      if (item.tool_calls) next.tool_calls = item.tool_calls;
+      if (item.tool_call_id) next.tool_call_id = item.tool_call_id;
+      if (Array.isArray(item.attachments) && item.attachments.length) {
+        next.attachments = item.attachments.map((att) => ({
+          id: att.id,
+          name: att.name,
+          mimeType: att.mimeType,
+          size: att.size,
+          url: att.url,
+          analysis: att.analysis || '',
+          error: att.error || ''
+        }));
+      }
+      return next;
+    })
+    .filter(item => item.content || item.tool_calls || item.tool_call_id);
+}
+
+function restoreSessionFromSnapshot(session, snapshot = {}) {
+  if (!snapshot || typeof snapshot !== 'object') return session;
+  session.messages = normalizeRestoreMessages(snapshot.messages);
+  session.bestPlan = snapshot.bestPlan || null;
+  session.userInput = snapshot.userInput || null;
+  session.docHtml = typeof snapshot.docHtml === 'string' ? snapshot.docHtml : '';
+  session.brief = snapshot.brief || null;
+  session.planItems = Array.isArray(snapshot.planItems) ? snapshot.planItems : [];
+  session.attachments = Array.isArray(snapshot.attachments)
+    ? snapshot.attachments.map((att) => ({
+        id: att.id,
+        name: att.name,
+        mimeType: att.mimeType,
+        size: att.size,
+        url: att.url,
+        analysis: att.analysis || '',
+        error: att.error || ''
+      }))
+    : [];
+  return session;
 }
 
 function ensureAgentImageDir() {
@@ -47,9 +113,7 @@ async function persistUploadedImages(files = []) {
   const attachments = [];
 
   for (const file of files) {
-    if (!String(file.mimetype || '').startsWith('image/')) {
-      throw new Error(`仅支持图片文件，收到：${file.originalname || file.mimetype}`);
-    }
+    if (!String(file.mimetype || '').startsWith('image/')) continue;
     const ext = path.extname(file.originalname || '').toLowerCase()
       || (file.mimetype === 'image/png' ? '.png'
         : file.mimetype === 'image/webp' ? '.webp'
@@ -75,21 +139,24 @@ async function persistUploadedImages(files = []) {
  * POST /api/agent/start
  * 用户发送新消息，启动 Brain 循环
  */
-router.post('/start', upload.array('images', 4), async (req, res) => {
+router.post('/start', upload.array('images', 5), async (req, res) => {
   try {
-    const { message, spaceId, sessionId: existingSessionId } = req.body;
+    const { message, spaceId, sessionId: existingSessionId, isNewConversation } = req.body;
     const apiKeys = safeJsonParse(req.body.apiKeys, {});
+    const restoreSession = safeJsonParse(req.body.restoreSession, null);
     const attachments = await persistUploadedImages(req.files || []);
+    const documents = await parseUploadedDocuments(req.files || []);
 
-    if ((!message || !message.trim()) && attachments.length === 0) {
-      return res.status(400).json({ success: false, message: '消息或图片不能为空' });
+    if ((!message || !message.trim()) && attachments.length === 0 && documents.length === 0) {
+      return res.status(400).json({ success: false, message: '消息或文件不能为空' });
     }
 
-    // 如果传入了 sessionId 且 session 处于可复用状态，继续使用该 session
+    // isNewConversation=true 时强制新建 session，不复用历史消息
+    // isNewConversation 未传或为 false 时，尝试复用同一对话的 session（多轮继续）
     let session = null;
-    if (existingSessionId) {
+    if (existingSessionId && !isNewConversation) {
       const existing = agentSession.getSession(existingSessionId);
-      if (existing && (existing.status === 'idle' || existing.status === 'failed')) {
+      if (existing && existing.status !== 'running' && existing.status !== 'waiting_for_user') {
         session = existing;
         session.stopRequested = false;
         session.doneEmitted = false;
@@ -100,9 +167,13 @@ router.post('/start', upload.array('images', 4), async (req, res) => {
 
     if (!session) {
       session = agentSession.createSession({
+        sessionId: existingSessionId && !isNewConversation ? existingSessionId : '',
         apiKeys: apiKeys || {},
         spaceId: spaceId || ''
       });
+      if (existingSessionId && !isNewConversation && restoreSession) {
+        restoreSessionFromSnapshot(session, restoreSession);
+      }
     }
 
     const onEvent = (eventType, data) => {
@@ -110,17 +181,32 @@ router.post('/start', upload.array('images', 4), async (req, res) => {
       agentSession.pushEvent(session.sessionId, eventType, data);
     };
 
-    brainAgent.run(session, message?.trim() || '', onEvent, { attachments }).catch(err => {
-      console.error('[agent/start] error:', err);
-      agentSession.pushEvent(session.sessionId, 'error', { message: err.message });
-      session.status = 'failed';
-    });
+    if (isMockHoldMode()) {
+      const userContent = message?.trim() || (attachments.length ? '用户上传了图片' : (documents.length ? '用户上传了文档' : ''));
+      if (userContent) {
+        session.messages.push({
+          role: 'user',
+          content: userContent,
+          ...(attachments.length ? { attachments: toPublicAttachments(attachments) } : {})
+        });
+      }
+      session.status = 'running';
+      session.stopRequested = false;
+      session.doneEmitted = false;
+    } else {
+      brainAgent.run(session, message?.trim() || '', onEvent, { attachments, documents }).catch(err => {
+        console.error('[agent/start] error:', err);
+        agentSession.pushEvent(session.sessionId, 'error', { message: err.message });
+        session.status = 'failed';
+      });
+    }
 
     res.json({
       success: true,
       sessionId: session.sessionId,
       streamUrl: `/api/agent/stream/${session.sessionId}`,
-      attachments: toPublicAttachments(attachments)
+      attachments: toPublicAttachments(attachments),
+      documents: documents.map(d => ({ id: d.id, name: d.name, type: d.type, pages: d.pages, size: d.size, error: d.error }))
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message || '启动失败' });
@@ -162,12 +248,13 @@ router.get('/stream/:sessionId', (req, res) => {
  * POST /api/agent/:sessionId/reply
  * 用户回答了 ask_user 的问题，恢复 Brain 循环
  */
-router.post('/:sessionId/reply', upload.array('images', 4), async (req, res) => {
+router.post('/:sessionId/reply', upload.array('images', 5), async (req, res) => {
   try {
     const { sessionId } = req.params;
     const { reply } = req.body;
     const apiKeys = safeJsonParse(req.body.apiKeys, {});
     const attachments = await persistUploadedImages(req.files || []);
+    const documents = await parseUploadedDocuments(req.files || []);
 
     const session = agentSession.getSession(sessionId);
     if (!session) {
@@ -176,8 +263,8 @@ router.post('/:sessionId/reply', upload.array('images', 4), async (req, res) => 
     if (session.status !== 'waiting_for_user') {
       return res.status(400).json({ success: false, message: `会话状态不正确：${session.status}` });
     }
-    if ((!reply || !reply.trim()) && attachments.length === 0) {
-      return res.status(400).json({ success: false, message: '回复或图片不能为空' });
+    if ((!reply || !reply.trim()) && attachments.length === 0 && documents.length === 0) {
+      return res.status(400).json({ success: false, message: '回复或文件不能为空' });
     }
 
     if (apiKeys) Object.assign(session.apiKeys, apiKeys);
@@ -190,7 +277,7 @@ router.post('/:sessionId/reply', upload.array('images', 4), async (req, res) => 
       agentSession.pushEvent(sessionId, eventType, data);
     };
 
-    brainAgent.resume(session, reply?.trim() || '', onEvent, { attachments }).catch(err => {
+    brainAgent.resume(session, reply?.trim() || '', onEvent, { attachments, documents }).catch(err => {
       console.error('[agent/reply] error:', err);
       agentSession.pushEvent(sessionId, 'error', { message: err.message });
       session.status = 'failed';
@@ -199,7 +286,8 @@ router.post('/:sessionId/reply', upload.array('images', 4), async (req, res) => 
     res.json({
       success: true,
       streamUrl: `/api/agent/stream/${sessionId}`,
-      attachments: toPublicAttachments(attachments)
+      attachments: toPublicAttachments(attachments),
+      documents: documents.map(d => ({ id: d.id, name: d.name, type: d.type, pages: d.pages, size: d.size, error: d.error }))
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message || '回复失败' });
@@ -208,7 +296,7 @@ router.post('/:sessionId/reply', upload.array('images', 4), async (req, res) => 
 
 router.use((err, req, res, next) => {
   if (err instanceof multer.MulterError) {
-    return res.status(400).json({ success: false, message: `图片上传失败：${err.message}` });
+    return res.status(400).json({ success: false, message: `文件上传失败：${err.message}` });
   }
   if (err) {
     return res.status(500).json({ success: false, message: err.message || '请求处理失败' });
@@ -222,11 +310,23 @@ router.use((err, req, res, next) => {
  */
 router.post('/:sessionId/build-ppt', (req, res) => {
   const { sessionId } = req.params;
-  const { docContent, apiKeys } = req.body || {};
-  const session = agentSession.getSession(sessionId);
+  const { docContent, apiKeys, planData, userInput, spaceId } = req.body || {};
+  let session = agentSession.getSession(sessionId);
+  let effectiveSessionId = sessionId;
 
   if (!session) {
-    return res.status(404).json({ success: false, message: '会话不存在' });
+    if (!planData || !userInput) {
+      return res.status(404).json({ success: false, message: '会话不存在' });
+    }
+    session = agentSession.createSession({
+      apiKeys: apiKeys || {},
+      spaceId: spaceId || ''
+    });
+    effectiveSessionId = session.sessionId;
+    session.bestPlan = planData;
+    session.userInput = userInput;
+    session.docHtml = typeof docContent === 'string' ? docContent : '';
+    session.brief = userInput || null;
   }
   if (!session.bestPlan || !session.userInput) {
     return res.status(400).json({ success: false, message: '当前会话还没有可用于生成 PPT 的方案文档' });
@@ -239,7 +339,7 @@ router.post('/:sessionId/build-ppt', (req, res) => {
 
   const onEvent = (eventType, data) => {
     if (eventType === 'done') session.doneEmitted = true;
-    agentSession.pushEvent(sessionId, eventType, data);
+    agentSession.pushEvent(effectiveSessionId, eventType, data);
   };
 
   session.status = 'running';
@@ -260,7 +360,8 @@ router.post('/:sessionId/build-ppt', (req, res) => {
 
   res.json({
     success: true,
-    streamUrl: `/api/agent/stream/${sessionId}`
+    sessionId: effectiveSessionId,
+    streamUrl: `/api/agent/stream/${effectiveSessionId}`
   });
 });
 

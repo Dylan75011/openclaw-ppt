@@ -1,0 +1,4 @@
+[  106881ms] [WARNING] [Vue warn]: Failed to resolve component: PhMoon
+If this is a native custom element, make sure to exclude it from component resolution via compilerOptions.isCustomElement. 
+  at <App> @ http://127.0.0.1:4173/@vite/client:509
+[  325877ms] [INFO] Autofocus processing was blocked because a document already has a focused element. @ http://127.0.0.1:4173/agent#/workspace:0

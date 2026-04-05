@@ -1,0 +1,155 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: OC
+      - generic [ref=e8]: OpenClaw
+    - navigation [ref=e9]:
+      - button "文档空间" [ref=e10] [cursor=pointer]:
+        - img [ref=e12]
+        - generic [ref=e16]: 文档空间
+      - button "智能体" [ref=e17] [cursor=pointer]:
+        - img [ref=e19]
+        - generic [ref=e23]: 智能体
+      - button "配置中心" [ref=e24] [cursor=pointer]:
+        - img [ref=e26]
+        - generic [ref=e30]: 配置中心
+    - generic [ref=e31]:
+      - button [ref=e32] [cursor=pointer]:
+        - img [ref=e33]
+      - generic [ref=e36]: v2.0
+  - generic [ref=e38]:
+    - complementary [ref=e39]:
+      - generic [ref=e40]:
+        - generic [ref=e42]:
+          - generic [ref=e43]: 当前空间
+          - generic "华为" [ref=e44] [cursor=pointer]:
+            - textbox "选择工作空间"
+            - generic [ref=e45]: 华为
+            - img [ref=e48]
+        - button "+" [ref=e50] [cursor=pointer]
+      - generic [ref=e51]:
+        - generic [ref=e52]: 历史对话
+        - generic [ref=e54]:
+          - img [ref=e56]
+          - textbox "搜索历史对话" [ref=e58]
+        - generic [ref=e60]:
+          - generic [ref=e61]: 今天
+          - generic [ref=e62]:
+            - button "帮我做一个小米汽车技术发布会活动策划方案，目标受众是科技媒体和高意向用户，突出智能驾驶与生态联动 11 条消息 · 3 分钟前 •••" [ref=e63] [cursor=pointer]:
+              - generic [ref=e64]:
+                - generic [ref=e65]: 帮我做一个小米汽车技术发布会活动策划方案，目标受众是科技媒体和高意向用户，突出智能驾驶与生态联动
+                - generic [ref=e66]: 11 条消息 · 3 分钟前
+              - generic [ref=e67]: •••
+            - button "你好 16 条消息 · 12 小时前 •••" [ref=e68] [cursor=pointer]:
+              - generic [ref=e69]:
+                - generic [ref=e70]: 你好
+                - generic [ref=e71]: 16 条消息 · 12 小时前
+              - generic [ref=e72]: •••
+            - button "华为 Mate70 新品发布会 38 条消息 · 16 小时前 •••" [ref=e73] [cursor=pointer]:
+              - generic [ref=e74]:
+                - generic [ref=e75]: 华为 Mate70 新品发布会
+                - generic [ref=e76]: 38 条消息 · 16 小时前
+              - generic [ref=e77]: •••
+    - button "‹" [ref=e78] [cursor=pointer]
+    - generic [ref=e79]:
+      - generic [ref=e80]:
+        - generic [ref=e83]: 帮我做一个小米汽车技术发布会活动策划方案，目标受众是科技媒体和高意向用户，突出智能驾驶与生态联动
+        - paragraph [ref=e86]: 好的，我来帮你做小米汽车技术发布会策划方案。
+        - generic [ref=e88]:
+          - generic [ref=e89]:
+            - generic [ref=e90]: 🔧
+            - generic [ref=e92]: 整理任务简报
+          - generic [ref=e93]:
+            - generic [ref=e94]: 已整理任务简报：小米汽车
+            - button "查看详情" [ref=e95] [cursor=pointer]
+        - generic [ref=e97] [cursor=pointer]:
+          - generic [ref=e98]:
+            - img [ref=e100]
+            - generic [ref=e102]:
+              - generic [ref=e103]: 任务理解
+              - generic [ref=e104]: 任务理解：小米汽车
+          - generic [ref=e105]: 展示智能驾驶技术实力，强化「人车家生态」差异化定位，传递技术领先形象
+          - generic [ref=e106]:
+            - generic [ref=e107]: product_launch
+            - generic [ref=e108]: 600人
+            - generic [ref=e109]: 500万
+          - generic [ref=e111]: 在右侧查看
+        - generic [ref=e113]:
+          - generic [ref=e114]:
+            - generic [ref=e115]: 🔧
+            - generic [ref=e117]: 更新计划（4 项）
+          - generic [ref=e118]:
+            - generic [ref=e119]: 已更新 4 项计划
+            - button "查看详情" [ref=e120] [cursor=pointer]
+        - generic [ref=e122]:
+          - generic [ref=e123]:
+            - generic [ref=e124]: 🔍
+            - generic [ref=e125]:
+              - generic [ref=e126]: 搜索：小米汽车智能驾驶技术发布会亮点 2024
+              - generic [ref=e127]: 找到 5 条结果（minimax）
+          - generic [ref=e128]:
+            - generic [ref=e129]: 找到 5 条搜索结果（minimax）
+            - button "查看详情" [ref=e130] [cursor=pointer]
+        - generic [ref=e132] [cursor=pointer]:
+          - generic [ref=e133]:
+            - img [ref=e135]
+            - generic [ref=e137]:
+              - generic [ref=e138]: 搜索研究
+              - generic [ref=e139]: 搜索研究：小米汽车智能驾驶技术发布会亮点 2024
+          - generic [ref=e140]: 雷军:小米汽车目标2024年进入自动驾驶第一阵营投资者智能驾驶汽车产业自动驾驶技术_网易订阅；雷军:小米汽车2024年进入智能驾驶第一梯队--快科技--科技改变未来；小米汽车发布会有哪些亮点 - 太平洋汽车问答
+          - generic [ref=e142]: 在右侧查看
+        - generic [ref=e144]:
+          - generic [ref=e145]:
+            - generic [ref=e146]: 🔍
+            - generic [ref=e147]:
+              - generic [ref=e148]: 搜索：智能汽车技术发布会创意形式 沉浸式体验 2024
+              - generic [ref=e149]: 找到 4 条结果（minimax）
+          - generic [ref=e150]:
+            - generic [ref=e151]: 找到 4 条搜索结果（minimax）
+            - button "查看详情" [ref=e152] [cursor=pointer]
+        - generic [ref=e154] [cursor=pointer]:
+          - generic [ref=e155]:
+            - img [ref=e157]
+            - generic [ref=e159]:
+              - generic [ref=e160]: 搜索研究
+              - generic [ref=e161]: 搜索研究：智能汽车技术发布会创意形式 沉浸式体验 2024
+          - generic [ref=e162]: 打造“多方位智能化用车场景”,比亚迪智能化街区亮相2024南京车博会_江南时报；2024世界智能网联汽车大会暨展览会_搜狐汽车_搜狐网；2024世界智能网联汽车大会在京开幕-光明日报-光明网
+          - generic [ref=e164]: 在右侧查看
+        - generic [ref=e166]:
+          - generic [ref=e167]:
+            - generic [ref=e168]: 🔧
+            - generic [ref=e170]: 更新计划（4 项）
+          - generic [ref=e171]:
+            - generic [ref=e172]: 已更新 4 项计划
+            - button "查看详情" [ref=e173] [cursor=pointer]
+        - generic [ref=e176]:
+          - generic [ref=e177]: 📋
+          - generic [ref=e178]:
+            - generic [ref=e179]: 制定策划方案：小米汽车
+            - generic [ref=e180]: 第 1 轮：制定策划方案...
+      - generic [ref=e182]:
+        - textbox "描述活动需求，如：帮我为小米做一个大型新品发布会..." [ref=e184]
+        - generic [ref=e185]:
+          - button "图片" [ref=e186] [cursor=pointer]
+          - button [disabled] [ref=e187]:
+            - img [ref=e188]
+    - button "›" [ref=e192] [cursor=pointer]
+    - generic [ref=e194]:
+      - generic [ref=e195]:
+        - generic [ref=e196]:
+          - img [ref=e197]
+          - generic [ref=e199]: 搜索研究：智能汽车技术发布会创意形式 沉浸式体验 2024
+        - button "保存" [ref=e201] [cursor=pointer]
+      - generic [ref=e202]:
+        - generic [ref=e203]:
+          - generic [ref=e204]: 研究主题
+          - generic [ref=e205]: 智能汽车技术发布会创意形式 沉浸式体验 2024
+        - generic [ref=e206]:
+          - generic [ref=e207]: 摘要
+          - generic [ref=e208]: 打造“多方位智能化用车场景”,比亚迪智能化街区亮相2024南京车博会_江南时报；2024世界智能网联汽车大会暨展览会_搜狐汽车_搜狐网；2024世界智能网联汽车大会在京开幕-光明日报-光明网
+        - generic [ref=e209]:
+          - generic [ref=e210]: 关键发现
+          - list [ref=e211]:
+            - listitem [ref=e212]: 4月30日,比亚迪智能化街区亮相南京车博会,展现品牌形象与技术的温度,促进品牌向上及销售转化,技术展示涵盖智能座舱､智能驾驶､整车智能三大版块,包括智能泊车､窄道通行､易四方概念车､一键漂移等｡ 据介绍,在二十年时间里比亚迪不断实现技术突破,使这项颠覆性技术成熟､落地｡易四方突破了现有的汽车动力架构,行业首次实现车辆在传统制动､转向系统失效的情况下,仍具备制动和转向能力｡
+            - listitem [ref=e213]: 据悉,本届展会的总面积将达到5万平方米,宛如一个巨大的创新舞台,汇聚了行业的精英与智慧｡在展览形式上,大会将采用线上线下相结合的方式,室内室外相互呼应,静态展示与动态接驳体验并驾齐驱,为观众带来一场视觉与心灵的盛宴｡线上方面,将全面提升“ICV星球”展览平台,设置“云展览”和“云直播”两大板块,通过大会官网和微信公众号,让更多人能够亲身体验这场科技的狂欢｡ 本次展会的核心理念是科技引领,服务全产业链全价值链｡展览将突出科技元素,聚焦行业热点､痛点和关键技术,展示那些科技含量高､创新性强的产品和技术｡同时,利用新科技创新办展形式,实现科技元素的全方位体现,让观众能够沉浸式体验新型出行方式,感受智能网联汽车带来的魅力｡ 展区设计方面,本届展会将覆盖全产业链,设立8个主题展区,包括整车展区､智能网联系统展区､新能源动力系统展区等,全方位展示新能源和智能网联汽车领域的先进产品､创新技术,以及典型应用场景和商业化进程｡ 此外,2024全国智能驾驶测试赛也将再次升级,引领智能网联汽车技术应用落地和产业化方向｡赛事于2024年4月正式启动,采取线上线下相结合的方式,在全国各地设立多个分赛区及总决赛｡经过前几届赛事的沉淀,测试赛吸引了众多国内外队伍参与,成为了一个独具特色的专业客观､公平公正的测试赛事平台｡ 在展会期间,还将举办一系列丰富多彩的配套活动,如“顺义车谈现场直播访谈”､“展商配对交流会及路演”､“智驾汽车消费周”等,让参观参展人员近距离感受智能网联汽车的魅力｡
+            - listitem [ref=e214]: 走进会场,一款没有仪表板､方向盘､制动踏板等设备,车身与轮胎融为一体的概念车Q-Bic前围满了观众｡另一边,全车窗PHUD(全景式抬头显示)产品把汽车的前挡风玻璃变成一整块透明屏幕,主驾前方显示驾驶辅助信息,副驾前的屏幕则可满足资讯获取､娱乐购物､视频电话等需求｡

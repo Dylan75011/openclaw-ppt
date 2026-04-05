@@ -1,0 +1,118 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: OC
+      - generic [ref=e8]: OpenClaw
+    - generic [ref=e10]:
+      - generic [ref=e11] [cursor=pointer]:
+        - img [ref=e13]
+        - generic [ref=e15]: 文档空间
+      - generic [ref=e16] [cursor=pointer]:
+        - img [ref=e18]
+        - generic [ref=e21]: 智能体
+      - generic [ref=e22] [cursor=pointer]:
+        - img [ref=e24]
+        - generic [ref=e27]: 配置中心
+    - generic [ref=e28]:
+      - button [ref=e29] [cursor=pointer]:
+        - img [ref=e31]
+      - generic [ref=e33]: v2.0
+  - generic [ref=e90]:
+    - complementary [ref=e91]:
+      - generic [ref=e92]:
+        - generic [ref=e94]:
+          - generic [ref=e95]: 当前空间
+          - generic "华为" [ref=e96] [cursor=pointer]:
+            - textbox "选择工作空间"
+            - generic [ref=e97]: 华为
+            - img [ref=e100]
+        - button "+" [ref=e102] [cursor=pointer]
+      - generic [ref=e103]:
+        - generic [ref=e104]: 历史对话
+        - generic [ref=e106]:
+          - img [ref=e108]
+          - textbox "搜索历史对话" [ref=e110]
+        - generic [ref=e112]:
+          - generic [ref=e113]: 今天
+          - generic [ref=e114]:
+            - button "你好 16 条消息 · 6 分钟前 •••" [ref=e115] [cursor=pointer]:
+              - generic [ref=e116]:
+                - generic [ref=e117]: 你好
+                - generic [ref=e118]: 16 条消息 · 6 分钟前
+              - generic [ref=e119]: •••
+            - button "华为 Mate70 新品发布会 38 条消息 · 3 小时前 •••" [ref=e120] [cursor=pointer]:
+              - generic [ref=e121]:
+                - generic [ref=e122]: 华为 Mate70 新品发布会
+                - generic [ref=e123]: 38 条消息 · 3 小时前
+              - generic [ref=e124]: •••
+    - button "‹" [ref=e125] [cursor=pointer]
+    - generic [ref=e126]:
+      - generic [ref=e127]:
+        - generic [ref=e130]: 你好
+        - generic [ref=e132]: 你好！我是 OpenClaw 的智能活动策划顾问，可以帮你快速生成活动策划方案、竞品分析，甚至直接做 PPT。 有策划需求随时告诉我~
+        - generic [ref=e134]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e137]: 闲聊一下
+        - generic [ref=e139]: 好呀～最近在忙什么项目吗？有什么我可以帮到的随时说。
+        - generic [ref=e141]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e144]: 帮我生成一个活动策划方案
+        - generic [ref=e146]: 好的，想做哪种类型的活动呢？比如产品发布会、展览、年会、还是其他？顺便告诉我是什么品牌或项目，我来帮你规划。
+        - generic [ref=e148]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e151]: 华为问界发布会
+        - generic [ref=e153]: 明白了，华为问界新品发布会。我先搜索一下问界最新动态和行业趋势，然后生成策划方案。
+        - generic [ref=e155]:
+          - generic [ref=e156]:
+            - generic [ref=e157]: 🔧
+            - generic [ref=e159]: 整理任务简报
+          - generic [ref=e160]:
+            - generic [ref=e161]: 已整理任务简报：华为问界
+            - button "查看详情" [ref=e162] [cursor=pointer]
+        - generic [ref=e164] [cursor=pointer]:
+          - generic [ref=e165]:
+            - img [ref=e166]
+            - generic [ref=e168]: 任务理解：华为问界
+          - generic [ref=e170]: product_launch
+          - generic [ref=e172]: 在右侧查看
+        - generic [ref=e174]:
+          - generic [ref=e175]:
+            - generic [ref=e176]: 🔍
+            - generic [ref=e177]:
+              - generic [ref=e178]: 搜索：华为问界 2024 新品发布会 最新消息
+              - generic [ref=e179]: 找到 8 条结果（minimax）
+          - generic [ref=e180]:
+            - generic [ref=e181]: 找到 8 条搜索结果（minimax）
+            - button "查看详情" [ref=e182] [cursor=pointer]
+        - generic [ref=e184] [cursor=pointer]:
+          - generic [ref=e185]:
+            - img [ref=e186]
+            - generic [ref=e188]: 搜索发现：华为问界 2024 新品发布会 最新消息
+          - generic [ref=e189]: 华为官宣春季发布会,重磅新品来了!；问界M9 2024款超燃升级,华为ADS小蓝灯服务等你体验；鸿蒙智行:问界M6将于3月23日开启预订
+          - generic [ref=e191]: 在右侧查看
+        - generic [ref=e194]:
+          - generic [ref=e195]: 🔍
+          - generic [ref=e197]: 搜索：问界汽车 发布会 创意 竞品案例
+      - generic [ref=e199]:
+        - textbox "描述活动需求，如：帮我为小米做一个大型新品发布会..." [ref=e201]
+        - generic [ref=e202]:
+          - button "图片" [ref=e203] [cursor=pointer]
+          - button [disabled] [ref=e204]:
+            - img [ref=e205]
+    - button "›" [ref=e209] [cursor=pointer]
+    - generic [ref=e211]:
+      - generic [ref=e212]:
+        - generic [ref=e213]:
+          - img [ref=e214]
+          - generic [ref=e216]: 搜索发现：华为问界 2024 新品发布会 最新消息
+        - button "保存" [ref=e218] [cursor=pointer]
+      - generic [ref=e219]:
+        - generic [ref=e220]:
+          - generic [ref=e221]: 研究主题
+          - generic [ref=e222]: 华为问界 2024 新品发布会 最新消息
+        - generic [ref=e223]:
+          - generic [ref=e224]: 摘要
+          - generic [ref=e225]: 华为官宣春季发布会,重磅新品来了!；问界M9 2024款超燃升级,华为ADS小蓝灯服务等你体验；鸿蒙智行:问界M6将于3月23日开启预订
+        - generic [ref=e226]:
+          - generic [ref=e227]: 关键发现
+          - list [ref=e228]:
+            - listitem [ref=e229]: 今天,华为正式官宣,将在 3 月 23 日 14:30 举办春季全场景新品发布｡</p><p><img src='http://qqpublic.qpic.cn/qq_public/0/28-982693548-2754C177177E249130E4650208F8E6C1/0?fmt=png&size=109&h=403&w=700&ppv=1'
+            - listitem [ref=e230]: 问界M9 2024款正式推出华为ADS小蓝灯付费升级服务,以创新技术重塑豪华汽车服务标准,为车主带来“常用常新”的科技体验｡此次升级涵盖前格栅灯带总成､侧后组合灯及轮眉装饰总成等核心部件,升级后的小蓝灯系统与2025款车型保持完全一致,实现车前车后同步点亮,视觉效果与功能深度融合｡</p><p><img src='http://qqpublic.qpic.
+            - listitem [ref=e231]: 3月16日,鸿蒙智行官方宣布,问界M6将于3月23日开启预订｡</p><p><img src='http://qqpublic.qpic.cn/qq_public/0/28-1032132348-E5F91DB068F1F66E74DB79244CB7F2A3/0?fmt=jpg&size=136&h=1414&w=796&ppv=1'

@@ -4,53 +4,45 @@
     <a-layout-sider
       class="app-sider"
       :collapsed="collapsed"
-      :collapsed-width="64"
-      :width="200"
+      :collapsed-width="60"
+      :width="220"
       collapsible
       :trigger="null"
       hide-trigger
     >
       <!-- Logo -->
       <div class="sider-logo">
-        <span class="logo-mark">OC</span>
-        <span class="logo-text" v-show="!collapsed">OpenClaw</span>
+        <span class="logo-mark" v-show="collapsed">
+          <PhSparkle :size="28" weight="duotone" />
+        </span>
+        <span class="logo-text-group" v-show="!collapsed">
+          <span class="logo-text">Luna</span>
+          <span class="logo-sub">活动策划助手</span>
+        </span>
       </div>
 
-      <!-- 导航菜单 -->
-      <a-menu
-        :selected-keys="[currentRoute]"
-        :collapsed="collapsed"
-        class="sider-menu"
-        @menu-item-click="onNavClick"
-      >
-        <a-menu-item key="/workspace">
-          <template #icon><icon-folder /></template>
-          文档空间
-        </a-menu-item>
-        <a-menu-item key="/agent">
-          <template #icon><icon-robot /></template>
-          智能体
-        </a-menu-item>
-        <a-menu-item key="/settings">
-          <template #icon><icon-settings /></template>
-          配置中心
-        </a-menu-item>
-      </a-menu>
+      <!-- 自定义导航列表，绕过 Arco 图标字体限制 -->
+      <nav class="sider-nav">
+        <button
+          v-for="item in navItems"
+          :key="item.path"
+          class="nav-item"
+          :class="{ active: currentRoute === item.path }"
+          @click="onNavClick(item.path)"
+        >
+          <span class="nav-icon">
+            <component :is="item.icon" :size="18" weight="duotone" />
+          </span>
+          <span class="nav-label" v-show="!collapsed">{{ item.label }}</span>
+        </button>
+      </nav>
 
       <!-- 底部：折叠按钮 + 版本 -->
       <div class="sider-footer">
         <a-tooltip :content="collapsed ? '展开侧栏' : '收起侧栏'" position="right">
-          <a-button
-            class="collapse-btn"
-            type="text"
-            size="small"
-            @click="collapsed = !collapsed"
-          >
-            <template #icon>
-              <icon-menu-fold v-if="!collapsed" />
-              <icon-menu-unfold v-else />
-            </template>
-          </a-button>
+          <button class="collapse-btn" @click="collapsed = !collapsed">
+            <PhCaretLeft :size="14" weight="bold" :class="{ 'rotated': collapsed }" />
+          </button>
         </a-tooltip>
         <span v-show="!collapsed" class="sider-version">v2.0</span>
       </div>
@@ -59,7 +51,7 @@
     <!-- 右侧内容 -->
     <a-layout class="app-content">
       <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
+        <transition name="page" mode="out-in">
           <component :is="Component" />
         </transition>
       </router-view>
@@ -70,52 +62,61 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import {
+  PhFolderOpen,
+  PhRobot,
+  PhSliders,
+  PhCaretLeft,
+  PhSparkle,
+  PhLayout,
+} from '@phosphor-icons/vue'
 
 const router = useRouter()
 const route  = useRoute()
 const APP_SIDER_COLLAPSED_KEY = 'oc_app_sider_collapsed'
 
+const navItems = [
+  { path: '/workspace', label: '文档空间', icon: PhFolderOpen },
+  { path: '/agent',     label: '智能体',   icon: PhRobot      },
+  { path: '/templates', label: '模版中心', icon: PhLayout     },
+  { path: '/settings',  label: '配置中心', icon: PhSliders    },
+]
+
 function loadCollapsedState() {
-  try {
-    return localStorage.getItem(APP_SIDER_COLLAPSED_KEY) === '1'
-  } catch {
-    return false
-  }
+  try { return localStorage.getItem(APP_SIDER_COLLAPSED_KEY) === '1' }
+  catch { return false }
 }
 
-const collapsed = ref(loadCollapsedState())
-
+const collapsed    = ref(loadCollapsedState())
 const currentRoute = computed(() => route.path)
 
-function onNavClick(key) {
-  router.push(key)
-}
+function onNavClick(path) { router.push(path) }
 
 watch(collapsed, (value) => {
-  try {
-    localStorage.setItem(APP_SIDER_COLLAPSED_KEY, value ? '1' : '0')
-  } catch {}
+  try { localStorage.setItem(APP_SIDER_COLLAPSED_KEY, value ? '1' : '0') }
+  catch {}
 })
 </script>
 
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Satisfy&display=swap');
+
 /* ── 全局重置 ── */
 *, *::before, *::after { box-sizing: border-box; }
 html, body, #app { height: 100%; margin: 0; padding: 0; overflow: hidden; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif; }
+body {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI', sans-serif;
+}
 
 /* ── App Shell ── */
-.app-shell {
-  height: 100vh;
-  overflow: hidden;
-}
+.app-shell { height: 100vh; overflow: hidden; }
 
 /* ── Sider ── */
 .app-sider {
-  background: #fff !important;
+  background: #f7f8fa !important;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #e5e6eb;
+  border-right: 1px solid #e5e7eb !important;
 }
 
 .app-sider :deep(.arco-layout-sider-children) {
@@ -124,75 +125,133 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI'
   overflow: hidden;
 }
 
-/* Logo */
+/* ── Logo ── */
 .sider-logo {
-  height: 56px;
+  height: 72px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 0 18px;
-  border-bottom: 1px solid #e5e6eb;
+  border-bottom: 1px solid #e5e7eb;
   flex-shrink: 0;
   user-select: none;
   overflow: hidden;
 }
 
 .logo-mark {
-  flex-shrink: 0;
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  background: linear-gradient(135deg, rgb(var(--arcoblue-6)), rgb(var(--arcoblue-4)));
-  color: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #e8732a;
 }
 
-.logo-text {
-  font-size: 15px;
-  font-weight: 700;
-  color: #1d2129;
-  white-space: nowrap;
+.logo-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
   overflow: hidden;
 }
 
-/* Menu */
-.sider-menu {
+.logo-text {
+  font-family: 'Satisfy', cursive;
+  font-size: 22px;
+  font-weight: 400;
+  color: #e8732a;
+  white-space: nowrap;
+  line-height: 1.2;
+  text-shadow: 0 1px 3px rgba(232,115,42,0.18);
+}
+
+.logo-sub {
+  font-size: 11px;
+  font-weight: 400;
+  color: #a3a3a3;
+  white-space: nowrap;
+  letter-spacing: 0.1px;
+}
+
+/* ── Nav ── */
+.sider-nav {
   flex: 1;
-  background: transparent !important;
-  border-right: none !important;
   padding: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.sider-menu :deep(.arco-menu-item) {
-  color: #4e5969 !important;
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: calc(100% - 16px);
+  margin: 0 8px;
+  padding: 0 10px;
+  height: 38px;
+  border: none;
+  background: transparent;
   border-radius: 8px;
-  margin: 2px 8px;
+  cursor: pointer;
+  color: #525252;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  text-align: left;
+  transition: background 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              color      0.18s cubic-bezier(0.16, 1, 0.3, 1),
+              transform  0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-.sider-menu :deep(.arco-menu-item:hover) {
-  background: #f2f3f5 !important;
-  color: #1d2129 !important;
+.nav-item:hover:not(.active) {
+  background: rgba(232,115,42,0.06);
+  color: #e8732a;
+  transform: translateX(2px);
 }
 
-.sider-menu :deep(.arco-menu-item.arco-menu-selected) {
-  background: rgb(var(--arcoblue-1)) !important;
-  color: rgb(var(--arcoblue-6)) !important;
+/* Active: full-width left bar 指示器 */
+.nav-item.active {
+  background: rgba(232,115,42,0.08);
+  color: #e8732a;
   font-weight: 600;
+  width: calc(100% - 8px);
+  margin-left: 0;
+  margin-right: 8px;
+  border-radius: 0 8px 8px 0;
+  padding-left: 18px;
+  box-shadow: inset 3px 0 0 0 #e8732a;
 }
 
-.sider-menu :deep(.arco-menu-item-icon) {
-  font-size: 18px;
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Footer */
+.nav-item:hover:not(.active) .nav-icon {
+  transform: scale(1.12);
+}
+
+.nav-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Footer ── */
 .sider-footer {
-  padding: 10px 14px;
-  border-top: 1px solid #e5e6eb;
+  padding: 10px 12px;
+  border-top: 1px solid #e5e7eb;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -201,30 +260,61 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Segoe UI'
 
 .collapse-btn {
   flex-shrink: 0;
-  color: #86909c !important;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  color: #a3a3a3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .collapse-btn:hover {
-  background: #f2f3f5 !important;
-  color: #1d2129 !important;
+  background: rgba(232,115,42,0.08);
+  color: #e8732a;
+}
+
+.collapse-btn svg {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.collapse-btn svg.rotated {
+  transform: rotate(180deg);
 }
 
 .sider-version {
   font-size: 11px;
-  color: #c9cdd4;
+  color: #d4d4d4;
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ── Content ── */
 .app-content {
   flex: 1;
   overflow: hidden;
-  background: #f5f6fa;
+  background: #f9fafb;
   display: flex;
   flex-direction: column;
 }
 
 /* ── Route transition ── */
-.fade-enter-active, .fade-leave-active { transition: opacity 0.15s ease; }
-.fade-enter-from, .fade-leave-to { opacity: 0; }
+.page-enter-active {
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.page-leave-active {
+  transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
 </style>

@@ -3,7 +3,7 @@
     ref="layoutRef"
     class="chat-layout"
     :class="{ 'preview-open': previewVisible, resizing: isResizing }"
-    :style="{ '--preview-width': `${previewWidth}px`, '--conversation-width': `${conversationSidebarCollapsed ? 0 : 280}px` }"
+    :style="{ '--preview-width': `${previewWidth}px`, '--conversation-width': `${conversationSidebarCollapsed ? 56 : 280}px` }"
   >
     <aside class="chat-conversation-sidebar" :class="{ collapsed: conversationSidebarCollapsed }">
       <div class="conversation-sidebar-head">
@@ -180,15 +180,22 @@
 
             <!-- 产出物卡片 -->
             <template v-else-if="msg.kind === 'artifact-card'">
-              <div class="artifact-msg-card" :class="`artifact-msg-card--${msg.artifactType}`" @click="openArtifactModal(msg)">
+              <div class="artifact-msg-card" :class="[`artifact-msg-card--${msg.artifactType}`, { 'artifact-msg-card--active': selectedArtifactId === msg.artifactId }]" @click.stop="selectArtifact(msg)">
                 <div class="artifact-msg-card-head">
-                  <span class="artifact-msg-card-icon">{{ artifactMsgIcon(msg.artifactType) }}</span>
-                  <span class="artifact-msg-card-title">{{ msg.title }}</span>
-                  <span class="artifact-msg-card-arrow">›</span>
+                  <span class="artifact-msg-card-icon-wrap">
+                    <component :is="artifactMsgIcon(msg.artifactType)" class="artifact-msg-card-icon" />
+                  </span>
+                  <div class="artifact-msg-card-copy">
+                    <span class="artifact-msg-card-kicker">{{ artifactTypeLabel(msg.artifactType) }}</span>
+                    <span class="artifact-msg-card-title">{{ msg.title }}</span>
+                  </div>
                 </div>
                 <div v-if="msg.summary" class="artifact-msg-card-summary">{{ msg.summary }}</div>
                 <div v-if="msg.chips?.length" class="artifact-msg-card-chips">
                   <span v-for="chip in msg.chips" :key="chip" class="artifact-msg-chip">{{ chip }}</span>
+                </div>
+                <div class="artifact-msg-card-footer">
+                  <span class="artifact-msg-card-view-btn">在右侧查看</span>
                 </div>
               </div>
             </template>
@@ -209,10 +216,10 @@
           <input
             ref="imageInputRef"
             type="file"
-            accept="image/png,image/jpeg,image/webp"
+            accept="image/png,image/jpeg,image/webp,application/pdf,.pdf,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             multiple
             class="chat-image-input"
-            @change="onImageInputChange"
+            @change="onFileInputChange"
           />
 
           <div v-if="pendingImages.length" class="pending-image-grid">
@@ -223,6 +230,18 @@
                 <div class="pending-image-size">{{ formatFileSize(item.size) }}</div>
               </div>
               <button type="button" class="pending-image-remove" @click="removePendingImage(item.id)">×</button>
+            </div>
+          </div>
+
+          <div v-if="pendingDocs.length" class="pending-doc-list">
+            <div v-for="item in pendingDocs" :key="item.id" class="pending-doc-chip">
+              <icon-file-pdf v-if="item.mimeType === 'application/pdf'" class="pending-doc-icon" />
+              <icon-file v-else class="pending-doc-icon" />
+              <div class="pending-doc-meta">
+                <div class="pending-doc-name">{{ item.name }}</div>
+                <div class="pending-doc-size">{{ formatFileSize(item.size) }}</div>
+              </div>
+              <button type="button" class="pending-image-remove" @click="removePendingDoc(item.id)">×</button>
             </div>
           </div>
 
@@ -248,7 +267,7 @@
               :disabled="isRunning"
               @click="triggerImagePicker"
             >
-              图片
+              <icon-attachment />
             </button>
 
             <!-- 终止按钮（任务运行中显示） -->
@@ -266,8 +285,8 @@
               v-else
               type="button"
               class="send-btn"
-              :class="{ 'send-btn--active': inputText.trim() || pendingImages.length }"
-              :disabled="!inputText.trim() && !pendingImages.length"
+              :class="{ 'send-btn--active': inputText.trim() || pendingImages.length || pendingDocs.length }"
+              :disabled="!inputText.trim() && !pendingImages.length && !pendingDocs.length"
               @click="send"
             >
               <icon-arrow-up />
@@ -293,311 +312,182 @@
       >{{ previewCollapsed ? '‹' : '›' }}</button>
     </div>
 
-    <!-- ── 右侧：任务工作区 / 结果预览区 ── -->
+    <!-- ── 右侧：单一产出物面板 ── -->
     <div v-if="previewVisible && !previewCollapsed" class="ws-workspace">
-      <div v-if="wsState === 'execution' || wsState === 'failed'" class="ws-execution">
-        <div class="exec-preview-card preview-only">
-          <div class="exec-preview-head">
-            <div>
-              <div class="exec-section-title">实时产出预览</div>
-              <div class="preview-stage-desc">{{ currentPreviewHint }}</div>
+
+      <!-- PPT 幻灯片（优先级最高，直接铺满） -->
+      <template v-if="displayedArtifact?.artifactType === 'ppt_slides'">
+        <div class="artifact-pane artifact-pane--ppt">
+          <SlideViewer
+            ref="slideViewerRef"
+            :slides="resultSlides"
+            :current-index="currentSlideIndex"
+            :download-url="resultDownloadUrl"
+            :show-save="wsState === 'done'"
+            :is-building="isBuilding"
+            :build-total="buildTotal"
+            @update:current-index="onSlideIndexChange"
+            @save="showSaveDialog"
+            @open-editor="editorVisible = true"
+          />
+        </div>
+      </template>
+
+      <template v-else-if="showPlanDocumentPanel">
+        <div class="ws-document">
+          <PlanDocumentPanel
+            :content="docContent"
+            :title="docTitle || displayedArtifact?.title || '策划方案'"
+            :spaces="spaces"
+            :loading="isRunning"
+            @generate-ppt="triggerPptBuild"
+            @saved="loadSpaces"
+          />
+        </div>
+      </template>
+
+      <!-- 具体产出物 -->
+      <template v-else-if="displayedArtifact">
+        <div class="artifact-pane">
+          <!-- 面板头 -->
+          <div class="artifact-pane-header">
+            <div class="artifact-pane-title-row">
+              <component :is="artifactMsgIcon(displayedArtifact.artifactType)" class="artifact-pane-icon" />
+              <span class="artifact-pane-title">{{ displayedArtifact.title || artifactTypeLabel(displayedArtifact.artifactType) }}</span>
             </div>
-            <div v-if="wsState === 'failed'" class="exec-preview-actions">
-              <a-button type="primary" size="small" @click="retryCurrentTask">重试</a-button>
-              <a-button size="small" @click="restoreTaskToInput">回填输入</a-button>
+            <div class="artifact-pane-actions">
+              <button v-if="displayedArtifact.artifactType === 'research_result'" type="button" class="pane-action-btn" @click="openSaveResearch">保存</button>
+              <button v-if="displayedArtifact.artifactType === 'plan_draft'" type="button" class="pane-action-btn" @click="openSavePlanDraft">保存</button>
             </div>
           </div>
 
-          <div v-if="hasStrategyPreview" class="strategy-preview">
-            <div class="strategy-hero">
-              <div class="strategy-hero-copy">
-                <div class="strategy-hero-eyebrow">方案实时预览</div>
-                <div class="strategy-hero-title">
-                  {{ latestPlanDraft?.payload.planTitle || currentTask?.topic || '活动策划方案' }}
-                </div>
-                <div class="strategy-hero-desc">
-                  {{ latestPlanDraft?.payload.coreStrategy || latestTaskBrief?.payload.parsedGoal || '系统正在基于任务简报、搜索摘要和评审反馈形成策划方案。' }}
-                </div>
-              </div>
-              <div class="strategy-hero-meta">
-                <div class="strategy-meta-card">
-                  <span>当前阶段</span>
-                  <strong>{{ currentStageTitle }}</strong>
-                </div>
-                <div class="strategy-meta-card">
-                  <span>当前产出</span>
-                  <strong>{{ strategySnapshotLabel }}</strong>
-                </div>
-              </div>
-            </div>
+          <!-- 面板内容 -->
+          <div class="artifact-pane-body">
 
-            <div v-if="latestTaskBrief" class="preview-block">
-              <div class="preview-block-title">任务理解</div>
-              <div class="artifact-paragraph">{{ latestTaskBrief.payload.parsedGoal }}</div>
-              <div v-if="latestTaskBrief.payload.keyThemes?.length" class="artifact-chip-row">
-                <span v-for="item in latestTaskBrief.payload.keyThemes" :key="item" class="artifact-chip">{{ item }}</span>
+            <!-- task_brief -->
+            <template v-if="displayedArtifact.artifactType === 'task_brief'">
+              <div class="pane-section">
+                <div class="pane-label">任务目标</div>
+                <div class="pane-text">{{ displayedArtifact.payload?.parsedGoal || displayedArtifact.payload?.goal || '—' }}</div>
               </div>
-            </div>
+              <div v-if="displayedArtifact.payload?.keyThemes?.length" class="pane-section">
+                <div class="pane-label">关键主题</div>
+                <div class="pane-chips">
+                  <span v-for="t in displayedArtifact.payload.keyThemes" :key="t" class="pane-chip">{{ t }}</span>
+                </div>
+              </div>
+            </template>
 
-            <div v-if="researchPreviewItems.length" class="preview-block">
-              <div class="preview-block-title">搜索摘要</div>
-              <div class="research-grid">
-                <div v-for="item in researchPreviewItems" :key="item.id" class="research-card">
-                  <div class="research-card-title">{{ item.payload.focus }}</div>
-                  <div class="research-card-summary">{{ item.payload.summary || '正在整理搜索发现...' }}</div>
-                  <div v-if="item.payload.keyFindings?.length" class="research-card-points">
-                    <span v-for="(finding, idx) in item.payload.keyFindings.slice(0, 2)" :key="idx">{{ finding }}</span>
+            <!-- research_result -->
+            <template v-else-if="displayedArtifact.artifactType === 'research_result'">
+              <div class="pane-section">
+                <div class="pane-label">研究主题</div>
+                <div class="pane-text">{{ displayedArtifact.payload?.focus || '—' }}</div>
+              </div>
+              <div class="pane-section">
+                <div class="pane-label">摘要</div>
+                <div class="pane-text">{{ displayedArtifact.payload?.summary || '—' }}</div>
+              </div>
+              <div v-if="displayedArtifact.payload?.keyFindings?.length" class="pane-section">
+                <div class="pane-label">关键发现</div>
+                <ul class="pane-list">
+                  <li v-for="(f, i) in displayedArtifact.payload.keyFindings" :key="i">{{ f }}</li>
+                </ul>
+              </div>
+            </template>
+
+            <!-- plan_draft -->
+            <template v-else-if="displayedArtifact.artifactType === 'plan_draft'">
+              <div class="pane-section">
+                <div class="pane-plan-title">{{ displayedArtifact.payload?.planTitle || '策划方案草稿' }}</div>
+                <div class="pane-text">{{ displayedArtifact.payload?.coreStrategy }}</div>
+              </div>
+              <div v-if="displayedArtifact.payload?.highlights?.length" class="pane-section">
+                <div class="pane-label">活动亮点</div>
+                <div v-for="(h, i) in displayedArtifact.payload.highlights" :key="i" class="pane-numbered-item">
+                  <span class="pane-num">{{ i + 1 }}</span>
+                  <span>{{ h }}</span>
+                </div>
+              </div>
+              <div v-if="displayedArtifact.payload?.sections?.length" class="pane-section">
+                <div class="pane-label">方案结构</div>
+                <div v-for="(s, i) in displayedArtifact.payload.sections" :key="i" class="pane-structure-item">
+                  <span class="pane-structure-num">{{ String(i + 1).padStart(2, '0') }}</span>
+                  <div>
+                    <div class="pane-structure-title">{{ s.title }}</div>
+                    <div class="pane-structure-points">{{ (s.keyPoints || []).slice(0, 3).join(' · ') }}</div>
                   </div>
                 </div>
               </div>
-            </div>
+            </template>
 
-            <div v-if="latestPlanDraft" class="preview-block preview-block--plan">
-              <div class="artifact-title">{{ latestPlanDraft.payload.planTitle || '策划方案草稿' }}</div>
-              <div class="artifact-paragraph">{{ latestPlanDraft.payload.coreStrategy }}</div>
-              <div v-if="latestPlanDraft.payload.highlights?.length" class="artifact-chip-row">
-                <span v-for="item in latestPlanDraft.payload.highlights.slice(0, 4)" :key="item" class="artifact-chip">{{ item }}</span>
-              </div>
-              <div v-if="latestPlanDraft.payload.highlights?.length" class="highlight-grid">
-                <div
-                  v-for="(item, idx) in latestPlanDraft.payload.highlights.slice(0, 3)"
-                  :key="item"
-                  class="highlight-card"
-                >
-                  <div class="highlight-index">亮点 {{ idx + 1 }}</div>
-                  <div class="highlight-text">{{ item }}</div>
+            <!-- review_feedback -->
+            <template v-else-if="displayedArtifact.artifactType === 'review_feedback'">
+              <div class="pane-section">
+                <div class="pane-label">评审结论</div>
+                <div class="pane-score" :class="{ 'pane-score--pass': displayedArtifact.payload?.passed }">
+                  <span class="pane-score-round">第 {{ displayedArtifact.payload?.round || 1 }} 轮</span>
+                  <span class="pane-score-num">{{ displayedArtifact.payload?.score || 0 }}</span>
+                  <span class="pane-score-label">分</span>
+                  <span class="pane-score-status">{{ displayedArtifact.payload?.passed ? '通过' : '待优化' }}</span>
                 </div>
               </div>
-              <div v-if="latestPlanDraft.payload.sections?.length" class="plan-outline">
-                <div class="preview-block-title">方案结构</div>
-                <div class="plan-outline-list">
-                  <div
-                    v-for="(section, idx) in latestPlanDraft.payload.sections.slice(0, 6)"
-                    :key="idx"
-                    class="plan-outline-item"
-                  >
-                    <div class="plan-outline-index">{{ String(idx + 1).padStart(2, '0') }}</div>
-                    <div class="plan-outline-copy">
-                      <div class="plan-outline-title">{{ section.title }}</div>
-                      <div class="plan-outline-desc">{{ (section.keyPoints || []).slice(0, 2).join(' / ') }}</div>
-                    </div>
-                  </div>
+              <div v-if="displayedArtifact.payload?.strengths?.length" class="pane-section">
+                <div class="pane-label">认可亮点</div>
+                <ul class="pane-list">
+                  <li v-for="(item, i) in displayedArtifact.payload.strengths" :key="i">{{ item }}</li>
+                </ul>
+              </div>
+              <div v-if="!displayedArtifact.payload?.passed && displayedArtifact.payload?.weaknesses?.length" class="pane-section">
+                <div class="pane-label">待优化项</div>
+                <ul class="pane-list">
+                  <li v-for="(w, i) in displayedArtifact.payload.weaknesses" :key="i">{{ w }}</li>
+                </ul>
+              </div>
+              <div v-if="!displayedArtifact.payload?.passed && displayedArtifact.payload?.suggestions?.length" class="pane-section">
+                <div class="pane-label">修改建议</div>
+                <ul class="pane-list">
+                  <li v-for="(s, i) in displayedArtifact.payload.suggestions" :key="i">{{ s }}</li>
+                </ul>
+              </div>
+              <div class="pane-section">
+                <div class="pane-label">{{ displayedArtifact.payload?.passed ? '通过理由' : '完整评语' }}</div>
+                <div class="pane-text">{{ displayedArtifact.payload?.specificFeedback || '—' }}</div>
+              </div>
+            </template>
+
+            <!-- ppt_outline -->
+            <template v-else-if="displayedArtifact.artifactType === 'ppt_outline'">
+              <div class="pane-section">
+                <div class="pane-plan-title">{{ displayedArtifact.payload?.title || 'PPT 大纲' }}</div>
+                <div class="pane-text">共 {{ displayedArtifact.payload?.total || 0 }} 页</div>
+              </div>
+              <div v-if="displayedArtifact.payload?.pages?.length" class="pane-section">
+                <div class="pane-label">页面结构</div>
+                <div v-for="(p, i) in displayedArtifact.payload.pages" :key="i" class="pane-page-item">
+                  <span class="pane-page-num">{{ i + 1 }}</span>
+                  <span class="pane-page-layout">{{ pptLayoutLabel(p.layout || p.type) }}</span>
+                  <span class="pane-page-title">{{ pptPageTitleLabel(p, i) }}</span>
                 </div>
               </div>
-            </div>
+            </template>
 
-            <div v-if="planSectionArtifacts.length" class="preview-block section-live-block">
-              <div class="artifact-title">
-                章节展开中
-                <span class="section-live-badge">实时更新</span>
-              </div>
-              <div v-if="latestPlanSection" class="section-live-focus">
-                <div class="section-live-eyebrow">当前展开章节</div>
-                <div class="section-live-title">{{ latestPlanSection.payload.title }}</div>
-                <div class="section-live-points">
-                  <span v-for="(point, idx) in latestPlanSection.payload.keyPoints.slice(0, 3)" :key="idx">{{ point }}</span>
-                </div>
-              </div>
-              <div class="section-live-list">
-                <div
-                  v-for="section in planSectionArtifacts"
-                  :key="section.payload.title"
-                  class="section-live-item"
-                  :class="{ active: latestPlanSection?.payload.title === section.payload.title }"
-                >
-                  <div class="section-live-item-head">
-                    <span class="section-live-item-index">{{ String((section.payload.index || 0) + 1).padStart(2, '0') }}</span>
-                    <span class="section-live-item-title">{{ section.payload.title }}</span>
-                  </div>
-                  <div class="section-live-item-desc">{{ (section.payload.keyPoints || []).slice(0, 3).join(' / ') }}</div>
-                </div>
-              </div>
-            </div>
+            <!-- fallback -->
+            <template v-else>
+              <pre class="pane-json">{{ JSON.stringify(displayedArtifact.payload, null, 2) }}</pre>
+            </template>
 
-            <div v-if="latestReviewFeedback" class="preview-block review-block">
-              <div class="artifact-title">
-                第 {{ latestReviewFeedback.payload.round }} 轮评审
-                <span class="artifact-score" :class="{ pass: latestReviewFeedback.payload.passed }">
-                  {{ latestReviewFeedback.payload.score }} 分
-                </span>
-              </div>
-              <div class="artifact-paragraph">{{ latestReviewFeedback.payload.specificFeedback }}</div>
-              <div v-if="latestReviewFeedback.payload.weaknesses?.length" class="artifact-list">
-                <div v-for="(item, idx) in latestReviewFeedback.payload.weaknesses.slice(0, 4)" :key="idx" class="artifact-list-item">
-                  <b>待优化</b>
-                  <span>{{ item }}</span>
-                </div>
-              </div>
-            </div>
-
-            <div v-if="latestPptOutline" class="preview-block">
-              <div class="preview-block-title">PPT 结构映射</div>
-              <div class="artifact-paragraph">已将方案映射为 {{ latestPptOutline.payload.total || 0 }} 页 PPT 结构，下一步会逐页生成可视内容。</div>
-            </div>
-          </div>
-
-          <div v-else class="exec-preview-skeleton">
-            <div class="preview-skel preview-skel--hero" />
-            <div class="preview-skel preview-skel--line" />
-            <div class="preview-skel preview-skel--line short" />
-            <div class="preview-grid">
-              <div class="preview-card" />
-              <div class="preview-card" />
-              <div class="preview-card" />
-            </div>
-          </div>
-
-          <div v-if="artifactTimeline.length" class="artifact-timeline">
-            <div class="exec-section-title">最近产出</div>
-            <div class="artifact-timeline-list">
-              <div v-for="item in artifactTimeline" :key="item.id" class="artifact-timeline-item">
-                <span class="artifact-timeline-type">{{ artifactTypeLabel(item.artifactType) }}</span>
-                <span class="artifact-timeline-text">{{ artifactTimelineText(item) }}</span>
-              </div>
-            </div>
           </div>
         </div>
-      </div>
+      </template>
 
-      <div v-else-if="wsState === 'document'" class="ws-document">
-        <PlanDocumentPanel
-          :content="docContent"
-          :title="docTitle"
-          :spaces="spaces"
-          :loading="isRunning"
-          @generate-ppt="triggerPptBuild"
-          @saved="loadSpaces"
-        />
-      </div>
-
-      <div v-else class="ws-done">
-        <div class="preview-tabs-head">
-          <div class="preview-tabs">
-            <button
-              type="button"
-              class="preview-tab"
-              :class="{ active: activePreviewTab === 'strategy' }"
-              @click="activePreviewTab = 'strategy'"
-            >
-              方案预览
-            </button>
-            <button
-              type="button"
-              class="preview-tab"
-              :class="{ active: activePreviewTab === 'ppt' }"
-              @click="activePreviewTab = 'ppt'"
-            >
-              PPT 预览
-            </button>
-          </div>
-          <div v-if="wsState === 'done'" class="done-summary">
-          <a-tag v-for="s in summarySteps" :key="s.key" color="green" size="small">
-            <template #icon><icon-check /></template>
-            {{ s.title }}
-          </a-tag>
-          <span class="done-label">全部完成</span>
+      <!-- 空状态 -->
+      <template v-else>
+        <div class="workspace-empty">
+          <div class="empty-icon">📋</div>
+          <div class="empty-text">{{ currentPreviewHint || '等待任务产出...' }}</div>
         </div>
-        </div>
-
-        <div v-if="activePreviewTab === 'strategy'" class="strategy-preview strategy-preview--final">
-          <div class="strategy-hero">
-            <div class="strategy-hero-copy">
-              <div class="strategy-hero-eyebrow">方案总览</div>
-              <div class="strategy-hero-title">
-                {{ latestPlanDraft?.payload.planTitle || resultData?.previewData?.title || currentTask?.topic || '活动策划方案' }}
-              </div>
-              <div class="strategy-hero-desc">
-                {{ latestPlanDraft?.payload.coreStrategy || '方案已成型，可继续切换到 PPT 预览查看视觉页面。' }}
-              </div>
-            </div>
-            <div class="strategy-hero-meta">
-              <div class="strategy-meta-card">
-                <span>任务状态</span>
-                <strong>{{ wsState === 'done' ? '已完成' : currentStageTitle }}</strong>
-              </div>
-              <div class="strategy-meta-card">
-                <span>方案亮点</span>
-                <strong>{{ latestPlanDraft?.payload.highlights?.length || 0 }} 项</strong>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="latestPlanDraft" class="preview-block preview-block--plan">
-            <div class="artifact-title">{{ latestPlanDraft.payload.planTitle || resultData?.previewData?.title || '策划方案' }}</div>
-            <div class="artifact-paragraph">{{ latestPlanDraft.payload.coreStrategy }}</div>
-            <div v-if="latestPlanDraft.payload.highlights?.length" class="artifact-chip-row">
-              <span v-for="item in latestPlanDraft.payload.highlights.slice(0, 4)" :key="item" class="artifact-chip">{{ item }}</span>
-            </div>
-            <div v-if="latestPlanDraft.payload.highlights?.length" class="highlight-grid">
-              <div
-                v-for="(item, idx) in latestPlanDraft.payload.highlights.slice(0, 3)"
-                :key="item"
-                class="highlight-card"
-              >
-                <div class="highlight-index">亮点 {{ idx + 1 }}</div>
-                <div class="highlight-text">{{ item }}</div>
-              </div>
-            </div>
-            <div v-if="latestPlanDraft.payload.sections?.length" class="plan-outline">
-              <div class="preview-block-title">方案结构</div>
-              <div class="plan-outline-list">
-                <div
-                  v-for="(section, idx) in latestPlanDraft.payload.sections"
-                  :key="idx"
-                  class="plan-outline-item"
-                >
-                  <div class="plan-outline-index">{{ String(idx + 1).padStart(2, '0') }}</div>
-                  <div class="plan-outline-copy">
-                    <div class="plan-outline-title">{{ section.title }}</div>
-                    <div class="plan-outline-desc">{{ (section.keyPoints || []).slice(0, 3).join(' / ') }}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="planSectionArtifacts.length" class="preview-block section-live-block">
-            <div class="artifact-title">章节内容总览</div>
-            <div class="section-live-list">
-              <div
-                v-for="section in planSectionArtifacts"
-                :key="section.payload.title"
-                class="section-live-item final"
-              >
-                <div class="section-live-item-head">
-                  <span class="section-live-item-index">{{ String((section.payload.index || 0) + 1).padStart(2, '0') }}</span>
-                  <span class="section-live-item-title">{{ section.payload.title }}</span>
-                </div>
-                <div class="section-live-item-desc">{{ (section.payload.keyPoints || []).slice(0, 4).join(' / ') }}</div>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="latestReviewFeedback" class="preview-block review-block">
-            <div class="artifact-title">
-              最新评审结论
-              <span class="artifact-score" :class="{ pass: latestReviewFeedback.payload.passed }">
-                {{ latestReviewFeedback.payload.score }} 分
-              </span>
-            </div>
-            <div class="artifact-paragraph">{{ latestReviewFeedback.payload.specificFeedback }}</div>
-          </div>
-        </div>
-
-        <SlideViewer
-          v-else
-          ref="slideViewerRef"
-          :slides="resultSlides"
-          :current-index="currentSlideIndex"
-          :download-url="resultDownloadUrl"
-          :show-save="wsState === 'done'"
-          :is-building="isBuilding"
-          :build-total="buildTotal"
-          @update:current-index="onSlideIndexChange"
-          @save="showSaveDialog"
-          @open-editor="editorVisible = true"
-        />
-      </div>
+      </template>
     </div>
 
     <!-- PPT 编辑器 -->
@@ -614,7 +504,7 @@
       @ok="doSave"
       @cancel="showSaveModal = false"
     >
-      <a-form layout="vertical">
+      <a-form layout="vertical" :model="{ saveSpaceId, saveName }">
         <a-form-item label="选择工作空间">
           <a-select v-model="saveSpaceId" placeholder="选择空间">
             <a-option v-for="s in spaces" :key="s.id" :value="s.id">{{ s.name }}</a-option>
@@ -626,131 +516,25 @@
       </a-form>
     </a-modal>
 
-    <!-- 产出物详情弹窗 -->
+    <!-- 保存MD对话框 -->
     <a-modal
-      v-model:visible="showArtifactModal"
-      :title="selectedArtifact?.title || '产出物详情'"
-      width="680px"
-      :footer="null"
-      @cancel="showArtifactModal = false"
+      v-model:visible="showSaveModalForMd"
+      title="保存到文档空间 (Markdown)"
+      @ok="doSaveMd"
+      @cancel="showSaveModalForMd = false"
     >
-      <div v-if="selectedArtifact" class="artifact-modal-content">
-        <!-- plan_draft -->
-        <template v-if="selectedArtifact.artifactType === 'plan_draft'">
-          <div class="artifact-modal-section">
-            <div class="artifact-modal-label">核心策略</div>
-            <div class="artifact-modal-text">{{ selectedArtifact.payload?.coreStrategy || '—' }}</div>
-          </div>
-          <div v-if="selectedArtifact.payload?.highlights?.length" class="artifact-modal-section">
-            <div class="artifact-modal-label">活动亮点</div>
-            <div class="artifact-modal-highlights">
-              <div v-for="(h, i) in selectedArtifact.payload.highlights" :key="i" class="artifact-modal-highlight">
-                <span class="highlight-num">{{ i + 1 }}</span>
-                <span>{{ h }}</span>
-              </div>
-            </div>
-          </div>
-          <div v-if="selectedArtifact.payload?.sections?.length" class="artifact-modal-section">
-            <div class="artifact-modal-label">方案结构</div>
-            <div class="artifact-modal-sections">
-              <div v-for="(s, i) in selectedArtifact.payload.sections" :key="i" class="artifact-modal-section-item">
-                <span class="section-num">{{ String(i + 1).padStart(2, '0') }}</span>
-                <div class="section-info">
-                  <div class="section-title">{{ s.title }}</div>
-                  <div class="section-points">{{ (s.keyPoints || []).slice(0, 3).join(' / ') }}</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </template>
-
-        <!-- task_brief -->
-        <template v-else-if="selectedArtifact.artifactType === 'task_brief'">
-          <div class="artifact-modal-section">
-            <div class="artifact-modal-label">任务目标</div>
-            <div class="artifact-modal-text">{{ selectedArtifact.payload?.parsedGoal || selectedArtifact.payload?.goal || '—' }}</div>
-          </div>
-          <div v-if="selectedArtifact.payload?.keyThemes?.length" class="artifact-modal-section">
-            <div class="artifact-modal-label">关键主题</div>
-            <div class="artifact-modal-chips">
-              <span v-for="t in selectedArtifact.payload.keyThemes" :key="t" class="artifact-modal-chip">{{ t }}</span>
-            </div>
-          </div>
-        </template>
-
-        <!-- research_result -->
-        <template v-else-if="selectedArtifact.artifactType === 'research_result'">
-          <div class="artifact-modal-section">
-            <div class="artifact-modal-label">研究主题</div>
-            <div class="artifact-modal-text">{{ selectedArtifact.payload?.focus || '—' }}</div>
-          </div>
-          <div class="artifact-modal-section">
-            <div class="artifact-modal-label">摘要</div>
-            <div class="artifact-modal-text">{{ selectedArtifact.payload?.summary || '—' }}</div>
-          </div>
-          <div v-if="selectedArtifact.payload?.keyFindings?.length" class="artifact-modal-section">
-            <div class="artifact-modal-label">关键发现</div>
-            <ul class="artifact-modal-list">
-              <li v-for="(f, i) in selectedArtifact.payload.keyFindings" :key="i">{{ f }}</li>
-            </ul>
-          </div>
-        </template>
-
-        <!-- review_feedback -->
-        <template v-else-if="selectedArtifact.artifactType === 'review_feedback'">
-          <div class="artifact-modal-section">
-            <div class="artifact-modal-score" :class="{ pass: selectedArtifact.payload?.passed }">
-              <span class="score-num">{{ selectedArtifact.payload?.score || 0 }}</span>
-              <span class="score-label">分</span>
-              <span class="score-status">{{ selectedArtifact.payload?.passed ? '通过' : '待优化' }}</span>
-            </div>
-          </div>
-          <div class="artifact-modal-section">
-            <div class="artifact-modal-label">评审反馈</div>
-            <div class="artifact-modal-text">{{ selectedArtifact.payload?.specificFeedback || '—' }}</div>
-          </div>
-          <div v-if="selectedArtifact.payload?.weaknesses?.length" class="artifact-modal-section">
-            <div class="artifact-modal-label">待优化项</div>
-            <ul class="artifact-modal-list">
-              <li v-for="(w, i) in selectedArtifact.payload.weaknesses" :key="i">{{ w }}</li>
-            </ul>
-          </div>
-          <div v-if="selectedArtifact.payload?.suggestions?.length" class="artifact-modal-section">
-            <div class="artifact-modal-label">修改建议</div>
-            <ul class="artifact-modal-list">
-              <li v-for="(s, i) in selectedArtifact.payload.suggestions" :key="i">{{ s }}</li>
-            </ul>
-          </div>
-        </template>
-
-        <!-- ppt_outline -->
-        <template v-else-if="selectedArtifact.artifactType === 'ppt_outline'">
-          <div class="artifact-modal-section">
-            <div class="artifact-modal-label">PPT 主题</div>
-            <div class="artifact-modal-text">{{ selectedArtifact.payload?.title || '—' }}</div>
-          </div>
-          <div class="artifact-modal-section">
-            <div class="artifact-modal-label">总页数</div>
-            <div class="artifact-modal-text">{{ selectedArtifact.payload?.total || 0 }} 页</div>
-          </div>
-          <div v-if="selectedArtifact.payload?.pages?.length" class="artifact-modal-section">
-            <div class="artifact-modal-label">页面结构</div>
-            <div class="artifact-modal-pages">
-              <div v-for="(p, i) in selectedArtifact.payload.pages" :key="i" class="artifact-modal-page-item">
-                <span class="page-num">{{ i + 1 }}</span>
-                <span class="page-layout">{{ p.layout || p.type }}</span>
-                <span class="page-title">{{ p.content?.title || p.content?.name || '' }}</span>
-              </div>
-            </div>
-          </div>
-        </template>
-
-        <!-- fallback -->
-        <template v-else>
-          <pre class="artifact-modal-json">{{ JSON.stringify(selectedArtifact.payload, null, 2) }}</pre>
-        </template>
-      </div>
+      <a-form layout="vertical" :model="{ saveSpaceId, saveName }">
+        <a-form-item label="选择工作空间">
+          <a-select v-model="saveSpaceId" placeholder="选择空间">
+            <a-option v-for="s in spaces" :key="s.id" :value="s.id">{{ s.name }}</a-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item label="文档名称">
+          <a-input v-model="saveName" />
+        </a-form-item>
+      </a-form>
     </a-modal>
+
   </div>
 </template>
 
@@ -764,7 +548,8 @@ import SlideViewer from '../components/SlideViewer.vue'
 import PlanDocumentPanel from '../components/PlanDocumentPanel.vue'
 import PptEditor from '../components/PptEditor.vue'
 import {
-  IconMobile, IconCompass, IconCamera, IconRecordStop
+  IconMobile, IconCompass, IconCamera, IconRecordStop,
+  IconBulb, IconSearch, IconEdit, IconCheckCircle, IconLayout, IconAttachment
 } from '@arco-design/web-vue/es/icon'
 
 const router   = useRouter()
@@ -784,6 +569,7 @@ function loadConversationSidebarCollapsed() {
 const currentSessionId        = ref('')   // 当前 Brain 会话 ID
 const waitingForClarification = ref(false) // Brain 正在等待用户回答
 const clarificationReplyText  = ref('')    // 澄清回答输入框内容
+const wasManuallyStopped      = ref(false) // 用户手动中止后，允许在同一会话继续
 const processedStreamEvents = new Set()
 
 // 工具图标映射
@@ -827,12 +613,14 @@ function shouldSkipStreamEvent(eventType, payload = {}) {
 async function submitClarificationReply(msg) {
   const reply = clarificationReplyText.value.trim()
   const images = pendingImages.value.map(item => ({ ...item }))
-  if (!reply && !images.length) return
+  const docs   = pendingDocs.value.map(item => ({ ...item }))
+  if (!reply && !images.length && !docs.length) return
   clarificationReplyText.value = ''
   msg.answered = true
 
-  pushMsg('user', reply || '（补充了图片）', '', {
-    attachments: buildMessageAttachments(images)
+  pushMsg('user', reply || (docs.length ? `（补充了 ${docs.length} 份文档）` : '（补充了图片）'), '', {
+    attachments: buildMessageAttachments(images),
+    documents: docs.map(d => ({ id: d.id, name: d.name, size: d.size, mimeType: d.mimeType }))
   })
   clearPendingImages()
   waitingForClarification.value = false
@@ -844,7 +632,7 @@ async function submitClarificationReply(msg) {
 
     fetch(`/api/agent/${currentSessionId.value}/reply`, {
       method: 'POST',
-      body: buildAgentFormData({ reply, apiKeys: settings.apiKeys, images })
+      body: buildAgentFormData({ reply, apiKeys: settings.apiKeys, images, docs })
     }).then(r => r.json()).then(res => {
       if (!res.success) throw new Error(res.message)
       replaceLatestUserAttachments(res.attachments || [])
@@ -862,6 +650,7 @@ const messages  = ref([])
 const inputText = ref('')
 const imageInputRef = ref(null)
 const pendingImages = ref([])
+const pendingDocs   = ref([])
 const historyRef = ref(null)
 const isRunning  = ref(false)
 const conversations = ref([])
@@ -882,6 +671,84 @@ function stripHtmlText(value = '') {
     .trim()
 }
 
+function escapeHtml(value = '') {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+function parseInlineRichText(value = '') {
+  return escapeHtml(value)
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+}
+
+function renderAiTextToHtml(value = '') {
+  const source = String(value || '')
+    .replace(/<think>[\s\S]*?<\/think>/gi, '')
+    .replace(/\r\n/g, '\n')
+    .trim()
+
+  if (!source) return ''
+  if (/<[a-z][\s\S]*>/i.test(source)) return source
+
+  const lines = source.split('\n')
+  const blocks = []
+  let listItems = []
+  let paragraph = []
+
+  const flushParagraph = () => {
+    if (!paragraph.length) return
+    blocks.push(`<p>${parseInlineRichText(paragraph.join('<br />'))}</p>`)
+    paragraph = []
+  }
+
+  const flushList = () => {
+    if (!listItems.length) return
+    blocks.push(`<ul>${listItems.map(item => `<li>${parseInlineRichText(item)}</li>`).join('')}</ul>`)
+    listItems = []
+  }
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim()
+    if (!line) {
+      flushParagraph()
+      flushList()
+      continue
+    }
+
+    const headingMatch = line.match(/^(#{1,3})\s+(.+)$/)
+    if (headingMatch) {
+      flushParagraph()
+      flushList()
+      const level = headingMatch[1].length
+      blocks.push(`<h${level}>${parseInlineRichText(headingMatch[2])}</h${level}>`)
+      continue
+    }
+
+    const listMatch = line.match(/^[-*]\s+(.+)$/) || line.match(/^\d+\.\s+(.+)$/)
+    if (listMatch) {
+      flushParagraph()
+      listItems.push(listMatch[1])
+      continue
+    }
+
+    flushList()
+    paragraph.push(line)
+  }
+
+  flushParagraph()
+  flushList()
+  return blocks.join('')
+}
+
+function resolveAiHtml(text = '', html = '') {
+  const candidate = html || text || ''
+  return renderAiTextToHtml(candidate)
+}
+
 function buildAiMessageMeta(text = '', html = '') {
   const plainText = stripHtmlText(html || text)
   const shouldCollapse = plainText.length > 220 || plainText.includes('1.') || plainText.includes('\n')
@@ -895,15 +762,16 @@ function buildAiMessageMeta(text = '', html = '') {
 }
 
 function pushMsg(role, text, html, extra = {}) {
+  const resolvedHtml = role === 'ai' ? resolveAiHtml(text, html) : (html || text || '')
   const nextMessage = {
     id: createMessageId(role),
     role,
     text: text || '',
-    html: html || text || '',
+    html: resolvedHtml,
     createdAt: new Date().toISOString(),
     ...extra
   }
-  if (role === 'ai') Object.assign(nextMessage, buildAiMessageMeta(text, html))
+  if (role === 'ai') Object.assign(nextMessage, buildAiMessageMeta(text, resolvedHtml))
   messages.value.push(nextMessage)
   scheduleConversationPersist()
   nextTick(() => {
@@ -943,6 +811,12 @@ function revokePreviewUrl(url = '') {
 function clearPendingImages() {
   pendingImages.value.forEach(item => revokePreviewUrl(item.previewUrl))
   pendingImages.value = []
+  pendingDocs.value = []
+  clearImageInputValue()
+}
+
+function removePendingDoc(id) {
+  pendingDocs.value = pendingDocs.value.filter(item => item.id !== id)
   clearImageInputValue()
 }
 
@@ -957,31 +831,53 @@ function removePendingImage(id) {
   clearImageInputValue()
 }
 
-function onImageInputChange(event) {
+function onFileInputChange(event) {
   const files = Array.from(event.target?.files || [])
   if (!files.length) return
 
-  const nextItems = []
+  const nextImages = []
+  const nextDocs   = []
+
   for (const file of files) {
-    if (!/^image\/(png|jpeg|webp)$/.test(file.type)) {
-      Message.warning(`暂只支持 PNG / JPEG / WebP：${file.name}`)
-      continue
+    if (/^image\/(png|jpeg|webp)$/.test(file.type)) {
+      nextImages.push({
+        id: createMessageId('img'),
+        file,
+        name: file.name,
+        size: file.size,
+        mimeType: file.type,
+        previewUrl: URL.createObjectURL(file)
+      })
+    } else if (
+      file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf') ||
+      file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' ||
+      file.name.toLowerCase().endsWith('.docx')
+    ) {
+      nextDocs.push({
+        id: createMessageId('doc'),
+        file,
+        name: file.name,
+        size: file.size,
+        mimeType: file.type || (file.name.endsWith('.pdf') ? 'application/pdf'
+          : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document')
+      })
+    } else {
+      Message.warning(`不支持的文件类型：${file.name}（支持图片、PDF、Word .docx）`)
     }
-    nextItems.push({
-      id: createMessageId('img'),
-      file,
-      name: file.name,
-      size: file.size,
-      mimeType: file.type,
-      previewUrl: URL.createObjectURL(file)
-    })
   }
 
-  const merged = [...pendingImages.value, ...nextItems]
-  if (merged.length > 4) {
-    Message.warning('单次最多上传 4 张图片')
+  if (nextImages.length) {
+    const merged = [...pendingImages.value, ...nextImages]
+    if (merged.length > 4) Message.warning('图片最多 4 张')
+    pendingImages.value = merged.slice(0, 4)
   }
-  pendingImages.value = merged.slice(0, 4)
+
+  if (nextDocs.length) {
+    const merged = [...pendingDocs.value, ...nextDocs]
+    if (merged.length > 3) Message.warning('文档最多 3 份')
+    pendingDocs.value = merged.slice(0, 3)
+  }
+
   clearImageInputValue()
 }
 
@@ -1009,8 +905,12 @@ function buildAgentFormData(payload = {}) {
   if (payload.reply !== undefined) form.append('reply', payload.reply)
   if (payload.spaceId !== undefined) form.append('spaceId', payload.spaceId)
   if (payload.sessionId !== undefined) form.append('sessionId', payload.sessionId)
+  if (payload.restoreSession !== undefined) form.append('restoreSession', JSON.stringify(payload.restoreSession))
   form.append('apiKeys', JSON.stringify(payload.apiKeys || {}))
   ;(payload.images || []).forEach((item) => {
+    form.append('images', item.file, item.name)
+  })
+  ;(payload.docs || []).forEach((item) => {
     form.append('images', item.file, item.name)
   })
   return form
@@ -1110,8 +1010,31 @@ const planSectionArtifacts = computed(() => artifacts.value
 const latestPlanSection = computed(() => planSectionArtifacts.value.at(-1) || null)
 const latestReviewFeedback = computed(() => artifacts.value.find(item => item.artifactType === 'review_feedback') || null)
 const latestPptOutline = computed(() => artifacts.value.find(item => item.artifactType === 'ppt_outline') || null)
+const latestArtifactCardMessage = computed(() => {
+  for (let i = messages.value.length - 1; i >= 0; i -= 1) {
+    const msg = messages.value[i]
+    if (msg?.kind === 'artifact-card') return msg
+  }
+  return null
+})
+const displayedArtifact = computed(() => {
+  if (activeArtifact.value?.artifactType === 'ppt_slides') return activeArtifact.value
+  if (activeArtifact.value?.artifactId) {
+    const matched = messages.value.find(msg => msg.kind === 'artifact-card' && msg.artifactId === activeArtifact.value.artifactId)
+    if (matched) return matched
+  }
+  if (latestArtifactCardMessage.value) return latestArtifactCardMessage.value
+  if (resultSlides.value.length) return { artifactType: 'ppt_slides' }
+  return null
+})
+const showPlanDocumentPanel = computed(() => {
+  if (!docContent.value) return false
+  if (!displayedArtifact.value) return wsState.value === 'document'
+  return ['plan_draft', 'plan_document'].includes(displayedArtifact.value.artifactType)
+})
+const selectedArtifactId = computed(() => displayedArtifact.value?.artifactId || '')
 const hasMatureStrategyPreview = computed(() =>
-  !!latestPlanDraft.value ||
+  !!focusedPlanDraft.value ||
   planSectionArtifacts.value.length > 0 ||
   !!latestReviewFeedback.value ||
   !!latestPptOutline.value
@@ -1119,7 +1042,7 @@ const hasMatureStrategyPreview = computed(() =>
 const hasStrategyPreview = computed(() =>
   !!latestTaskBrief.value ||
   researchPreviewItems.value.length > 0 ||
-  !!latestPlanDraft.value ||
+  !!focusedPlanDraft.value ||
   planSectionArtifacts.value.length > 0 ||
   !!latestReviewFeedback.value ||
   !!latestPptOutline.value
@@ -1128,12 +1051,15 @@ const previewVisible = computed(() => {
   if (docContent.value || resultSlides.value.length > 0) return true
   return hasStrategyPreview.value
 })
+const focusedPlanDraft = computed(() => latestPlanDraft.value)
+const focusedPlanSection = computed(() => latestPlanSection.value)
+
 const strategySnapshotLabel = computed(() => {
   if (latestPptOutline.value) return '已进入 PPT 结构映射'
   if (latestReviewFeedback.value) return '已形成评审结论'
   if (latestPlanSection.value) return `已展开 ${latestPlanSection.value.payload.title}`
-  if (latestPlanDraft.value) return '已形成方案草稿'
-  if (researchPreviewItems.value.length) return '已形成研究摘要'
+  if (focusedPlanDraft.value) return '已形成方案草稿'
+  if (researchPreviewItems.value.length) return '已形成搜索研究'
   if (latestTaskBrief.value) return '已完成任务理解'
   return '正在准备'
 })
@@ -1145,11 +1071,14 @@ const currentPreviewHint = computed(() => {
   if (wsState.value === 'failed') {
     return '任务已中断，右侧保留当前阶段与最近产出，方便判断是配置问题还是方案质量问题。'
   }
+  if (wsState.value === 'interrupted') {
+    return '任务已手动中止，当前上下文会保留，你可以直接继续补充要求并接着推进。'
+  }
   if (taskMode.value === 'brain') {
     if (waitingForClarification.value) return '正在等待你补充一个关键信息，收到后会继续推进。'
     if (isBuilding.value) return '正在把方案转换成 PPT 页面，新的页面会在这里逐张出现。'
     if (brainPlanItems.value.some(item => item.status === 'in_progress')) {
-      return '系统正在按计划推进任务，会把结构化 brief、搜索结果和方案草稿同步展示在这里。'
+      return '系统正在按计划推进任务，会把任务理解、搜索研究和方案草稿同步展示在这里。'
     }
   }
   return '系统正在准备可预览的中间产出。'
@@ -1180,8 +1109,10 @@ function resetSteps() {
   failedStage.value = ''
   artifacts.value = []
   executionLogs.value = []
+  activeArtifact.value = null
   taskMode.value = 'idle'
   brainPlanItems.value = []
+  wasManuallyStopped.value = false
 }
 
 function statusLabel(s) {
@@ -1191,31 +1122,57 @@ function statusLabel(s) {
 function artifactTypeLabel(type) {
   return {
     task_brief: '任务理解',
-    research_result: '搜索发现',
+    research_result: '搜索研究',
     plan_draft: '方案草稿',
-    review_feedback: '评审结果',
-    ppt_outline: 'PPT 大纲',
-    ppt_page: '页面完成'
+    plan_document: '策划文档',
+    review_feedback: '评审意见',
+    ppt_outline: 'PPT大纲',
+    ppt_page: 'PPT页面'
   }[type] || '中间产物'
 }
 
 function artifactMsgIcon(type) {
   return {
-    task_brief: '📋',
-    research_result: '🔍',
-    plan_draft: '📝',
-    review_feedback: '✅',
-    ppt_outline: '📐'
-  }[type] || '📄'
+    task_brief: IconBulb,
+    research_result: IconSearch,
+    plan_draft: IconEdit,
+    plan_document: IconEdit,
+    review_feedback: IconCheckCircle,
+    ppt_outline: IconLayout,
+  }[type] || IconEdit
+}
+
+function pptLayoutLabel(layout) {
+  return {
+    immersive_cover: '沉浸式封面',
+    cover: '封面页',
+    toc: '目录页',
+    editorial_quote: '引言观点页',
+    data_cards: '数据卡片页',
+    asymmetrical_story: '故事阐述页',
+    end_card: '结束页',
+    section: '章节过渡页',
+    comparison: '对比分析页',
+    metrics: '数据指标页',
+    highlights: '亮点概览页',
+    timeline: '时间节奏页'
+  }[layout] || layout || '内容页'
+}
+
+function pptPageTitleLabel(page = {}, index = 0) {
+  const explicitTitle = page?.content?.title || page?.content?.name || page?.title || ''
+  if (explicitTitle) return explicitTitle
+  return `第 ${index + 1} 页 · ${pptLayoutLabel(page?.layout || page?.type)}`
 }
 
 function artifactTimelineText(item) {
   const payload = item.payload || {}
   if (item.artifactType === 'task_brief') return payload.parsedGoal || '已完成任务拆解'
-  if (item.artifactType === 'research_result') return payload.focus || payload.summary || '已完成一条搜索结果'
+  if (item.artifactType === 'research_result') return payload.focus || payload.summary || '已完成一条搜索研究'
   if (item.artifactType === 'plan_draft') return payload.planTitle || payload.coreStrategy || '已生成方案草稿'
+  if (item.artifactType === 'plan_document') return payload.title || '策划文档已生成'
   if (item.artifactType === 'review_feedback') return `第 ${payload.round} 轮评分 ${payload.score}${payload.passed ? '，通过' : '，待优化'}`
-  if (item.artifactType === 'ppt_outline') return `已生成 ${payload.total || 0} 页 PPT 大纲`
+  if (item.artifactType === 'ppt_outline') return `已生成 ${payload.total || 0} 页 PPT大纲`
   if (item.artifactType === 'ppt_page') return `第 ${payload.index + 1} / ${payload.total} 页：${payload.title}`
   return '已生成中间产物'
 }
@@ -1314,6 +1271,8 @@ loadSpaces()
 
 function serializeState() {
   return {
+    currentSessionId: currentSessionId.value,
+    wasManuallyStopped: wasManuallyStopped.value,
     taskMode: taskMode.value,
     brainPlanItems: brainPlanItems.value,
     wsState: wsState.value,
@@ -1349,6 +1308,70 @@ function serializeMessages() {
   })
 }
 
+function extractRestorableMessages() {
+  return messages.value.flatMap((msg) => {
+    if (msg.role === 'user') {
+      const attachmentText = Array.isArray(msg.attachments) && msg.attachments.length
+        ? `\n\n用户上传图片：${msg.attachments.map(item => item.name || '图片').join('、')}`
+        : ''
+      const content = `${msg.text || ''}${attachmentText}`.trim()
+      return content
+        ? [{
+            role: 'user',
+            content,
+            attachments: Array.isArray(msg.attachments) ? msg.attachments.map(item => ({ ...item })) : []
+          }]
+        : []
+    }
+
+    if (msg.role !== 'ai') return []
+
+    if (msg.kind === 'clarification') {
+      return msg.question ? [{ role: 'assistant', content: msg.question }] : []
+    }
+
+    if (!msg.kind || msg.kind === 'narration') {
+      const content = stripHtmlText(msg.html || msg.text || '')
+      return content ? [{ role: 'assistant', content }] : []
+    }
+
+    return []
+  }).slice(-24)
+}
+
+function buildRestoreSessionPayload() {
+  const latestPlan = latestPlanDraft.value?.payload
+  const uniqueAttachments = []
+  const seenAttachmentIds = new Set()
+
+  messages.value.forEach((msg) => {
+    ;(msg.attachments || []).forEach((item) => {
+      const key = item.id || item.url || item.name
+      if (!key || seenAttachmentIds.has(key)) return
+      seenAttachmentIds.add(key)
+      uniqueAttachments.push({
+        id: item.id,
+        name: item.name,
+        mimeType: item.mimeType,
+        size: item.size,
+        url: item.url
+      })
+    })
+  })
+
+  return {
+    messages: extractRestorableMessages(),
+    bestPlan: latestPlan ? { ...latestPlan } : null,
+    userInput: currentTask.value ? { ...currentTask.value } : null,
+    docHtml: docContent.value || '',
+    brief: currentTask.value ? { ...currentTask.value } : null,
+    planItems: Array.isArray(brainPlanItems.value)
+      ? brainPlanItems.value.map(item => ({ ...item }))
+      : [],
+    attachments: uniqueAttachments
+  }
+}
+
 function restoreFromConversation(detail) {
   const state = detail?.state || {}
   restoringConversation.value = true
@@ -1361,6 +1384,8 @@ function restoreFromConversation(detail) {
       }))
     : []
 
+  currentSessionId.value = state.currentSessionId || ''
+  wasManuallyStopped.value = !!state.wasManuallyStopped
   currentTask.value = state.currentTask || null
   taskMode.value = state.taskMode || 'idle'
   brainPlanItems.value = Array.isArray(state.brainPlanItems) ? state.brainPlanItems : []
@@ -1379,6 +1404,7 @@ function restoreFromConversation(detail) {
   failedStage.value = state.failedStage || ''
   artifacts.value = Array.isArray(state.artifacts) ? state.artifacts : []
   executionLogs.value = Array.isArray(state.executionLogs) ? state.executionLogs : []
+  activeArtifact.value = resultSlides.value.length ? { artifactType: 'ppt_slides' } : null
 
   const savedWsState = state.wsState || 'welcome'
   wsState.value = ['execution', 'streaming', 'document'].includes(savedWsState)
@@ -1400,6 +1426,8 @@ function clearConversationView() {
   restoringConversation.value = true
   messages.value = []
   clearPendingImages()
+  currentSessionId.value = ''
+  wasManuallyStopped.value = false
   currentTask.value = null
   taskMode.value = 'idle'
   brainPlanItems.value = []
@@ -1408,6 +1436,7 @@ function clearConversationView() {
   currentSlideIndex.value = 0
   failedReason.value = ''
   failedStage.value = ''
+  activeArtifact.value = null
   nextTick(() => {
     restoringConversation.value = false
   })
@@ -1690,7 +1719,8 @@ function closeSseConnection() {
 async function send() {
   const text = inputText.value.trim()
   const images = pendingImages.value.map(item => ({ ...item }))
-  if ((!text && !images.length) || isRunning.value) return
+  const docs   = pendingDocs.value.map(item => ({ ...item }))
+  if ((!text && !images.length && !docs.length) || isRunning.value) return
   inputText.value = ''
 
   // 如果正在等待澄清回答
@@ -1707,25 +1737,29 @@ async function send() {
 
   // 如果 PPT 已生成完成，开新对话；否则在同一对话内继续
   const pptDone = wsState.value === 'done' && (resultDownloadUrl.value || resultSlides.value.length > 0)
-  if (pptDone || wsState.value === 'failed') {
+  if (pptDone || (wsState.value === 'failed' && !wasManuallyStopped.value)) {
     activeConversationId.value = ''
     currentSessionId.value = ''
   }
 
-  const conversationId = await ensureActiveConversation((text || images[0]?.name || '图片对话').slice(0, 24))
+  const conversationId = await ensureActiveConversation(
+    (text || docs[0]?.name || images[0]?.name || '文件对话').slice(0, 24)
+  )
   if (!conversationId) {
     inputText.value = text
     return
   }
 
-  pushMsg('user', text || '（发送了图片）', '', {
-    attachments: buildMessageAttachments(images)
+  const displayText = text || (docs.length ? `（发送了 ${docs.length} 份文档）` : '（发送了图片）')
+  pushMsg('user', displayText, '', {
+    attachments: buildMessageAttachments(images),
+    documents: docs.map(d => ({ id: d.id, name: d.name, size: d.size, mimeType: d.mimeType }))
   })
   clearPendingImages()
   await nextTick()
   if (historyRef.value) historyRef.value.scrollTop = historyRef.value.scrollHeight
 
-  await runBrainTask(text, images)
+  await runBrainTask(text, images, docs)
 }
 
 function retryCurrentTask() {
@@ -1751,9 +1785,10 @@ function stopTask() {
   isRunning.value  = false
   isBuilding.value = false
   waitingForClarification.value = false
+  wasManuallyStopped.value = true
   failedReason.value = '用户已停止任务'
   if (wsState.value === 'execution' || wsState.value === 'streaming') {
-    wsState.value = 'failed'
+    wsState.value = 'interrupted'
   }
   // resolve 挂起的 Promise，让队列处理器正常退出
   if (resolveCurrent) { resolveCurrent(); resolveCurrent = null }
@@ -1761,18 +1796,19 @@ function stopTask() {
 }
 
 // ── Brain Agent 任务 ──────────────────────────────────────────────
-async function runBrainTask(text, images = []) {
+async function runBrainTask(text, images = [], docs = []) {
   const isContinuing = !!currentSessionId.value  // 是否复用现有 session
-  const taskSeed = text || images[0]?.name || '图片需求'
+  const taskSeed = text || docs[0]?.name || images[0]?.name || '文件需求'
   isRunning.value = true
   waitingForClarification.value = false
+  wasManuallyStopped.value = false
   resetProcessedStreamEvents()
   if (!isContinuing) {
     resetSteps()
     brainPlanItems.value = defaultBrainPlan()
     currentTask.value = {
       topic: taskSeed.slice(0, 32),
-      requirements: text || '用户上传了图片，希望结合视觉内容继续分析'
+      requirements: text || (docs.length ? `用户上传了文档：${docs.map(d => d.name).join('、')}` : '用户上传了图片，希望结合视觉内容继续分析')
     }
   }
   taskMode.value = 'brain'
@@ -1800,7 +1836,9 @@ async function runBrainTask(text, images = []) {
         spaceId: selectedSpaceId.value,
         apiKeys: settings.apiKeys,
         sessionId: currentSessionId.value || undefined,
-        images
+        restoreSession: currentSessionId.value ? buildRestoreSessionPayload() : undefined,
+        images,
+        docs
       })
     }).then(r => r.json()).then(res => {
       if (!res.success) throw new Error(res.message || '启动失败')
@@ -1868,6 +1906,51 @@ function connectBrainSSE(url, resolve = () => {}) {
     if (d.text) pushMsg('ai', '', d.text, { kind: 'narration' })
   })
 
+  // 流式文字：逐 token 追加到同一条消息
+  let streamingMsgId = null
+
+  sse.addEventListener('text_delta', e => {
+    const { delta } = JSON.parse(e.data)
+    if (!delta) return
+
+    if (!streamingMsgId) {
+      popThinking()
+      const msgId = createMessageId('ai')
+      messages.value.push({
+        id: msgId,
+        role: 'ai',
+        text: '',
+        html: '',
+        kind: 'narration',
+        createdAt: new Date().toISOString()
+      })
+      streamingMsgId = msgId
+    }
+
+    const msg = messages.value.find(m => m.id === streamingMsgId)
+    if (msg) {
+      msg.text += delta
+      msg.html = resolveAiHtml(msg.text)
+      // 仅在用户未向上滚动时才自动滚底
+      const el = historyRef.value
+      if (el && el.scrollHeight - el.scrollTop - el.clientHeight < 120) {
+        el.scrollTop = el.scrollHeight
+      }
+    }
+  })
+
+  sse.addEventListener('text_end', () => {
+    if (streamingMsgId) {
+      const msg = messages.value.find(m => m.id === streamingMsgId)
+      if (msg) {
+        msg.html = resolveAiHtml(msg.text)
+        Object.assign(msg, buildAiMessageMeta(msg.text, msg.html))
+      }
+      scheduleConversationPersist()
+      streamingMsgId = null
+    }
+  })
+
   sse.addEventListener('clarification', e => {
     const d = JSON.parse(e.data)
     if (shouldSkipStreamEvent('clarification', d)) return
@@ -1927,6 +2010,7 @@ function connectBrainSSE(url, resolve = () => {}) {
   sse.addEventListener('doc_ready', e => handleDocReady(JSON.parse(e.data)))
   sse.addEventListener('slide_added', e => handleSlideAdded(JSON.parse(e.data)))
   sse.addEventListener('done', e => {
+    streamingMsgId = null
     popThinking()
     handleDone(JSON.parse(e.data))
     closeSseConnection()
@@ -1935,6 +2019,7 @@ function connectBrainSSE(url, resolve = () => {}) {
   })
 
   sse.addEventListener('error', e => {
+    streamingMsgId = null
     popThinking()
     if (e.data) {
       try {
@@ -1961,10 +2046,10 @@ function handleArtifact(d) {
   artifacts.value.unshift(artifact)
   if (d.artifactType === 'ppt_page') return
 
-  // 在对话流中插入产出物卡片
+  // 在对话流中插入产出物卡片，并自动切换右侧面板
   const cardTypes = ['task_brief', 'research_result', 'plan_draft', 'review_feedback', 'ppt_outline']
   if (cardTypes.includes(d.artifactType)) {
-    pushAiMessage({
+    const cardMsg = {
       kind: 'artifact-card',
       artifactType: d.artifactType,
       artifactId: artifact.id,
@@ -1972,7 +2057,10 @@ function handleArtifact(d) {
       summary: artifactCardSummary(d.artifactType, d.payload || {}),
       chips: artifactCardChips(d.artifactType, d.payload || {}),
       payload: d.payload || {}
-    })
+    }
+    pushAiMessage(cardMsg)
+    // 自动切换右侧面板到最新产出物
+    activeArtifact.value = cardMsg
   }
   if (['plan_draft', 'review_feedback', 'ppt_outline'].includes(d.artifactType)) {
     addExecutionLog(`${artifactTypeLabel(d.artifactType)}已更新：${artifactTimelineText({ artifactType: d.artifactType, payload: d.payload || {} })}`, d.timestamp || Date.now())
@@ -1981,10 +2069,11 @@ function handleArtifact(d) {
 
 function artifactCardTitle(type, payload) {
   if (type === 'task_brief') return `任务理解：${payload.brand || payload.topic || '已整理'}`
-  if (type === 'research_result') return `搜索发现：${payload.focus || '行业资讯'}`
+  if (type === 'research_result') return `搜索研究：${payload.focus || '行业资讯'}`
   if (type === 'plan_draft') return `方案草稿：${payload.planTitle || '已生成'}`
-  if (type === 'review_feedback') return `评审结果：第 ${payload.round || 1} 轮，评分 ${payload.score || 0}`
-  if (type === 'ppt_outline') return `PPT 大纲：共 ${payload.total || 0} 页`
+  if (type === 'plan_document') return `策划文档：${payload.title || '已生成'}`
+  if (type === 'review_feedback') return `评审意见：第 ${payload.round || 1} 轮，评分 ${payload.score || 0}`
+  if (type === 'ppt_outline') return `PPT大纲：共 ${payload.total || 0} 页`
   return artifactTypeLabel(type)
 }
 
@@ -1992,14 +2081,31 @@ function artifactCardSummary(type, payload) {
   if (type === 'task_brief') return payload.parsedGoal || payload.goal || ''
   if (type === 'research_result') return payload.summary || ''
   if (type === 'plan_draft') return payload.coreStrategy || ''
-  if (type === 'review_feedback') return payload.passed ? '方案通过评审，进入下一步' : (payload.suggestions?.[0] || '方案待优化')
-  if (type === 'ppt_outline') return `${payload.title || ''}`
+  if (type === 'plan_document') return payload.summary || '完整策划方案文档已生成，可在右侧继续编辑和确认。'
+  if (type === 'review_feedback') {
+    if (payload.passed) return payload.specificFeedback || '方案通过评审，当前可以进入下一步。'
+    return payload.weaknesses?.[0] || payload.suggestions?.[0] || '方案待优化'
+  }
+  if (type === 'ppt_outline') {
+    const pages = Array.isArray(payload.pages) ? payload.pages : []
+    if (!pages.length) return payload.title || 'PPT结构已生成，可在右侧查看页面结构。'
+    return pages
+      .slice(0, 3)
+      .map((page, index) => pptPageTitleLabel(page, index))
+      .join(' · ')
+  }
   return ''
 }
 
 function artifactCardChips(type, payload) {
   if (type === 'task_brief') return (payload.keyThemes || []).slice(0, 3)
   if (type === 'plan_draft') return (payload.highlights || []).slice(0, 3)
+  if (type === 'plan_document') return (payload.highlights || []).slice(0, 3)
+  if (type === 'ppt_outline') {
+    return (Array.isArray(payload.pages) ? payload.pages : [])
+      .slice(0, 3)
+      .map(page => pptLayoutLabel(page?.layout || page?.type))
+  }
   return []
 }
 
@@ -2009,16 +2115,39 @@ function handleDocReady(d) {
   progress.value = Math.max(progress.value, 88)
   progressLabel.value = '策划文档已生成，等待确认'
   wsState.value = 'document'
+  const documentCard = {
+    kind: 'artifact-card',
+    artifactType: 'plan_document',
+    artifactId: createMessageId('artifact'),
+    title: artifactCardTitle('plan_document', {
+      title: d.title || docTitle.value,
+      summary: latestPlanDraft.value?.payload?.coreStrategy || '',
+      highlights: latestPlanDraft.value?.payload?.highlights || []
+    }),
+    summary: artifactCardSummary('plan_document', {
+      summary: latestPlanDraft.value?.payload?.coreStrategy || ''
+    }),
+    chips: artifactCardChips('plan_document', {
+      highlights: latestPlanDraft.value?.payload?.highlights || []
+    }),
+    payload: {
+      title: d.title || docTitle.value,
+      summary: latestPlanDraft.value?.payload?.coreStrategy || '',
+      highlights: latestPlanDraft.value?.payload?.highlights || []
+    }
+  }
+  pushAiMessage(documentCard)
+  activeArtifact.value = documentCard
   isRunning.value = false
   addExecutionLog('策划文档已生成，请先确认文档内容，再生成 PPT。', d.timestamp || Date.now())
-  pushMsg('ai', '', `策划文档已生成。请先在右侧确认「${docTitle.value}」，确认后再生成 PPT。`)
 }
 
 function handleSlideAdded(d) {
-  // 第一张页到来时切换到 streaming 状态，展开右侧面板
+  // 第一张页到来时切换到 streaming 状态，右侧切换到 PPT 视图
   if (wsState.value !== 'streaming' && wsState.value !== 'done') {
     wsState.value = 'streaming'
     isBuilding.value = true
+    activeArtifact.value = { artifactType: 'ppt_slides' }
   }
   buildTotal.value = d.total || 0
   const current = d.index + 1
@@ -2042,8 +2171,11 @@ function handleSlideAdded(d) {
 
 function handleDone(d) {
   const isBrainOnly = d?.mode === 'brain' && !d?.previewSlides?.length && !d?.downloadUrl
+  const isPptDone = !!(d?.previewSlides?.length || d?.downloadUrl)
   progress.value = 100
-  progressLabel.value = isBrainOnly ? '本轮任务已完成' : '策划方案生成完成！'
+  progressLabel.value = isBrainOnly
+    ? '本轮任务已完成'
+    : (isPptDone ? 'PPT 生成完成！' : '策划方案生成完成！')
   brainPlanItems.value = (brainPlanItems.value.length ? brainPlanItems.value : defaultBrainPlan()).map((item) => ({
     ...item,
     status: 'completed'
@@ -2053,6 +2185,9 @@ function handleDone(d) {
   resultSlides.value       = d.previewSlides || []
   resultDownloadUrl.value  = d.downloadUrl   || ''
   resultData.value         = d
+  if (isPptDone) {
+    activeArtifact.value = { artifactType: 'ppt_slides' }
+  }
   if (d.brief) {
     currentTask.value = {
       ...(currentTask.value || {}),
@@ -2071,23 +2206,25 @@ function handleDone(d) {
       ? 'document'
       : (hasStrategyPreview.value ? 'done' : 'welcome')
   } else {
-    pushMsg('ai', '', '策划方案已生成完成！可在右侧预览，或点击"进入编辑器"精修。')
+    pushMsg('ai', '', isPptDone
+      ? 'PPT 已生成完成，可在右侧直接预览、翻页并下载。'
+      : '策划方案已生成完成！可在右侧预览，或点击"进入编辑器"精修。')
     wsState.value = 'done'
   }
-  addExecutionLog(isBrainOnly ? '本轮任务已完成，可继续补充要求或进入 PPT 生成。' : '任务已完成，支持预览、编辑和保存。')
+  addExecutionLog(
+    isBrainOnly
+      ? '本轮任务已完成，可继续补充要求或进入 PPT 生成。'
+      : (isPptDone ? 'PPT 已生成完成，支持右侧预览和下载。' : '任务已完成，支持预览、编辑和保存。')
+  )
   isRunning.value = false
   waitingForClarification.value = false
+  wasManuallyStopped.value = false
   failedReason.value = ''
   failedStage.value = ''
   // resolve 由 connectSSE 的 done 监听器调用
 }
 
 async function triggerPptBuild({ content: editedHtml } = {}) {
-  if (!currentSessionId.value) {
-    Message.error('当前会话不存在，请重新开始')
-    return
-  }
-
   isRunning.value = true
   isBuilding.value = false
   wsState.value = 'execution'
@@ -2098,16 +2235,43 @@ async function triggerPptBuild({ content: editedHtml } = {}) {
   }
 
   try {
-    const res = await fetch(`/api/agent/${currentSessionId.value}/build-ppt`, {
+    const fallbackPlanPayload = latestPlanDraft.value?.payload || null
+    const fallbackPlan = fallbackPlanPayload
+      ? {
+          title: fallbackPlanPayload.planTitle || docTitle.value || currentTask.value?.topic || '策划方案',
+          coreStrategy: fallbackPlanPayload.coreStrategy || '',
+          highlights: Array.isArray(fallbackPlanPayload.highlights) ? fallbackPlanPayload.highlights : [],
+          sections: Array.isArray(fallbackPlanPayload.sections) ? fallbackPlanPayload.sections : [],
+          visualTheme: fallbackPlanPayload.visualTheme || {},
+          timeline: fallbackPlanPayload.timeline || {},
+          kpis: Array.isArray(fallbackPlanPayload.kpis) ? fallbackPlanPayload.kpis : [],
+          budget: fallbackPlanPayload.budget || {},
+          riskMitigation: Array.isArray(fallbackPlanPayload.riskMitigation) ? fallbackPlanPayload.riskMitigation : []
+        }
+      : null
+
+    if (!currentSessionId.value && !fallbackPlan) {
+      Message.error('当前会话缺少可用于生成 PPT 的方案数据，请先重新生成策划文档')
+      isRunning.value = false
+      wsState.value = 'document'
+      return
+    }
+
+    const requestSessionId = currentSessionId.value || `restore_${activeConversationId.value || Date.now()}`
+    const res = await fetch(`/api/agent/${requestSessionId}/build-ppt`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         docContent: docContent.value,
-        apiKeys: settings.apiKeys
+        apiKeys: settings.apiKeys,
+        planData: currentSessionId.value ? undefined : fallbackPlan,
+        userInput: currentTask.value || {},
+        spaceId: selectedSpaceId.value || ''
       })
     }).then(r => r.json())
 
     if (!res.success) throw new Error(res.message || '启动失败')
+    if (res.sessionId) currentSessionId.value = res.sessionId
     if (!sse || sse.readyState === EventSource.CLOSED) {
       connectBrainSSE(res.streamUrl, () => {})
     }
@@ -2120,17 +2284,55 @@ async function triggerPptBuild({ content: editedHtml } = {}) {
 
 // ── 保存 PPT ─────────────────────────────────────────────────────
 const showSaveModal = ref(false)
+const showSaveModalForMd = ref(false)
+const mdContentToSave = ref('')
 const saveSpaceId   = ref('')
 const saveName      = ref('')
 
-// ── 产出物卡片详情 ─────────────────────────────────────────────────
-const showArtifactModal = ref(false)
-const selectedArtifact = ref(null)
+// ── 产出物面板（单一活跃产出物）──────────────────────────────────
+const activeArtifact = ref(null)  // { artifactType, title, payload, artifactId } | { artifactType: 'ppt_slides' }
 
-function openArtifactModal(msg) {
-  selectedArtifact.value = msg
-  showArtifactModal.value = true
+function selectArtifact(msg) {
+  activeArtifact.value = msg
+  previewCollapsed.value = false
 }
+
+function openSaveResearch() {
+  if (!spaces.value.length) {
+    Message.warning('请先在文档空间创建工作空间')
+    return
+  }
+  const researchItems = researchPreviewItems.value
+  if (!researchItems.length) return
+  const mdContent = researchItems.map(item => `# ${item.payload.focus || '搜索研究'}\n\n${item.payload.summary || ''}\n\n## 关键发现\n\n${(item.payload.keyFindings || []).map(f => `- ${f}`).join('\n')}`).join('\n\n---\n\n')
+  const title = '搜索研究_' + new Date().toLocaleDateString('zh-CN')
+  saveName.value = title
+  showSaveModalForMd.value = true
+  mdContentToSave.value = mdContent
+}
+
+function openSavePlanDraft() {
+  if (!spaces.value.length) {
+    Message.warning('请先在文档空间创建工作空间')
+    return
+  }
+  if (!latestPlanDraft.value) return
+  const draft = latestPlanDraft.value.payload
+  let mdContent = `# ${draft.planTitle || '策划方案草稿'}\n\n## 核心策略\n\n${draft.coreStrategy || ''}\n\n`
+  if (draft.highlights?.length) {
+    mdContent += `## 活动亮点\n\n${draft.highlights.map((h, i) => `${i + 1}. ${h}`).join('\n')}\n\n`
+  }
+  if (draft.sections?.length) {
+    mdContent += `## 方案结构\n\n`
+    draft.sections.forEach((s, i) => {
+      mdContent += `### ${i + 1}. ${s.title}\n\n${(s.keyPoints || []).map(p => `- ${p}`).join('\n')}\n\n`
+    })
+  }
+  saveName.value = draft.planTitle || '策划方案草稿'
+  showSaveModalForMd.value = true
+  mdContentToSave.value = mdContent
+}
+
 
 function showSaveDialog() {
   if (!spaces.value.length) {
@@ -2170,6 +2372,22 @@ async function doSave() {
   }
 }
 
+async function doSaveMd() {
+  if (!saveSpaceId.value || !saveName.value || !mdContentToSave.value) return
+  try {
+    const res = await workspaceApi.createDocument(saveSpaceId.value, saveName.value, 'document')
+    const nodeId = res.data?.node?.id || res.data?.id
+    if (nodeId) {
+      await workspaceApi.saveContent(nodeId, mdContentToSave.value, 'markdown')
+    }
+    showSaveModalForMd.value = false
+    Message.success('已保存到文档空间')
+    mdContentToSave.value = ''
+  } catch (err) {
+    Message.error('保存失败：' + err.message)
+  }
+}
+
 watch(previewVisible, (visible) => {
   if (!visible) return
   nextTick(() => {
@@ -2196,7 +2414,6 @@ onUnmounted(() => {
   closeSseConnection()
   stopResize()
   clearTimeout(persistConversationTimer)
-  clearPendingLoadingTicker()
   window.removeEventListener('resize', syncPreviewWidth)
 })
 </script>
@@ -2432,6 +2649,26 @@ onUnmounted(() => {
   margin-bottom: 0;
 }
 
+.ai-message-card :deep(h1),
+.ai-message-card :deep(h2),
+.ai-message-card :deep(h3) {
+  margin: 0 0 8px;
+  color: #111827;
+  line-height: 1.45;
+}
+
+.ai-message-card :deep(h1) {
+  font-size: 17px;
+}
+
+.ai-message-card :deep(h2) {
+  font-size: 15px;
+}
+
+.ai-message-card :deep(h3) {
+  font-size: 14px;
+}
+
 .ai-message-card :deep(ul) {
   margin-bottom: 8px;
   padding-left: 20px;
@@ -2439,6 +2676,19 @@ onUnmounted(() => {
 
 .ai-message-card :deep(li) {
   margin-bottom: 4px;
+}
+
+.ai-message-card :deep(strong) {
+  color: #111827;
+  font-weight: 700;
+}
+
+.ai-message-card :deep(code) {
+  padding: 1px 6px;
+  border-radius: 6px;
+  background: #f3f4f6;
+  color: #334155;
+  font-size: 12px;
 }
 
 /* ── 澄清卡片 ── */
@@ -2466,58 +2716,90 @@ onUnmounted(() => {
 
 /* ── 产出物消息卡片 ── */
 .artifact-msg-card {
-  max-width: 88%;
-  border: none;
-  padding: 4px 0;
+  width: min(85%, 560px);
+  background: #fff;
+  border: 1px solid #E2E8F0;
+  border-radius: 0;
+  border-left-width: 3px;
+  padding: 12px 14px 10px 12px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 7px;
   cursor: pointer;
-  transition: all 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.artifact-msg-card:hover .artifact-msg-card-arrow {
-  color: #3b82f6;
+.artifact-msg-card:hover {
+  border-color: rgb(var(--arcoblue-6));
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.08);
 }
 
-.artifact-msg-card--plan_draft,
-.artifact-msg-card--review_feedback {
-  background: transparent;
-  border-color: transparent;
+.artifact-msg-card--active {
+  border-color: rgb(var(--arcoblue-6));
+  background: #EFF6FF;
 }
 
 .artifact-msg-card-head {
   display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.artifact-msg-card-icon-wrap {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  display: inline-flex;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
 }
 
 .artifact-msg-card-icon {
-  font-size: 15px;
-  flex-shrink: 0;
+  font-size: 14px;
+  color: #64748B;
+}
+
+.artifact-msg-card-copy {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.artifact-msg-card-kicker {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94A3B8;
+}
+
+.artifact-msg-card--active .artifact-msg-card-icon {
+  color: rgb(var(--arcoblue-6));
+}
+
+.artifact-msg-card--active .artifact-msg-card-icon-wrap {
+  background: rgba(var(--arcoblue-6), 0.08);
+  border-color: rgba(var(--arcoblue-6), 0.24);
 }
 
 .artifact-msg-card-title {
   font-size: 13px;
   font-weight: 600;
-  color: #1f2937;
-  flex: 1;
+  color: #1E293B;
+  line-height: 1.4;
 }
 
-.artifact-msg-card-arrow {
-  font-size: 18px;
-  color: #9ca3af;
-  font-weight: 300;
-  margin-left: auto;
-}
-
-.artifact-msg-card:hover .artifact-msg-card-arrow {
-  color: #3b82f6;
+.artifact-msg-card--active .artifact-msg-card-title {
+  color: rgb(var(--arcoblue-6));
 }
 
 .artifact-msg-card-summary {
-  font-size: 12.5px;
-  color: #6b7280;
+  font-size: 12px;
+  color: #64748B;
   line-height: 1.55;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -2529,15 +2811,44 @@ onUnmounted(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
+}
+
+.artifact-msg-card-footer {
+  display: flex;
+  justify-content: flex-end;
   margin-top: 2px;
+  padding-top: 2px;
+  border-top: 1px solid #F1F5F9;
+}
+
+.artifact-msg-card-view-btn {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgb(var(--arcoblue-6));
+  padding: 3px 8px;
+  border: 1px solid rgba(var(--arcoblue-6), 0.3);
+  border-radius: 5px;
+  background: rgba(var(--arcoblue-6), 0.05);
+  transition: background 0.15s;
+}
+
+.artifact-msg-card:hover .artifact-msg-card-view-btn {
+  background: rgba(var(--arcoblue-6), 0.12);
+}
+
+.artifact-msg-card--active .artifact-msg-card-view-btn {
+  background: rgb(var(--arcoblue-6));
+  color: #fff;
+  border-color: rgb(var(--arcoblue-6));
 }
 
 .artifact-msg-chip {
   font-size: 11px;
   padding: 2px 8px;
-  background: rgba(59, 130, 246, 0.08);
-  color: rgb(var(--arcoblue-6));
-  border-radius: 20px;
+  background: #F8FAFC;
+  color: #475569;
+  border: 1px solid #E2E8F0;
+  border-radius: 999px;
   white-space: nowrap;
   max-width: 160px;
   overflow: hidden;
@@ -2851,6 +3162,17 @@ onUnmounted(() => {
 
 .chat-conversation-sidebar.collapsed {
   border-right-color: transparent;
+}
+
+.chat-conversation-sidebar.collapsed .conversation-sidebar-head {
+  padding: 12px 6px 6px;
+  min-height: 44px;
+  border-bottom-color: transparent;
+}
+
+.chat-conversation-sidebar.collapsed .conversation-sidebar-body {
+  padding: 8px 6px 14px;
+  align-items: center;
 }
 
 .conversation-sidebar-head {
@@ -3932,6 +4254,49 @@ onUnmounted(() => {
   padding: 12px 12px 0;
 }
 
+.pending-doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px 0;
+}
+
+.pending-doc-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #e0e7ff;
+  border-radius: 10px;
+  background: #f0f4ff;
+}
+
+.pending-doc-icon {
+  font-size: 18px;
+  color: #4f46e5;
+  flex-shrink: 0;
+}
+
+.pending-doc-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.pending-doc-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e1b4b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pending-doc-size {
+  margin-top: 2px;
+  font-size: 11px;
+  color: #6366f1;
+}
+
 .pending-image-card {
   display: flex;
   align-items: center;
@@ -4017,18 +4382,23 @@ onUnmounted(() => {
 .input-toolbar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 10px;
   padding: 6px 10px 10px;
 }
 
 .attach-btn {
-  padding: 6px 10px;
+  margin-right: auto;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
-  border-radius: 999px;
+  border-radius: 50%;
   background: #eef2ff;
   color: #334155;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 15px;
   cursor: pointer;
   transition: background 0.18s, color 0.18s;
 }
@@ -4102,6 +4472,265 @@ onUnmounted(() => {
   min-height: 0;
   overflow: hidden;
   background: #f5f6fa;
+}
+
+/* ── 单一产出物面板 ── */
+.artifact-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  background: #fff;
+}
+
+.artifact-pane--ppt {
+  background: #f5f6fa;
+}
+
+.artifact-pane-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid #E2E8F0;
+  flex-shrink: 0;
+  background: #fff;
+}
+
+.artifact-pane-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.artifact-pane-icon {
+  font-size: 16px;
+}
+
+.artifact-pane-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.artifact-pane-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pane-action-btn {
+  padding: 4px 12px;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+  color: #475569;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.pane-action-btn:hover {
+  border-color: rgb(var(--arcoblue-6));
+  color: rgb(var(--arcoblue-6));
+}
+
+.artifact-pane-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pane-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pane-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94A3B8;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pane-text {
+  font-size: 14px;
+  color: #334155;
+  line-height: 1.7;
+}
+
+.pane-plan-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1E293B;
+  margin-bottom: 4px;
+}
+
+.pane-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pane-chip {
+  padding: 3px 10px;
+  background: #EFF6FF;
+  color: rgb(var(--arcoblue-6));
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pane-list {
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.pane-list li {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.pane-numbered-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #F1F5F9;
+  font-size: 13px;
+  color: #334155;
+  line-height: 1.5;
+}
+
+.pane-num {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgb(var(--arcoblue-6));
+  min-width: 18px;
+  padding-top: 1px;
+}
+
+.pane-structure-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.pane-structure-num {
+  font-size: 14px;
+  font-weight: 800;
+  color: rgb(var(--arcoblue-6));
+  opacity: 0.6;
+  min-width: 28px;
+}
+
+.pane-structure-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1E293B;
+  margin-bottom: 3px;
+}
+
+.pane-structure-points {
+  font-size: 12px;
+  color: #94A3B8;
+}
+
+.pane-score {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 16px;
+  background: #FEF2F2;
+  border-radius: 10px;
+}
+.pane-score--pass {
+  background: #F0FDF4;
+}
+
+.pane-score-round {
+  width: 100%;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94A3B8;
+  margin-bottom: 4px;
+}
+
+.pane-score-num {
+  font-size: 36px;
+  font-weight: 900;
+  color: #EF4444;
+}
+.pane-score--pass .pane-score-num {
+  color: #22C55E;
+}
+
+.pane-score-label {
+  font-size: 16px;
+  color: #64748B;
+}
+
+.pane-score-status {
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748B;
+  margin-left: 8px;
+}
+
+.pane-page-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.pane-page-num {
+  font-size: 12px;
+  font-weight: 700;
+  color: rgb(var(--arcoblue-6));
+  opacity: 0.6;
+  min-width: 24px;
+}
+
+.pane-page-layout {
+  font-size: 11px;
+  color: #94A3B8;
+  background: #F1F5F9;
+  padding: 1px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.pane-page-title {
+  font-size: 13px;
+  color: #334155;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pane-json {
+  font-size: 12px;
+  color: #64748B;
+  background: #F8FAFC;
+  border-radius: 8px;
+  padding: 12px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
 /* Welcome */
@@ -5299,5 +5928,360 @@ onUnmounted(() => {
 .clarification-answered {
   font-size: 12px;
   color: #86909c;
+}
+
+/* ── 独立产出物面板 ── */
+.artifact-panel {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+}
+
+.panel-header:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+
+.panel-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-icon {
+  font-size: 16px;
+}
+
+.panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1d2129;
+}
+
+.panel-badge {
+  font-size: 11px;
+  color: #86909c;
+  background: #f4f5f5;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.panel-selected-badge {
+  font-size: 10px;
+  color: #fff;
+  background: #165dff;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.panel-toggle {
+  font-size: 10px;
+  color: #c9cdd4;
+}
+
+.panel-save-btn {
+  font-size: 12px;
+  color: #165dff;
+  background: none;
+  border: 1px solid #165dff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.panel-save-btn:hover {
+  background: #165dff;
+  color: #fff;
+}
+
+.panel-body {
+  padding: 0 16px 16px;
+}
+
+/* ── 搜索研究面板 ── */
+.research-item {
+  padding: 12px;
+  background: #f7f8fa;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.research-item:last-child {
+  margin-bottom: 0;
+}
+
+.research-item-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1d2129;
+  margin-bottom: 6px;
+}
+
+.research-item-summary {
+  font-size: 12px;
+  color: #4e5969;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
+.research-item-findings {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.finding-item {
+  font-size: 12px;
+  color: #4e5969;
+  padding-left: 12px;
+  position: relative;
+}
+
+.finding-item::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #165dff;
+}
+
+/* ── 方案草稿面板 ── */
+.plan-draft-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1d2129;
+  margin-bottom: 12px;
+}
+
+.plan-draft-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.highlight-section {
+  background: #f7f8fa;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.highlight-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1d2129;
+  margin-bottom: 8px;
+}
+
+.highlight-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: #4e5969;
+  margin-bottom: 6px;
+}
+
+.highlight-item:last-child {
+  margin-bottom: 0;
+}
+
+.highlight-num {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  background: #165dff;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.plan-structure {
+  background: #f7f8fa;
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.structure-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1d2129;
+  margin-bottom: 10px;
+}
+
+.structure-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.structure-item:last-child {
+  margin-bottom: 0;
+}
+
+.structure-num {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  background: #e8eefb;
+  color: #165dff;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.structure-info {
+  flex: 1;
+}
+
+.structure-item-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1d2129;
+  margin-bottom: 2px;
+}
+
+.structure-item-points {
+  font-size: 12px;
+  color: #86909c;
+}
+
+/* ── 章节内容面板 ── */
+.section-item {
+  padding: 10px 12px;
+  background: #f7f8fa;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.section-item:last-child {
+  margin-bottom: 0;
+}
+
+.section-item-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.section-item-num {
+  font-size: 12px;
+  font-weight: 600;
+  color: #165dff;
+}
+
+.section-item-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: #1d2129;
+}
+
+.section-item-points {
+  font-size: 12px;
+  color: #86909c;
+  padding-left: 30px;
+}
+
+/* ── PPT预览面板 ── */
+.ppt-outline {
+  background: #f7f8fa;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.ppt-outline-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1d2129;
+  margin-bottom: 10px;
+}
+
+.ppt-page-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #e8eefb;
+}
+
+.ppt-page-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.ppt-page-num {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  background: #e8eefb;
+  color: #165dff;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ppt-page-layout {
+  font-size: 11px;
+  color: #86909c;
+  background: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid #e8eefb;
+}
+
+.ppt-page-name {
+  flex: 1;
+  font-size: 12px;
+  color: #1d2129;
+}
+
+.ppt-slides {
+  margin-top: 12px;
+}
+
+/* ── 空状态 ── */
+.workspace-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  color: #86909c;
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 14px;
+  text-align: center;
 }
 </style>

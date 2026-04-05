@@ -1,0 +1,26 @@
+[   41838ms] [WARNING] [Vue warn]: Unhandled error during execution of setup function 
+  at <App> @ http://127.0.0.1:4173/@vite/client:509
+[   41841ms] [ERROR] ReferenceError: PhBrain is not defined
+    at setup (http://127.0.0.1:4173/src/App.vue?t=1775287571108:22:47)
+    at callWithErrorHandling (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:1873:17)
+    at setupStatefulComponent (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:6694:23)
+    at setupComponent (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:6670:35)
+    at mountComponent (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:5471:3)
+    at processComponent (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:5461:8)
+    at patch (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:5256:28)
+    at render (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:5884:10)
+    at context.reload (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:4486:7)
+    at reload (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:2132:60) @ http://127.0.0.1:4173/@vite/client:509
+[   41843ms] [WARNING] [HMR] Something went wrong during Vue component hot-reload. Full reload required. @ http://127.0.0.1:4173/@vite/client:509
+[   46467ms] [ERROR] TypeError: Cannot read properties of null (reading 'nextSibling')
+    at nextSibling (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:7114:30)
+    at removeFragment (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:5843:11)
+    at remove (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:5822:9)
+    at unmount (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:5806:18)
+    at unmountComponent (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:5858:4)
+    at unmount (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:5796:22)
+    at Object.remove (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:2531:5)
+    at unmount (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:5803:35)
+    at unmountChildren (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:5867:49)
+    at unmount (http://127.0.0.1:4173/@fs/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.vite/deps/vue.runtime.esm-bundler-Cg9CpxwA.js?v=c1e1a735:5805:83) @ http://127.0.0.1:4173/@vite/client:509
+[   46468ms] [WARNING] [HMR] Something went wrong during Vue component hot-reload. Full reload required. @ http://127.0.0.1:4173/@vite/client:509

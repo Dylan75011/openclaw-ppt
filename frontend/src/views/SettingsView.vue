@@ -1,88 +1,112 @@
 <template>
   <div class="page-layout">
+
+    <!-- Header -->
     <div class="page-header">
-      <div>
+      <div class="page-header-inner">
         <div class="page-title">配置中心</div>
         <div class="page-subtitle">管理 API Key 和生成参数</div>
       </div>
-      <a-button type="primary" @click="handleSave" :loading="saving">
-        <template #icon><icon-save /></template>
-        保存配置
-      </a-button>
+      <button class="save-btn" @click="handleSave" :disabled="saving">
+        <PhCheck :size="14" weight="bold" />
+        {{ saving ? '保存中…' : '保存配置' }}
+      </button>
     </div>
 
+    <!-- Body -->
     <div class="settings-body">
       <a-form :model="form" layout="vertical" class="settings-form">
 
         <!-- MiniMax -->
-        <a-card class="settings-card" title="MiniMax（主力模型 · 订阅制）">
-          <a-form-item label="API Key">
-            <a-input-password
-              v-model="form.minimaxApiKey"
-              placeholder="sk-cp-..."
-              allow-clear
-            />
-            <template #extra>sk-cp- 开头为 token plan 订阅 key，主力模型免费多用</template>
-          </a-form-item>
-          <a-form-item label="模型版本">
-            <a-select v-model="form.minimaxModel">
-              <a-option value="MiniMax-M2.5">MiniMax-M2.5（Token Plan 推荐）</a-option>
-              <a-option value="MiniMax-M2.5-highspeed">MiniMax-M2.5-highspeed（更快）</a-option>
-              <a-option value="MiniMax-M2.7">MiniMax-M2.7（最新旗舰）</a-option>
-              <a-option value="MiniMax-M2.7-highspeed">MiniMax-M2.7-highspeed</a-option>
-            </a-select>
-            <template #extra>Token Plan（sk-cp- 开头）订阅后可免费大量调用</template>
-          </a-form-item>
-        </a-card>
+        <div class="settings-section">
+          <div class="section-header">
+            <span class="section-title">MiniMax</span>
+            <span class="section-badge">主力模型 · 订阅制</span>
+          </div>
+          <div class="section-fields">
+            <a-form-item label="API Key">
+              <a-input-password
+                v-model="form.minimaxApiKey"
+                placeholder="sk-cp-..."
+                allow-clear
+              />
+              <template #extra>sk-cp- 开头为 Token Plan 订阅 key，主力模型免费大量调用</template>
+            </a-form-item>
+            <a-form-item label="模型版本">
+              <a-select v-model="form.minimaxModel">
+                <a-option value="MiniMax-M2.5">MiniMax-M2.5（Token Plan 推荐）</a-option>
+                <a-option value="MiniMax-M2.5-highspeed">MiniMax-M2.5-highspeed（更快）</a-option>
+                <a-option value="MiniMax-M2.7">MiniMax-M2.7（最新旗舰）</a-option>
+                <a-option value="MiniMax-M2.7-highspeed">MiniMax-M2.7-highspeed</a-option>
+              </a-select>
+              <template #extra>Token Plan（sk-cp- 开头）订阅后可免费大量调用</template>
+            </a-form-item>
+          </div>
+        </div>
 
         <!-- DeepSeek -->
-        <a-card class="settings-card" title="DeepSeek-R1（评审专用 · 按量付费）">
-          <a-form-item label="API Key">
-            <a-input-password
-              v-model="form.deepseekApiKey"
-              placeholder="sk-..."
-              allow-clear
-            />
-            <template #extra>仅 Critic Agent 评审时调用，每次生成约 1-3 次</template>
-          </a-form-item>
-        </a-card>
+        <div class="settings-section">
+          <div class="section-header">
+            <span class="section-title">DeepSeek-R1</span>
+            <span class="section-badge">评审专用 · 按量付费</span>
+          </div>
+          <div class="section-fields">
+            <a-form-item label="API Key">
+              <a-input-password
+                v-model="form.deepseekApiKey"
+                placeholder="sk-..."
+                allow-clear
+              />
+              <template #extra>仅 Critic Agent 评审时调用，每次生成约 1–3 次</template>
+            </a-form-item>
+          </div>
+        </div>
 
-        <!-- Tavily 兜底搜索 -->
-        <a-card class="settings-card" title="Tavily（可选兜底搜索）">
-          <a-form-item label="API Key">
-            <a-input-password
-              v-model="form.tavilyApiKey"
-              placeholder="tvly-..."
-              allow-clear
-            />
-            <template #extra>默认优先走 MiniMax Web Search；这里只作为降级兜底。<a href="https://tavily.com" target="_blank">获取 Tavily API Key</a></template>
-          </a-form-item>
-        </a-card>
+        <!-- Tavily -->
+        <div class="settings-section">
+          <div class="section-header">
+            <span class="section-title">Tavily</span>
+            <span class="section-badge">可选兜底搜索</span>
+          </div>
+          <div class="section-fields">
+            <a-form-item label="API Key">
+              <a-input-password
+                v-model="form.tavilyApiKey"
+                placeholder="tvly-..."
+                allow-clear
+              />
+              <template #extra>
+                默认优先走 MiniMax Web Search，仅作降级兜底。
+                <a href="https://tavily.com" target="_blank" class="settings-link">获取 Key</a>
+              </template>
+            </a-form-item>
+          </div>
+        </div>
 
         <!-- 评审参数 -->
-        <a-card class="settings-card" title="评审参数">
-          <a-row :gutter="24">
-            <a-col :span="12">
-              <a-form-item label="通过阈值（0-10）">
+        <div class="settings-section">
+          <div class="section-header">
+            <span class="section-title">评审参数</span>
+          </div>
+          <div class="section-fields">
+            <div class="fields-row">
+              <a-form-item label="通过阈值（0–10）" style="flex:1">
                 <a-input-number
                   v-model="form.criticPassScore"
-                  :min="0" :max="10" :step="0.5"
-                  :precision="1"
+                  :min="0" :max="10" :step="0.5" :precision="1"
                   style="width:100%"
                 />
               </a-form-item>
-            </a-col>
-            <a-col :span="12">
-              <a-form-item label="最大评审轮次">
+              <a-form-item label="最大评审轮次" style="flex:1">
                 <a-input-number
                   v-model="form.criticMaxRounds"
                   :min="1" :max="5" :step="1"
                   style="width:100%"
                 />
               </a-form-item>
-            </a-col>
-          </a-row>
-        </a-card>
+            </div>
+          </div>
+        </div>
 
       </a-form>
     </div>
@@ -93,8 +117,9 @@
 import { reactive, ref } from 'vue'
 import { Message } from '@arco-design/web-vue'
 import { useSettingsStore } from '../stores/settings'
+import { PhCheck } from '@phosphor-icons/vue'
 
-const store = useSettingsStore()
+const store  = useSettingsStore()
 const saving = ref(false)
 
 const form = reactive({
@@ -103,7 +128,7 @@ const form = reactive({
   deepseekApiKey:  store.data.deepseekApiKey  || '',
   tavilyApiKey:    store.data.tavilyApiKey    || '',
   criticPassScore: store.data.criticPassScore ?? 7.0,
-  criticMaxRounds: store.data.criticMaxRounds ?? 3
+  criticMaxRounds: store.data.criticMaxRounds ?? 3,
 })
 
 async function handleSave() {
@@ -123,46 +148,171 @@ async function handleSave() {
   overflow: hidden;
 }
 
+/* ── Header ── */
 .page-header {
+  background: #fff;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+  padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 28px;
-  background: #fff;
-  border-bottom: 1px solid var(--color-border);
-  flex-shrink: 0;
+}
+
+.page-header-inner {
+  height: 56px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .page-title {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
-  color: var(--color-text-1);
+  color: #1c1917;
+  letter-spacing: -0.2px;
 }
 
 .page-subtitle {
-  font-size: 13px;
-  color: var(--color-text-3);
-  margin-top: 2px;
+  font-size: 12px;
+  color: #a8a29e;
+  margin-top: 1px;
 }
 
+/* Save button */
+.save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  height: 32px;
+  border: 1px solid rgba(68, 64, 60, 0.18);
+  background: #fff;
+  border-radius: 7px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #44403c;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.12s ease;
+}
+
+.save-btn:hover {
+  background: #faf9f7;
+  border-color: rgba(68, 64, 60, 0.3);
+}
+
+.save-btn:active { transform: scale(0.98); }
+.save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Body ── */
 .settings-body {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 28px;
+  background: #faf9f7;
 }
+
+.settings-body::-webkit-scrollbar { width: 5px; }
+.settings-body::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 3px; }
 
 .settings-form {
-  max-width: 640px;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 8px 0 40px;
+}
+
+/* ── Section ── */
+.settings-section {
+  background: #fff;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: -1px; /* collapse borders */
+  padding: 20px 28px 4px;
+}
+
+.settings-section:first-of-type {
+  margin-top: 20px;
+  border-radius: 12px 12px 0 0;
+}
+
+.settings-section:last-of-type {
+  border-radius: 0 0 12px 12px;
+  margin-bottom: 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1c1917;
+  letter-spacing: -0.1px;
+}
+
+.section-badge {
+  font-size: 11.5px;
+  color: #a8a29e;
+  font-weight: 400;
+}
+
+.section-fields {
   display: flex;
   flex-direction: column;
-  gap: 16px;
 }
 
-.settings-card {
-  border-radius: 12px;
+/* Row layout for paired fields */
+.fields-row {
+  display: flex;
+  gap: 20px;
 }
 
-.settings-card :deep(.arco-card-header) {
-  font-weight: 600;
+/* ── Arco form overrides ── */
+:deep(.arco-form-item-label) {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #57534e;
 }
+
+:deep(.arco-form-item-message) {
+  font-size: 12px;
+  color: #a8a29e;
+}
+
+:deep(.arco-input-wrapper),
+:deep(.arco-select-view) {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  border-radius: 7px !important;
+  background: #faf9f7 !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+:deep(.arco-input-wrapper:hover),
+:deep(.arco-select-view:hover) {
+  border-color: rgba(68, 64, 60, 0.3) !important;
+}
+
+:deep(.arco-input-wrapper.arco-input-focus),
+:deep(.arco-select-view-focus) {
+  border-color: #44403c !important;
+  box-shadow: 0 0 0 2px rgba(68, 64, 60, 0.1) !important;
+}
+
+:deep(.arco-input-number) {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  border-radius: 7px !important;
+  background: #faf9f7 !important;
+}
+
+.settings-link {
+  color: #78716c;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.settings-link:hover { color: #44403c; }
 </style>

@@ -34,7 +34,7 @@
       @cancel="showSave = false"
       :ok-loading="saving"
     >
-      <a-form layout="vertical">
+      <a-form layout="vertical" :model="{ saveSpaceId, saveName }">
         <a-form-item label="选择工作空间">
           <a-select v-model="saveSpaceId" placeholder="选择空间">
             <a-option v-for="s in spaces" :key="s.id" :value="s.id">{{ s.name }}</a-option>

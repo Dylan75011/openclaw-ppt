@@ -1,10 +1,74 @@
 // Brain Agent：ReAct 循环（Reason → Act → Observe → Reason...）
-const { callMinimaxWithTools } = require('../services/llmClients');
+const { callMinimaxWithToolsStream } = require('../services/llmClients');
 const { TOOL_DEFINITIONS, executeTool, getToolDisplay } = require('../services/toolRegistry');
 const { analyzeAgentImages } = require('../services/visionMcp');
 const { buildBrainSystemPrompt } = require('../prompts/brain');
 
 const MAX_TURNS = 15;
+
+// 单条工具结果最大保留字符数（约 250 token）
+const TOOL_RESULT_MAX_CHARS = 1000;
+// 估算 token 数（中英混合约 0.4 token/字符）
+function estimateTokens(text) {
+  return Math.ceil((text || '').length * 0.4);
+}
+// 整体对话历史 token 警戒线（超过时截断早期工具结果）
+const CONTEXT_TOKEN_WARN = 10000;
+
+/**
+ * 流式输出中实时过滤 <think>...</think> 块
+ * 保留 7 个字符的缓冲区以处理跨 chunk 的标签边界
+ */
+class ThinkFilter {
+  constructor() {
+    this.buf = '';
+    this.inThink = false;
+  }
+
+  push(delta) {
+    this.buf += delta;
+    let out = '';
+
+    while (this.buf.length > 0) {
+      if (this.inThink) {
+        const end = this.buf.indexOf('</think>');
+        if (end !== -1) {
+          this.buf = this.buf.slice(end + 8);
+          this.inThink = false;
+        } else {
+          // 仍在 think 块内，保留末尾以防 </think> 被截断
+          if (this.buf.length > 50) this.buf = this.buf.slice(-9);
+          break;
+        }
+      } else {
+        const start = this.buf.indexOf('<think>');
+        if (start !== -1) {
+          out += this.buf.slice(0, start);
+          this.buf = this.buf.slice(start + 7);
+          this.inThink = true;
+        } else {
+          // 无 think 块 — 安全输出，末尾保留 6 字符防截断
+          const safe = this.buf.length > 7 ? this.buf.slice(0, -7) : '';
+          out += safe;
+          this.buf = this.buf.slice(safe.length);
+          break;
+        }
+      }
+    }
+    return out;
+  }
+
+  flush() {
+    // 流结束，输出剩余缓冲
+    const remaining = this.buf;
+    const wasInThink = this.inThink;
+    this.buf = '';
+    this.inThink = false;
+    // 若仍在 think 块内（标签未关闭），buffer 内容是思考过程，直接丢弃
+    if (wasInThink) return '';
+    return remaining.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+  }
+}
 
 function isStopRequested(session) {
   return !!session?.stopRequested;
@@ -57,18 +121,42 @@ function stripThinkingBlocks(text) {
 }
 
 function buildMessages(session) {
-  return [
-    { role: 'system', content: buildBrainSystemPrompt() },
-    ...session.messages.map((message) => {
-      const next = {
-        role: message.role,
-        content: message.content
-      };
-      if (message.tool_calls) next.tool_calls = message.tool_calls;
-      if (message.tool_call_id) next.tool_call_id = message.tool_call_id;
-      return next;
-    })
-  ];
+  const systemPrompt = buildBrainSystemPrompt();
+
+  // 第一步：对每条 tool 消息的 content 做截断，防止搜索/抓取结果撑爆 token
+  const trimmed = session.messages.map((message) => {
+    const next = {
+      role: message.role,
+      content: message.content
+    };
+    if (message.tool_calls)   next.tool_calls   = message.tool_calls;
+    if (message.tool_call_id) next.tool_call_id = message.tool_call_id;
+
+    if (message.role === 'tool' && typeof message.content === 'string'
+        && message.content.length > TOOL_RESULT_MAX_CHARS) {
+      next.content = message.content.slice(0, TOOL_RESULT_MAX_CHARS) + '\n...[结果已截断]';
+    }
+    return next;
+  });
+
+  // 第二步：估算总 token，超出警戒线时删除最早的工具往返（user→assistant+tool_calls→tool）
+  const totalTokens = estimateTokens(systemPrompt)
+    + trimmed.reduce((sum, m) => sum + estimateTokens(JSON.stringify(m)), 0);
+
+  if (totalTokens > CONTEXT_TOKEN_WARN && trimmed.length > 6) {
+    // 保留最近 6 条，其余只保留 user/assistant 文字，丢弃 tool 结果
+    const recent = trimmed.slice(-6);
+    const older  = trimmed.slice(0, -6).filter(m => m.role !== 'tool').map(m => {
+      if (m.role === 'assistant' && m.tool_calls) {
+        // assistant 只保留文字部分，去掉 tool_calls
+        return { role: 'assistant', content: m.content || '[工具调用，已归档]' };
+      }
+      return m;
+    });
+    return [{ role: 'system', content: systemPrompt }, ...older, ...recent];
+  }
+
+  return [{ role: 'system', content: systemPrompt }, ...trimmed];
 }
 
 function canCallBuildPpt(session) {
@@ -114,26 +202,61 @@ function buildImageContextBlock(attachments = []) {
   ].join('\n\n');
 }
 
-async function prepareUserInputMessage(text, attachments = [], session, onEvent) {
+// 单份文档注入的最大字符数（约 2000 token）
+const DOC_TEXT_MAX_CHARS = 8000;
+
+function buildDocumentContextBlock(documents = []) {
+  if (!documents || !documents.length) return '';
+
+  const parts = documents.map((doc, index) => {
+    if (doc.error) {
+      return `[文档${index + 1}：${doc.name}]\n解析失败：${doc.error}`;
+    }
+    const pageInfo = doc.pages ? `，共 ${doc.pages} 页` : '';
+    const truncated = doc.text.length > DOC_TEXT_MAX_CHARS;
+    const text = truncated ? doc.text.slice(0, DOC_TEXT_MAX_CHARS) + '\n...[内容已截断，仅展示前段]' : doc.text;
+    return `[文档${index + 1}：${doc.name}${pageInfo}]\n${text}`;
+  });
+
+  return [
+    '以下是用户上传的文档内容，请结合这些文档完成任务：',
+    ...parts
+  ].join('\n\n---\n\n');
+}
+
+async function prepareUserInputMessage(text, attachments = [], documents = [], session, onEvent) {
   const normalizedText = String(text || '').trim();
-  if (!attachments.length) {
+  const parts = [];
+
+  if (attachments.length) {
+    onEvent('text', { text: '我先看一下你发来的图片内容。' });
+    const analyzedAttachments = await analyzeAgentImages(attachments, {
+      minimaxApiKey: session.apiKeys.minimaxApiKey,
+      userText: normalizedText
+    });
+    const imageContext = buildImageContextBlock(analyzedAttachments);
+    if (normalizedText) parts.push(normalizedText);
+    if (imageContext) parts.push(imageContext);
+
+    const docContext = buildDocumentContextBlock(documents);
+    if (docContext) parts.push(docContext);
+
     return {
-      content: normalizedText,
-      attachments: []
+      content: parts.join('\n\n') || '用户上传了图片，请结合图片内容理解需求并作答。',
+      attachments: toPublicAttachments(analyzedAttachments)
     };
   }
 
-  onEvent('text', { text: '我先看一下你发来的图片内容。' });
-  const analyzedAttachments = await analyzeAgentImages(attachments, {
-    minimaxApiKey: session.apiKeys.minimaxApiKey,
-    userText: normalizedText
-  });
-  const imageContext = buildImageContextBlock(analyzedAttachments);
-  const content = [normalizedText, imageContext].filter(Boolean).join('\n\n');
+  if (normalizedText) parts.push(normalizedText);
+
+  if (documents.length) {
+    const docContext = buildDocumentContextBlock(documents);
+    if (docContext) parts.push(docContext);
+  }
 
   return {
-    content: content || '用户上传了图片，请结合图片内容理解需求并作答。',
-    attachments: toPublicAttachments(analyzedAttachments)
+    content: parts.join('\n\n') || (documents.length ? '用户上传了文档，请结合文档内容理解需求并作答。' : ''),
+    attachments: []
   };
 }
 
@@ -141,7 +264,7 @@ async function prepareUserInputMessage(text, attachments = [], session, onEvent)
  * 收到用户新消息，启动/继续 Brain 循环
  */
 async function run(session, userMessage, onEvent, options = {}) {
-  const prepared = await prepareUserInputMessage(userMessage, options.attachments || [], session, onEvent);
+  const prepared = await prepareUserInputMessage(userMessage, options.attachments || [], options.documents || [], session, onEvent);
   appendSessionAttachments(session, prepared.attachments);
   session.messages.push({
     role: 'user',
@@ -158,7 +281,7 @@ async function run(session, userMessage, onEvent, options = {}) {
  * 用户回答了 ask_user 的问题，恢复循环
  */
 async function resume(session, userReply, onEvent, options = {}) {
-  const prepared = await prepareUserInputMessage(userReply, options.attachments || [], session, onEvent);
+  const prepared = await prepareUserInputMessage(userReply, options.attachments || [], options.documents || [], session, onEvent);
   appendSessionAttachments(session, prepared.attachments);
   // 把用户回答作为 tool result 补回去
   if (session.pendingToolCallId) {
@@ -195,7 +318,10 @@ async function runLoop(session, onEvent) {
 
     let choice;
     try {
-      choice = await callMinimaxWithTools(
+      const filter = new ThinkFilter();
+      let hasStreamedText = false;
+
+      choice = await callMinimaxWithToolsStream(
         buildMessages(session),
         TOOL_DEFINITIONS,
         {
@@ -203,8 +329,26 @@ async function runLoop(session, onEvent) {
           minimaxModel: session.apiKeys.minimaxModel,
           maxTokens: 4096,
           temperature: 0.7
+        },
+        (chunk) => {
+          if (chunk.type !== 'text_delta') return;
+          const clean = filter.push(chunk.delta);
+          if (clean) {
+            if (!hasStreamedText) {
+              hasStreamedText = true;
+            }
+            onEvent('text_delta', { delta: clean });
+          }
         }
       );
+
+      // 刷出过滤器中剩余缓冲
+      const tail = filter.flush();
+      if (tail) onEvent('text_delta', { delta: tail });
+
+      // 通知前端本轮文字流结束
+      if (hasStreamedText || tail) onEvent('text_end', {});
+
     } catch (err) {
       console.error('[BrainAgent] LLM 调用失败:', err.message);
       if (isStopRequested(session)) {
@@ -221,7 +365,7 @@ async function runLoop(session, onEvent) {
       return;
     }
 
-    const { message, finish_reason } = choice;
+    const { message } = choice;
 
     // 存储 assistant 消息（含 tool_calls 或纯文本）
     session.messages.push({
@@ -229,21 +373,6 @@ async function runLoop(session, onEvent) {
       content: message.content || null,
       ...(message.tool_calls ? { tool_calls: message.tool_calls } : {})
     });
-
-    // 如果有文本内容，推送给前端（剥离思考过程，过长时截断）
-    if (message.content) {
-      const rawText = message.content;
-      const text = stripThinkingBlocks(rawText).trim();
-      if (text) {
-        let displayText = text;
-        if (text.length > 800) {
-          displayText = text.slice(0, 800) + '\n\n[内容较长，已截断]';
-        }
-        if (!isInternalThinking(rawText)) {
-          onEvent('text', { text: displayText });
-        }
-      }
-    }
 
     // 没有工具调用 → Brain 决定自然结束本轮
     if (!message.tool_calls || message.tool_calls.length === 0) {

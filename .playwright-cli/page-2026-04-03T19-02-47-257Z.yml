@@ -1,0 +1,48 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: OC
+      - generic [ref=e8]: OpenClaw
+    - generic [ref=e10]:
+      - generic [ref=e11] [cursor=pointer]:
+        - img [ref=e13]
+        - generic [ref=e15]: 文档空间
+      - generic [ref=e16] [cursor=pointer]:
+        - img [ref=e18]
+        - generic [ref=e21]: 智能体
+      - generic [ref=e22] [cursor=pointer]:
+        - img [ref=e24]
+        - generic [ref=e27]: 配置中心
+    - generic [ref=e28]:
+      - button [ref=e29] [cursor=pointer]:
+        - img [ref=e31]
+      - generic [ref=e33]: v2.0
+  - generic [ref=e35]:
+    - generic [ref=e37]:
+      - generic [ref=e38]: 文档空间
+      - generic [ref=e39]: 管理活动策划文档与生成的 PPT 方案
+    - generic [ref=e40]:
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]: 工作空间
+          - button [ref=e44] [cursor=pointer]:
+            - img [ref=e46]
+        - generic [ref=e49]:
+          - generic [ref=e50] [cursor=pointer]:
+            - img [ref=e54]
+            - generic [ref=e56]:
+              - img [ref=e58]
+              - generic [ref=e61]:
+                - generic [ref=e62]: 华为
+                - img [ref=e64]
+          - generic [ref=e67] [cursor=pointer]:
+            - img [ref=e71]
+            - generic [ref=e73]:
+              - img [ref=e75]
+              - generic [ref=e78]:
+                - generic [ref=e79]: 岚图
+                - img [ref=e81]
+      - generic [ref=e85]:
+        - img [ref=e86]
+        - generic [ref=e88]: 选择或新建文档
+        - generic [ref=e89]: 从左侧选择节点，或点击 ＋ 新建工作空间

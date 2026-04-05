@@ -1,0 +1,59 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e7]: OC
+    - generic [ref=e10]:
+      - generic [ref=e87] [cursor=pointer]:
+        - img [ref=e89]
+        - generic: 文档空间
+      - generic [ref=e91] [cursor=pointer]:
+        - img [ref=e93]
+        - generic: 智能体
+      - generic [ref=e96] [cursor=pointer]:
+        - img [ref=e98]
+        - generic: 配置中心
+    - button [ref=e29] [cursor=pointer]:
+      - img [ref=e101]
+  - generic [ref=e35]:
+    - complementary [ref=e36]:
+      - generic [ref=e37]:
+        - generic [ref=e39]:
+          - generic [ref=e40]: 当前空间
+          - generic "华为" [ref=e41] [cursor=pointer]:
+            - textbox "选择工作空间"
+            - generic [ref=e42]: 华为
+            - img [ref=e45]
+        - button "+" [ref=e47] [cursor=pointer]
+      - generic [ref=e48]:
+        - generic [ref=e49]: 历史对话
+        - generic [ref=e51]:
+          - img [ref=e53]
+          - textbox "搜索历史对话" [ref=e55]
+        - generic [ref=e57]:
+          - generic [ref=e58]: 今天
+          - generic [ref=e59]:
+            - button "帮我做一个小米汽车技术发布会活动策划方案，目标受众是科技媒体和高 2 条消息 · 1 分钟前 •••" [ref=e107] [cursor=pointer]:
+              - generic [ref=e61]:
+                - generic [ref=e62]: 帮我做一个小米汽车技术发布会活动策划方案，目标受众是科技媒体和高
+                - generic [ref=e63]: 2 条消息 · 1 分钟前
+              - generic [ref=e64]: •••
+            - button "你好 16 条消息 · 12 小时前 •••" [ref=e65] [cursor=pointer]:
+              - generic [ref=e66]:
+                - generic [ref=e67]: 你好
+                - generic [ref=e68]: 16 条消息 · 12 小时前
+              - generic [ref=e69]: •••
+            - button "华为 Mate70 新品发布会 38 条消息 · 16 小时前 •••" [ref=e70] [cursor=pointer]:
+              - generic [ref=e71]:
+                - generic [ref=e72]: 华为 Mate70 新品发布会
+                - generic [ref=e73]: 38 条消息 · 16 小时前
+              - generic [ref=e74]: •••
+    - button "‹" [ref=e75] [cursor=pointer]
+    - generic [ref=e76]:
+      - generic [ref=e110]: 帮我做一个小米汽车技术发布会活动策划方案，目标受众是科技媒体和高意向用户，突出智能驾驶与生态联动
+      - generic [ref=e79]:
+        - textbox "描述活动需求，如：帮我为小米做一个大型新品发布会..." [ref=e81]
+        - button [ref=e116] [cursor=pointer]:
+          - img [ref=e117]
+    - button "›" [ref=e123] [cursor=pointer]
+    - generic [ref=e125]:
+      - generic [ref=e126]: 📋
+      - generic [ref=e127]: 系统正在按计划推进任务，会把任务理解、搜索研究和方案草稿同步展示在这里。

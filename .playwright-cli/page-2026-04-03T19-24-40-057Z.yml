@@ -1,0 +1,419 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - generic [ref=e7]: OC
+      - generic [ref=e8]: OpenClaw
+    - generic [ref=e10]:
+      - generic [ref=e11] [cursor=pointer]:
+        - img [ref=e13]
+        - generic [ref=e15]: 文档空间
+      - generic [ref=e16] [cursor=pointer]:
+        - img [ref=e18]
+        - generic [ref=e21]: 智能体
+      - generic [ref=e22] [cursor=pointer]:
+        - img [ref=e24]
+        - generic [ref=e27]: 配置中心
+    - generic [ref=e28]:
+      - button [ref=e29] [cursor=pointer]:
+        - img [ref=e31]
+      - generic [ref=e33]: v2.0
+  - generic [ref=e35]:
+    - complementary [ref=e36]:
+      - generic [ref=e37]:
+        - generic [ref=e39]:
+          - generic [ref=e40]: 当前空间
+          - generic "华为" [ref=e41] [cursor=pointer]:
+            - textbox "选择工作空间"
+            - generic [ref=e42]: 华为
+            - img [ref=e45]
+        - button "+" [ref=e47] [cursor=pointer]
+      - generic [ref=e48]:
+        - generic [ref=e49]: 历史对话
+        - generic [ref=e51]:
+          - img [ref=e53]
+          - textbox "搜索历史对话" [ref=e55]
+        - generic [ref=e57]:
+          - generic [ref=e58]: 今天
+          - generic [ref=e59]:
+            - button "你好 16 条消息 · 28 分钟前 •••" [ref=e183] [cursor=pointer]:
+              - generic [ref=e61]:
+                - generic [ref=e62]: 你好
+                - generic [ref=e63]: 16 条消息 · 28 分钟前
+              - generic [ref=e64]: •••
+            - button "华为 Mate70 新品发布会 38 条消息 · 4 小时前 •••" [active] [ref=e65] [cursor=pointer]:
+              - generic [ref=e66]:
+                - generic [ref=e67]: 华为 Mate70 新品发布会
+                - generic [ref=e68]: 38 条消息 · 4 小时前
+              - generic [ref=e69]: •••
+    - button "‹" [ref=e70] [cursor=pointer]
+    - generic [ref=e71]:
+      - generic [ref=e72]:
+        - generic [ref=e186]: 你好，简单介绍一下你自己
+        - generic [ref=e188]: 你好！我是 OpenClaw 的智能活动策划顾问。 我可以帮你完成活动策划的全流程：从收集行业信息、制定策略方案，到生成 PPT 文档。核心能力包括搜索竞品案例、分析行业趋势、设计活动创意等。 简单来说——告诉我你想做什么活动，我来帮你规划。
+        - generic [ref=e190]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e193]: 帮我给华为 Mate70 新品发布会做一个策划方案和 PPT，目标是吸引科技媒体和高端用户，突出 AI 功能创新
+        - generic [ref=e195]: 好的，我来帮你策划华为 Mate70 新品发布会。先收集一些行业信息和竞品案例。
+        - generic [ref=e197]:
+          - generic [ref=e198]:
+            - generic [ref=e199]: 🔧
+            - generic [ref=e201]: 整理任务简报
+          - generic [ref=e202]:
+            - generic [ref=e203]: 已整理任务简报：华为
+            - button "查看详情" [ref=e204] [cursor=pointer]
+        - generic [ref=e206] [cursor=pointer]:
+          - generic [ref=e207]:
+            - img [ref=e209]
+            - generic [ref=e211]:
+              - generic [ref=e212]: 任务理解
+              - generic [ref=e213]: 任务理解：华为
+          - generic [ref=e214]: 吸引科技媒体和高端用户，突出AI功能创新
+          - generic [ref=e215]:
+            - generic [ref=e216]: product_launch
+            - generic [ref=e217]: 大型发布会，500-800人
+          - generic [ref=e219]: 在右侧查看
+        - generic [ref=e221]:
+          - generic [ref=e222]:
+            - generic [ref=e223]: 🔍
+            - generic [ref=e224]:
+              - generic [ref=e225]: 搜索：华为Mate70 AI功能 发布会
+              - generic [ref=e226]: 找到 5 条结果（minimax）
+          - generic [ref=e227]:
+            - generic [ref=e228]: 找到 5 条搜索结果（minimax）
+            - button "查看详情" [ref=e229] [cursor=pointer]
+        - generic [ref=e231] [cursor=pointer]:
+          - generic [ref=e232]:
+            - img [ref=e234]
+            - generic [ref=e236]:
+              - generic [ref=e237]: 搜索研究
+              - generic [ref=e238]: 搜索发现：华为Mate70 AI功能 发布会
+          - generic [ref=e239]: 华为Mate 70 Pro墨韵黑限时特惠-中关村在线；华为Mate70系列发布:AI隔空传送功能引领未来交互新体验_用户_文智_手势；国外18禁污官方版-国外18禁污2026最新N.9.38.31-2265安卓网
+          - generic [ref=e241]: 在右侧查看
+        - generic [ref=e243]:
+          - generic [ref=e244]:
+            - generic [ref=e245]: 🔍
+            - generic [ref=e246]:
+              - generic [ref=e247]: 搜索：高端手机发布会创意形式 2024
+              - generic [ref=e248]: 找到 5 条结果（minimax）
+          - generic [ref=e249]:
+            - generic [ref=e250]: 找到 5 条搜索结果（minimax）
+            - button "查看详情" [ref=e251] [cursor=pointer]
+        - generic [ref=e253] [cursor=pointer]:
+          - generic [ref=e254]:
+            - img [ref=e256]
+            - generic [ref=e258]:
+              - generic [ref=e259]: 搜索研究
+              - generic [ref=e260]: 搜索发现：高端手机发布会创意形式 2024
+          - generic [ref=e261]: 手机品牌新品科技发布会“以美之名”主题活动策划方案；2024 苹果发布会:科技盛宴,亮点纷呈 - 今日头条；2024魅族Lucky08生态AI新品发布会方案_StarV_智能_产品
+          - generic [ref=e263]: 在右侧查看
+        - generic [ref=e265]:
+          - generic [ref=e266]:
+            - generic [ref=e267]: 🔍
+            - generic [ref=e268]:
+              - generic [ref=e269]: 搜索：科技发布会舞台设计 沉浸式体验 2024
+              - generic [ref=e270]: 找到 5 条结果（minimax）
+          - generic [ref=e271]:
+            - generic [ref=e272]: 找到 5 条搜索结果（minimax）
+            - button "查看详情" [ref=e273] [cursor=pointer]
+        - generic [ref=e275] [cursor=pointer]:
+          - generic [ref=e276]:
+            - img [ref=e278]
+            - generic [ref=e280]:
+              - generic [ref=e281]: 搜索研究
+              - generic [ref=e282]: 搜索发现：科技发布会舞台设计 沉浸式体验 2024
+          - generic [ref=e283]: 点亮MAMA舞台的科技之光——维世科技LED升降折叠屏震撼亮相!张力led_网易订阅；2024全球数字经济大会:沉浸式体验区感受未来生活新风尚_中国网；舞美新纪元!这场发布会设计让人目不转睛_舞台_细节_观众
+          - generic [ref=e285]: 在右侧查看
+        - generic [ref=e287]:
+          - generic [ref=e288]:
+            - generic [ref=e289]: 🔍
+            - generic [ref=e290]:
+              - generic [ref=e291]: 搜索：华为发布会回顾 历年创意 Mate系列
+              - generic [ref=e292]: 找到 5 条结果（minimax）
+          - generic [ref=e293]:
+            - generic [ref=e294]: 找到 5 条搜索结果（minimax）
+            - button "查看详情" [ref=e295] [cursor=pointer]
+        - generic [ref=e297] [cursor=pointer]:
+          - generic [ref=e298]:
+            - img [ref=e300]
+            - generic [ref=e302]:
+              - generic [ref=e303]: 搜索研究
+              - generic [ref=e304]: 搜索发现：华为发布会回顾 历年创意 Mate系列
+          - generic [ref=e305]: 华为 跨越山海,乘风破浪,不断创新,成为中华大地的脊梁!华为Mate系列历届发布会高能盘点! 华为mate60pro 华为发布会 绿联；华为手机全系全面回归 华为春季全场景发布会汇总；华为发布会 - 华为官网
+          - generic [ref=e307]: 在右侧查看
+        - generic [ref=e309]:
+          - generic [ref=e310]:
+            - generic [ref=e311]: 🔧
+            - generic [ref=e313]: 更新计划（2 项）
+          - generic [ref=e314]:
+            - generic [ref=e315]: 已更新 2 项计划
+            - button "查看详情" [ref=e316] [cursor=pointer]
+        - generic [ref=e318]:
+          - generic [ref=e319]:
+            - generic [ref=e320]: 📋
+            - generic [ref=e321]:
+              - generic [ref=e322]: 制定策划方案：华为
+              - generic [ref=e323]: 正在整理策划文档...
+          - generic [ref=e324]:
+            - generic [ref=e325]: 方案已形成，评分 8.1
+            - button "查看详情" [ref=e326] [cursor=pointer]
+        - generic [ref=e328]: 策划文档已生成。请先在右侧确认「「跨越·共生」华为Mate70新品发布会策划方案」，确认后再生成 PPT。
+        - generic [ref=e330] [cursor=pointer]:
+          - generic [ref=e331]:
+            - img [ref=e333]
+            - generic [ref=e335]:
+              - generic [ref=e336]: 方案草稿
+              - generic [ref=e337]: 方案草稿：「跨越·共生」华为Mate70新品发布会策划方案
+          - generic [ref=e338]: 通过沉浸式AI互动体验，将华为Mate70的AI功能从'技术参数'转化为'感官记忆'，让媒体和用户在亲身参与中建立对品牌AI领先性的深度认同。
+          - generic [ref=e339]:
+            - generic [ref=e340]: AI隔空传送互动装置：搭建沉浸式光影空间，用户可通过真实手势将空中图像'抓取'并'传送'至大屏，零距离感受革命性交互
+            - generic [ref=e341]: AI修图大师实景体验区：设置专业影棚级光场，用户拍摄后现场体验AI修图的一键消除、智慧补光、智能构图功能
+            - generic [ref=e342]: 主舞台采用720°环绕式LED天幕：打造'星河入梦'沉浸式视觉场域，发布会全程实现裸眼3D视觉盛宴
+          - generic [ref=e344]: 在右侧查看
+        - generic [ref=e346]: "方案已完成，我来介绍一下核心亮点： --- ## 华为 Mate70 新品发布会策划方案 **主题：「跨越·共生」** ### 🎯 核心策略 通过沉浸式AI互动体验，将AI功能从\"技术参数\"转化为\"感官记忆\"，让媒体和用户在亲身参与中建立对品牌AI领先性的深度认同。 ### ✨ 三大亮点 1. **AI隔空传送互动装置** - 搭建沉浸式光影空间，用户可通过真实手势将空中图像\"抓取\"并\"传送\"至大屏 - 零距离感受革命性交互，拍照打卡传播性强 2. **AI修图大师实景体验区** - 专业影棚级光场，现场拍摄后即刻体验AI修图的一键消除、智慧补光、智能构图 - 让\"AI修图大师\"从概念变为可感知的功能 3. **720°环绕式LED天幕舞台** - 打造\"星河入梦\"沉浸式视觉场域 - 发布会全程裸眼3D视觉盛宴 ### 🎨 视觉风格 科技未来主义与东方美学的融合，通过流动光影和极简几何形态传递华为的技术哲学 --- 需要我生成PPT 吗？"
+        - generic [ref=e348]: 方案方向已经整理完了，我会带着这版判断继续配合你细化，确认后也可以直接生成 PPT。
+        - generic [ref=e350]: 好的，我来帮你策划华为 Mate70 新品发布会。先收集一些行业信息和竞品案例。
+        - generic [ref=e352]:
+          - generic [ref=e353]:
+            - generic [ref=e354]: 🔧
+            - generic [ref=e356]: 整理任务简报
+          - generic [ref=e357]:
+            - generic [ref=e358]: 已整理任务简报：华为
+            - button "查看详情" [ref=e359] [cursor=pointer]
+        - generic [ref=e361] [cursor=pointer]:
+          - generic [ref=e362]:
+            - img [ref=e364]
+            - generic [ref=e366]:
+              - generic [ref=e367]: 任务理解
+              - generic [ref=e368]: 任务理解：华为
+          - generic [ref=e369]: 吸引科技媒体和高端用户，突出AI功能创新
+          - generic [ref=e370]:
+            - generic [ref=e371]: product_launch
+            - generic [ref=e372]: 大型发布会，500-800人
+          - generic [ref=e374]: 在右侧查看
+        - generic [ref=e376]:
+          - generic [ref=e377]:
+            - generic [ref=e378]: 🔍
+            - generic [ref=e379]:
+              - generic [ref=e380]: 搜索：华为Mate70 AI功能 发布会
+              - generic [ref=e381]: 找到 5 条结果（minimax）
+          - generic [ref=e382]:
+            - generic [ref=e383]: 找到 5 条搜索结果（minimax）
+            - button "查看详情" [ref=e384] [cursor=pointer]
+        - generic [ref=e386] [cursor=pointer]:
+          - generic [ref=e387]:
+            - img [ref=e389]
+            - generic [ref=e391]:
+              - generic [ref=e392]: 搜索研究
+              - generic [ref=e393]: 搜索发现：华为Mate70 AI功能 发布会
+          - generic [ref=e394]: 华为Mate 70 Pro墨韵黑限时特惠-中关村在线；华为Mate70系列发布:AI隔空传送功能引领未来交互新体验_用户_文智_手势；国外18禁污官方版-国外18禁污2026最新N.9.38.31-2265安卓网
+          - generic [ref=e396]: 在右侧查看
+        - generic [ref=e398]:
+          - generic [ref=e399]:
+            - generic [ref=e400]: 🔍
+            - generic [ref=e401]:
+              - generic [ref=e402]: 搜索：高端手机发布会创意形式 2024
+              - generic [ref=e403]: 找到 5 条结果（minimax）
+          - generic [ref=e404]:
+            - generic [ref=e405]: 找到 5 条搜索结果（minimax）
+            - button "查看详情" [ref=e406] [cursor=pointer]
+        - generic [ref=e408] [cursor=pointer]:
+          - generic [ref=e409]:
+            - img [ref=e411]
+            - generic [ref=e413]:
+              - generic [ref=e414]: 搜索研究
+              - generic [ref=e415]: 搜索发现：高端手机发布会创意形式 2024
+          - generic [ref=e416]: 手机品牌新品科技发布会“以美之名”主题活动策划方案；2024 苹果发布会:科技盛宴,亮点纷呈 - 今日头条；2024魅族Lucky08生态AI新品发布会方案_StarV_智能_产品
+          - generic [ref=e418]: 在右侧查看
+        - generic [ref=e420]:
+          - generic [ref=e421]:
+            - generic [ref=e422]: 🔍
+            - generic [ref=e423]:
+              - generic [ref=e424]: 搜索：科技发布会舞台设计 沉浸式体验 2024
+              - generic [ref=e425]: 找到 5 条结果（minimax）
+          - generic [ref=e426]:
+            - generic [ref=e427]: 找到 5 条搜索结果（minimax）
+            - button "查看详情" [ref=e428] [cursor=pointer]
+        - generic [ref=e430] [cursor=pointer]:
+          - generic [ref=e431]:
+            - img [ref=e433]
+            - generic [ref=e435]:
+              - generic [ref=e436]: 搜索研究
+              - generic [ref=e437]: 搜索发现：科技发布会舞台设计 沉浸式体验 2024
+          - generic [ref=e438]: 点亮MAMA舞台的科技之光——维世科技LED升降折叠屏震撼亮相!张力led_网易订阅；2024全球数字经济大会:沉浸式体验区感受未来生活新风尚_中国网；舞美新纪元!这场发布会设计让人目不转睛_舞台_细节_观众
+          - generic [ref=e440]: 在右侧查看
+        - generic [ref=e442]:
+          - generic [ref=e443]:
+            - generic [ref=e444]: 🔍
+            - generic [ref=e445]:
+              - generic [ref=e446]: 搜索：华为发布会回顾 历年创意 Mate系列
+              - generic [ref=e447]: 找到 5 条结果（minimax）
+          - generic [ref=e448]:
+            - generic [ref=e449]: 找到 5 条搜索结果（minimax）
+            - button "查看详情" [ref=e450] [cursor=pointer]
+        - generic [ref=e452] [cursor=pointer]:
+          - generic [ref=e453]:
+            - img [ref=e455]
+            - generic [ref=e457]:
+              - generic [ref=e458]: 搜索研究
+              - generic [ref=e459]: 搜索发现：华为发布会回顾 历年创意 Mate系列
+          - generic [ref=e460]: 华为 跨越山海,乘风破浪,不断创新,成为中华大地的脊梁!华为Mate系列历届发布会高能盘点! 华为mate60pro 华为发布会 绿联；华为手机全系全面回归 华为春季全场景发布会汇总；华为发布会 - 华为官网
+          - generic [ref=e462]: 在右侧查看
+        - generic [ref=e464]:
+          - generic [ref=e465]:
+            - generic [ref=e466]: 🔧
+            - generic [ref=e468]: 更新计划（2 项）
+          - generic [ref=e469]:
+            - generic [ref=e470]: 已更新 2 项计划
+            - button "查看详情" [ref=e471] [cursor=pointer]
+        - generic [ref=e473]:
+          - generic [ref=e474]:
+            - generic [ref=e475]: 📋
+            - generic [ref=e476]:
+              - generic [ref=e477]: 制定策划方案：华为
+              - generic [ref=e478]: 正在整理策划文档...
+          - generic [ref=e479]:
+            - generic [ref=e480]: 方案已形成，评分 8.1
+            - button "查看详情" [ref=e481] [cursor=pointer]
+        - generic [ref=e483]: 策划文档已生成。请先在右侧确认「「跨越·共生」华为Mate70新品发布会策划方案」，确认后再生成 PPT。
+        - generic [ref=e485] [cursor=pointer]:
+          - generic [ref=e486]:
+            - img [ref=e488]
+            - generic [ref=e490]:
+              - generic [ref=e491]: 方案草稿
+              - generic [ref=e492]: 方案草稿：「跨越·共生」华为Mate70新品发布会策划方案
+          - generic [ref=e493]: 通过沉浸式AI互动体验，将华为Mate70的AI功能从'技术参数'转化为'感官记忆'，让媒体和用户在亲身参与中建立对品牌AI领先性的深度认同。
+          - generic [ref=e494]:
+            - generic [ref=e495]: AI隔空传送互动装置：搭建沉浸式光影空间，用户可通过真实手势将空中图像'抓取'并'传送'至大屏，零距离感受革命性交互
+            - generic [ref=e496]: AI修图大师实景体验区：设置专业影棚级光场，用户拍摄后现场体验AI修图的一键消除、智慧补光、智能构图功能
+            - generic [ref=e497]: 主舞台采用720°环绕式LED天幕：打造'星河入梦'沉浸式视觉场域，发布会全程实现裸眼3D视觉盛宴
+          - generic [ref=e499]: 在右侧查看
+        - generic [ref=e501]: "方案已完成，我来介绍一下核心亮点： --- ## 华为 Mate70 新品发布会策划方案 **主题：「跨越·共生」** ### 🎯 核心策略 通过沉浸式AI互动体验，将AI功能从\"技术参数\"转化为\"感官记忆\"，让媒体和用户在亲身参与中建立对品牌AI领先性的深度认同。 ### ✨ 三大亮点 1. **AI隔空传送互动装置** - 搭建沉浸式光影空间，用户可通过真实手势将空中图像\"抓取\"并\"传送\"至大屏 - 零距离感受革命性交互，拍照打卡传播性强 2. **AI修图大师实景体验区** - 专业影棚级光场，现场拍摄后即刻体验AI修图的一键消除、智慧补光、智能构图 - 让\"AI修图大师\"从概念变为可感知的功能 3. **720°环绕式LED天幕舞台** - 打造\"星河入梦\"沉浸式视觉场域 - 发布会全程裸眼3D视觉盛宴 ### 🎨 视觉风格 科技未来主义与东方美学的融合，通过流动光影和极简几何形态传递华为的技术哲学 --- 需要我生成PPT 吗？"
+        - generic [ref=e503]: 方案方向已经整理完了，我会带着这版判断继续配合你细化，确认后也可以直接生成 PPT。
+      - generic [ref=e150]:
+        - textbox "描述活动需求，如：帮我为小米做一个大型新品发布会..." [ref=e152]
+        - generic [ref=e153]:
+          - button "图片" [ref=e154] [cursor=pointer]
+          - button [disabled] [ref=e155]:
+            - img [ref=e156]
+    - button "›" [ref=e160] [cursor=pointer]
+    - generic [ref=e505]:
+      - generic [ref=e506]:
+        - generic [ref=e507]:
+          - generic [ref=e508]:
+            - generic [ref=e509]: 策划文档
+            - generic [ref=e510]: 「跨越·共生」华为Mate70新品发布会策划方案
+          - generic [ref=e511]: AI 已生成策划文档，可直接编辑后生成 PPT
+        - generic [ref=e512]:
+          - button "保存到空间" [ref=e513] [cursor=pointer]:
+            - img [ref=e515]
+            - text: 保存到空间
+          - button "生成 PPT" [ref=e517] [cursor=pointer]:
+            - img [ref=e519]
+            - text: 生成 PPT
+      - textbox [ref=e524]:
+        - heading "华为Mate70系列发布会沉浸式AI体验策划方案" [level=1] [ref=e525]
+        - heading "一、活动定位与核心策略" [level=2] [ref=e526]
+        - paragraph [ref=e527]:
+          - strong [ref=e528]: 我们判断：Mate70的发布会必须从"产品展示"升级为"认知建立"，用沉浸式体验替代传统功能讲解。
+        - paragraph [ref=e529]: Mate70系列的核心竞争力在于AI能力的全面突破。传统发布会容易被参数和功能介绍所主导，媒体和用户获得的是表层认知——知道有什么功能，但无法建立对品牌AI实力的深度认同。我们的策略是将AI功能转化为可感知、可操作的沉浸式体验——通过手势交互、AI修图和卫星通信等真实场景，让用户在参与中建立对华为AI实力的深度认同。这不仅是一次产品发布，更是品牌AI领先性的感官认知建设。
+        - paragraph [ref=e530]:
+          - text: 500-800人的规模决定了活动必须兼顾
+          - strong [ref=e531]: 仪式感与深度体验感
+          - text: 。人数足够形成传播声量，又足够保证每个参与者都能获得完整的体验。
+        - heading "二、活动概念与视觉设计" [level=2] [ref=e532]
+        - paragraph [ref=e533]:
+          - strong [ref=e534]: 我们建议：打造"星河入梦"沉浸式视觉场域，让720°环绕式LED天幕成为发布会的视觉核心。
+        - paragraph [ref=e535]: 主会场采用环形舞台设计，增强视觉冲击力的同时便于360°覆盖参会媒体和嘉宾。720°环绕式LED天幕贯穿整个发布会，从开场到产品发布再到体验环节，营造持续不断的沉浸氛围。裸眼3D效果的视觉呈现，让每个环节都超越传统发布会的平面感。
+        - paragraph [ref=e536]: 这个设计的核心逻辑是：当用户置身于"星河入梦"的光影空间中，他们对华为品牌的感知会自然上升到"科技美学"的层面，AI功能的体验也会被赋予更高的期待感和仪式感。
+        - heading "三、核心体验动线设计" [level=2] [ref=e537]
+        - paragraph [ref=e538]:
+          - strong [ref=e539]: 我们设计三条体验动线，覆盖视觉、触觉、感知三个维度，让用户完整理解Mate70的AI价值。
+        - heading "3.1 AI隔空传送互动装置" [level=3] [ref=e540]
+        - paragraph [ref=e541]: 用户在光影空间中可通过真实手势将空中图像"抓取"并"传送"至大屏。高精度传感器实时捕捉用户动作，在空中形成图像并完成传送交互。这是革命性交互方式的零距离体验，让"隔空操作"从概念变为可感知的现实。
+        - heading "3.2 AI修图大师实景体验区" [level=3] [ref=e542]
+        - paragraph [ref=e543]: 专业影棚级光场支持用户拍摄后立即体验AI修图功能。一键消除、智慧补光、智能构图等功能在实际操作中呈现效果，用户亲眼见证"废片变大片"的即时惊喜。这个体验区将AI修图从功能参数转化为真实的"哇时刻"。
+        - heading "3.3 卫星通信模拟体验舱" [level=3] [ref=e544]
+        - paragraph [ref=e545]: 真实还原极端场景，用户可体验Mate70在无信号环境下的卫星通信能力。当用户在模拟舱中感受到从"完全失联"到"成功发送消息"的转折时，对卫星通信功能的价值理解会比任何文字描述都更深刻。
+        - paragraph [ref=e546]: 三个体验区形成完整闭环，覆盖从视觉新奇到功能实操再到极端场景的完整认知链条。
+        - heading "四、媒体与KOL体验策略" [level=2] [ref=e547]
+        - paragraph [ref=e548]:
+          - strong [ref=e549]: 我们为媒体和KOL设计专属的'AI创想空间'，确保每个核心传播节点都能产出高质量原生内容。
+        - paragraph [ref=e550]: 500-800人的参会规模中，媒体和KOL是传播的关键节点。我们不设置简单的通稿体验环节，而是邀请核心科技媒体和数码博主进入"AI创想空间"进行深度试炼。提前彩排和专属引导确保每个媒体都能充分体验并理解AI功能的差异化价值。
+        - paragraph [ref=e551]: 头部数码博主将进行直播探秘，在体验区进行实时互动直播。博主的实时体验和惊叹反应，比任何预制内容都更有传播说服力。
+        - heading "五、传播节奏与影响力建设" [level=2] [ref=e552]
+        - paragraph [ref=e553]:
+          - strong [ref=e554]: 我们用三波传播节奏，将发布会的影响力从单点爆发转化为持续发酵。
+        - paragraph [ref=e555]:
+          - strong [ref=e556]: 第一波：预热期
+          - text: ——通过"AI隔空传送"概念 teaser 视频制造悬念，激发科技圈讨论热度。悬念物料的目的是让行业和用户对发布会产生期待，而非提前剧透。
+        - paragraph [ref=e557]:
+          - strong [ref=e558]: 第二波：发布会当天
+          - text: ——全程直播覆盖线上用户，在关键环节设置实时互动，线上线下形成联动。直播不仅是传播渠道，更是让线上用户参与"现场"的方式。
+        - paragraph [ref=e559]:
+          - strong [ref=e560]: 第三波：会后持续
+          - text: ——邀请头部媒体进行深度测评，持续保持话题热度和功能认知。会后深度内容是将"发布会热度"转化为"产品认知"的关键环节。
+        - heading "六、预算分配" [level=2] [ref=e561]
+        - paragraph [ref=e562]:
+          - strong [ref=e563]: 我们在500-800万预算框架内，优先保障沉浸式体验的硬投入，这是品牌高端形象的载体。
+        - paragraph [ref=e564]: 预算项金额范围占比投入逻辑场地与舞台搭建200-280万40%720°环绕式LED天幕、升降舞台系统、灯光音响等硬投入是打造沉浸式体验的基础互动体验装置开发100-150万20%AI隔空传送、AI修图、卫星通信模拟等装置定制化开发，是实现"从展示到体验"的核心投入内容与传播80-120万16%预热短视频、直播流、媒体通稿、KOL合作等传播费用嘉宾与餐饮服务50-80万10%高端餐饮、伴手礼、嘉宾接待等服务细节体现品牌待客之道应急与风险预备30-50万6%技术保障、医疗安保有备无患，高端活动必须预留风险应对资金其他管理与执行40-70万8%项目管理、场地协调、差旅住宿等运营管理费用
+        - heading "七、执行节奏" [level=2] [ref=e565]
+        - paragraph [ref=e566]:
+          - strong [ref=e567]: 我们采用四阶段执行计划，总周期13周，确保每个环节有充足的准备时间。
+        - list [ref=e568]:
+          - listitem [ref=e569]:
+            - paragraph [ref=e570]:
+              - strong [ref=e571]: 策略与概念期（4周）
+              - text: ：确定活动核心策略、视觉概念、场地档期。核心任务是明确"做什么"和"在哪里做"。
+          - listitem [ref=e572]:
+            - paragraph [ref=e573]:
+              - strong [ref=e574]: 设计与开发期（6周）
+              - text: ：完成舞台设计、互动装置开发、内容制作。核心任务是解决"怎么做"。
+          - listitem [ref=e575]:
+            - paragraph [ref=e576]:
+              - strong [ref=e577]: 搭建与彩排期（2周）
+              - text: ：完成场地搭建、技术彩排、流程预演。核心任务是验证"能不能做到"。
+          - listitem [ref=e578]:
+            - paragraph [ref=e579]:
+              - strong [ref=e580]: 执行与传播期（1周）
+              - text: ：活动执行、直播传播、媒体跟进。核心任务是确保"完美呈现"。
+        - heading "八、效果评估与KPI" [level=2] [ref=e581]
+        - paragraph [ref=e582]:
+          - strong [ref=e583]: 我们用五个核心指标验证策略是否有效触达用户认知。
+        - list [ref=e584]:
+          - listitem [ref=e585]:
+            - paragraph [ref=e586]:
+              - strong [ref=e587]: 媒体到场率 >90%
+              - text: ——500-800人规模中，科技媒体和高端用户的到场率直接决定传播基础
+          - listitem [ref=e588]:
+            - paragraph [ref=e589]:
+              - strong [ref=e590]: 互动体验参与率 >80%
+              - text: ——体验区参与率验证"从展示到体验"策略是否有效触达用户
+          - listitem [ref=e591]:
+            - paragraph [ref=e592]:
+              - strong [ref=e593]: 直播观看量 >500万
+              - text: ——线上传播是发布会影响力几何倍增的关键渠道
+          - listitem [ref=e594]:
+            - paragraph [ref=e595]:
+              - strong [ref=e596]: 社交媒体曝光量 >1亿
+              - text: ——通过话题运营和KOL合作实现社交媒体声量最大化
+          - listitem [ref=e597]:
+            - paragraph [ref=e598]:
+              - strong [ref=e599]: 媒体报道覆盖率 >95%
+              - text: ——核心科技媒体全覆盖，确保品牌AI领先性认知建立
+        - heading "九、风险应对" [level=2] [ref=e600]
+        - paragraph [ref=e601]:
+          - strong [ref=e602]: 我们为四类核心风险准备应对方案，确保活动万无一失。
+        - paragraph [ref=e603]:
+          - strong [ref=e604]: 技术风险
+          - text: ：AI互动装置可能因环境光干扰或传感器灵敏度导致体验不稳定。提前30天进行技术彩排，准备备用方案，关键体验环节安排技术人员现场待命。
+        - paragraph [ref=e605]:
+          - strong [ref=e606]: 嘉宾风险
+          - text: ：媒体和KOL可能因档期问题无法到场。提前1个月发送邀请，预留充足档期，VIP媒体安排专人接待和行程管理。
+        - paragraph [ref=e607]:
+          - strong [ref=e608]: 直播风险
+          - text: ：现场网络和直播可能出现卡顿或中断。准备专属网络带宽，直播信号采用主备双路保障。
+        - paragraph [ref=e609]:
+          - strong [ref=e610]: 安全风险
+          - text: ：500-800人大型活动存在人员安全和应急隐患。配备专业医疗团队和安保人员，制定完整应急预案并提前演练。
+        - paragraph [ref=e611]: "---"
+        - paragraph [ref=e612]:
+          - strong [ref=e613]: 总结：我们为Mate70设计的这场发布会，本质上是一次品牌AI领先性的认知建设。通过沉浸式体验将技术参数转化为感官记忆，让每个参与者离开时都带着对华为AI实力的真实认同。这不是一场传统的产品发布会，而是一次品牌认知的战略高地建设。

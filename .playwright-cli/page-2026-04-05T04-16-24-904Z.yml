@@ -1,0 +1,436 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - img [ref=e8]
+    - navigation [ref=e13]:
+      - button [ref=e338] [cursor=pointer]:
+        - img [ref=e16]
+      - button [ref=e339] [cursor=pointer]:
+        - img [ref=e23]
+      - button [ref=e340] [cursor=pointer]:
+        - img [ref=e30]
+      - button [ref=e341] [cursor=pointer]:
+        - img [ref=e37]
+    - button [ref=e43] [cursor=pointer]:
+      - img [ref=e44]
+  - generic [ref=e342]:
+    - complementary [ref=e343]:
+      - generic [ref=e344]:
+        - generic [ref=e346]:
+          - generic [ref=e347]: 当前空间
+          - generic "华为" [ref=e348] [cursor=pointer]:
+            - textbox "选择工作空间"
+            - generic [ref=e349]: 华为
+            - img [ref=e352]
+        - button "+" [ref=e354] [cursor=pointer]
+      - generic [ref=e355]:
+        - generic [ref=e356]: 历史对话
+        - generic [ref=e358]:
+          - img [ref=e360]
+          - textbox "搜索历史对话" [ref=e362]
+        - generic [ref=e364]:
+          - generic [ref=e365]: 今天
+          - generic [ref=e366]:
+            - button "我们这边最近要提一个线下活动方案，先不用太正式。大概是给一个手机新品做预热，领导想要年轻一点、能出片一点，但预算应该不会特别高。你先别急着写整套方案，先帮我想想方向。 23 条消息 · 1 分钟前 •••" [ref=e723] [cursor=pointer]:
+              - generic [ref=e368]:
+                - generic [ref=e369]: 我们这边最近要提一个线下活动方案，先不用太正式。大概是给一个手机新品做预热，领导想要年轻一点、能出片一点，但预算应该不会特别高。你先别急着写整套方案，先帮我想想方向。
+                - generic [ref=e370]: 23 条消息 · 1 分钟前
+              - generic [ref=e371]: •••
+            - button "华为智界新车发布会 3 条消息 · 56 分钟前 •••" [ref=e724] [cursor=pointer]:
+              - generic [ref=e373]:
+                - generic [ref=e374]: 华为智界新车发布会
+                - generic [ref=e375]: 3 条消息 · 56 分钟前
+              - generic [ref=e376]: •••
+            - button "华为 PPT 40 条消息 · 1 小时前 •••" [ref=e377] [cursor=pointer]:
+              - generic [ref=e378]:
+                - generic [ref=e379]: 华为 PPT
+                - generic [ref=e380]: 40 条消息 · 1 小时前
+              - generic [ref=e381]: •••
+    - button "‹" [ref=e382] [cursor=pointer]
+    - generic [ref=e383]:
+      - generic [ref=e384]:
+        - generic [ref=e387]: 我们这边最近要提一个线下活动方案，先不用太正式。大概是给一个手机新品做预热，领导想要年轻一点、能出片一点，但预算应该不会特别高。你先别急着写整套方案，先帮我想想方向。
+        - generic [ref=e389]:
+          - paragraph [ref=e390]: 好的，先聊方向。
+          - paragraph [ref=e391]: 几个思路给你参考：
+          - paragraph [ref=e392]:
+            - strong [ref=e393]: 1. 快闪店 + 挑战打卡
+            - text: <br />在城市年轻人口聚集的地方（比如三里屯、国贸、前滩太古里这种），弄一个为期3-5天的限时体验空间。设置几个能出片的互动装置（比如光影隧道、产品合影墙、AR打卡点），让用户拍照分享然后领小礼品。成本可控，核心吃传播。
+          - paragraph [ref=e394]:
+            - strong [ref=e395]: 2. 联名快闪咖啡车 / 气泡站
+            - text: <br />现在年轻人对"喝一杯"打卡没什么抵抗力。搞个手机主题的移动咖啡车或者气泡水站，放个巨幅包装装置，往那儿一站就是朋友圈素材。场地灵活，成本比固定店低。
+          - paragraph [ref=e396]:
+            - strong [ref=e397]: 3. 校园 / 艺术区地下赛博风活动
+            - text: <br />如果产品偏性能或游戏属性，可以考虑这种调性——暗黑系灯光、霓虹元素、投篮机或电竞挑战。场地选大学城或者创意园区，氛围感到位，拍照也出片。
+          - paragraph [ref=e398]:
+            - strong [ref=e399]: 4. 盒子盲盒装置
+            - text: <br />堆一堆巨型产品盒子，做成可以打开的盲盒墙或者互动墙，年轻人就喜欢这种"拆"的仪式感。拍出来也有视觉冲击力。
+          - paragraph [ref=e400]: "---"
+          - paragraph [ref=e401]: 这几个方向你们倾向于哪个？或者你们产品有什么特别的卖点，我可以帮你往那个方向再收一收。
+        - paragraph [ref=e404]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e407]: 先别往校园和咖啡车那边走，感觉有点跑偏。我们大概率还是在商场中庭或者购物中心里做，品牌调性是国产中高端，卖点偏拍照，尤其是夜景和人像这块。还有一个点，领导会怕太像纯网红打卡，所以最好还是能看起来有产品体验逻辑。你帮我收两个更稳一点的方向。
+        - generic [ref=e409]:
+          - paragraph [ref=e410]: 明白了，再收两个：
+          - paragraph [ref=e411]:
+            - strong [ref=e412]: 1. 暗光摄影实验室
+            - text: <br />围绕夜景和人像的核心卖点，做一个"黑空间"——模拟夜晚城市街头、霓虹灯箱、弱光人像等场景，参观者现场用手机拍，现场对比效果。视觉上偏专业摄影棚调性（深灰/黑色系），不是那种花里胡哨的网红风，但拍照确实出片。逻辑很顺：让你亲身试验我们的夜景/人像到底强在哪。
+          - paragraph [ref=e413]:
+            - strong [ref=e414]: 2. 人像写真体验区
+            - text: <br />搭几个不同风格的人像场景（极简肖像、复古胶片感、艺术光影），强调"用手机也能拍出写真级人像"。可以设置现场打印照片的环节，增加一点"带走实物"的仪式感。比纯打卡更有体验内容，同时出片效果一点不差。
+          - paragraph [ref=e415]: "---"
+          - paragraph [ref=e416]: 这两个哪个更贴合你们想法？或者你们倾向于把两个揉在一起也行。
+        - paragraph [ref=e419]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e422]: 那就按两个揉在一起走吧，但名字别太土，也别太技术宅。我们内部汇报的时候还是需要一个好讲一点的总概念。你先帮我出一版主概念/KV说法，再顺一下现场分区和用户动线，按商场中庭能落地的逻辑讲。不要写得太像提案 final 稿，像我现在跟你来回碰方向就行。
+        - generic [ref=e424]:
+          - paragraph [ref=e425]: 好，拢一下：
+          - paragraph [ref=e426]: "---"
+          - paragraph [ref=e427]:
+            - strong [ref=e428]: 主概念：追光计划
+          - paragraph [ref=e429]: 比"实验室"轻，比"打卡"有内容。夜景捕光、人像追光，两边都能含。汇报的时候也好讲——"我们不是做个拍照布景，是让用户进来追一把光"。
+          - paragraph [ref=e430]: "---"
+          - paragraph [ref=e431]:
+            - strong [ref=e432]: 现场分区（从外往里）：
+          - list [ref=e433]:
+            - listitem [ref=e434]:
+              - strong [ref=e435]: 入口吸睛装置
+              - text: —— 商场外围先有个视觉点，不用复杂，一个能亮的抽象光影装置+主KV就行，起到"拉人"的作用
+          - list [ref=e436]:
+            - listitem [ref=e437]:
+              - strong [ref=e438]: 暗光区（夜景实验室）
+              - text: —— 模拟城市暗光环境（霓虹灯箱、夜 street 氛围），用户现场拍，现场看效果。侧重"怎么在这种环境里还能出片"
+          - list [ref=e439]:
+            - listitem [ref=e440]:
+              - strong [ref=e441]: 人像区（光影肖像）
+              - text: —— 两三个不同光效的Portrait角落（柔光、轮廓光、戏剧感），可以排队拍照，也可以让工作人员帮拍。侧重"手机直出的人像质感"
+          - list [ref=e442]:
+            - listitem [ref=e443]:
+              - strong [ref=e444]: 对比互动屏
+              - text: —— 拍完可以走到屏幕前，跟竞品或者前代机型同框对比夜景/人像的差异。一目了然，不用光靠嘴说
+          - list [ref=e445]:
+            - listitem [ref=e446]:
+              - strong [ref=e447]: 收尾区
+              - text: —— 打印照片带走 + 领个小周边（比如手机支架、镜头擦拭布这种实用不low的）
+          - paragraph [ref=e448]: "---"
+          - paragraph [ref=e449]:
+            - strong [ref=e450]: 动线逻辑：
+          - paragraph [ref=e451]: 进 → 被光影装置吸引 → 先进暗光区玩一圈 → 走到人像区拍一张 → 往前到对比屏看看自己拍得怎么样 → 最后打印/领周边走人
+          - paragraph [ref=e452]: 这样体验是有递进的：先试夜景功能，再拍人像，再对比确认，最后带着东西走。逻辑上是顺的，不是纯网红布景打卡。
+          - paragraph [ref=e453]: "---"
+          - paragraph [ref=e454]: 你觉得这个框架OK吗？OK的话我下个阶段可以帮你搜几个类似的案例参考，再往后就是具体方案和PPT了。
+        - paragraph [ref=e457]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e460]: 框架可以。你先别急着搜太散的案例，我现在更需要能拿去内部过一轮。你按这个方向先帮我整理成一个相对完整的活动方案，至少要有：活动主题、核心创意、现场区域、互动玩法、传播点、基础执行口径。如果你觉得信息还不够，就按商场中庭快闪这个常规场景先帮我补齐假设，先出一版。
+        - generic [ref=e462]:
+          - paragraph [ref=e463]: 好，帮你出一版。先按商场中庭快闪的常规逻辑补齐假设：
+          - paragraph [ref=e464]: "---"
+          - paragraph [ref=e465]:
+            - strong [ref=e466]: 活动主题：追光计划 —— 手机夜景人像体验空间
+          - paragraph [ref=e467]:
+            - strong [ref=e468]: 核心创意：
+            - text: <br />把"拍夜景"和"拍人像"这两个功能卖点，变成一个可体验、有内容、能传播的线下空间。不是纯布景打卡，而是让用户真的拿手机拍一圈，体验完再对比，效果一目了然。
+          - paragraph [ref=e469]: "---"
+          - paragraph [ref=e470]:
+            - strong [ref=e471]: 现场分区：
+          - paragraph [ref=e472]: "| 区域 | 内容 | 对应功能点 |<br />|------|------|-----------|<br />| 入口装置 | 抽象光影造型 + 主题KV + 引导立牌 | 吸睛、拉人 |<br />| 暗光实验室 | 模拟城市夜景场景（霓虹灯箱/暗巷/月光装置），提供拍摄指引 | 夜景功能 |<br />| 光影人像棚 | 2-3个不同光效场景（柔光/轮廓/戏剧），可自行拍照或请工作人员帮拍 | 人像功能 |<br />| 对比互动屏 | 拍摄后现场同屏对比（可对比前代或竞品），直观展示差异 | 产品力 |<br />| 收尾区 | 照片打印 + 领取品牌周边（镜头布/手机支架） | 留存、社交货币 |"
+          - paragraph [ref=e473]: "---"
+          - paragraph [ref=e474]:
+            - strong [ref=e475]: 互动玩法：
+          - list [ref=e476]:
+            - listitem [ref=e477]:
+              - strong [ref=e478]: 全程体验打卡
+              - text: —— 暗光区拍3张 + 人像区拍1张，完成后到对比屏生成"追光报告"（包含你的照片 + 功能点评），可分享社交媒体
+            - listitem [ref=e479]:
+              - strong [ref=e480]: 专业摄影师助拍
+              - text: —— 人像区安排1位驻场摄影师，用该手机帮用户拍一张"质感大片"，满足"出片"需求
+            - listitem [ref=e481]:
+              - strong [ref=e482]: 光效DIY
+              - text: —— 暗光区提供小型补光灯/荧光棒，用户自己调光拍照，增加参与感
+            - listitem [ref=e483]:
+              - strong [ref=e484]: 集章兑奖
+              - text: —— 暗光区/人像区/对比屏三个点分别盖章，集齐换周边
+          - paragraph [ref=e485]: "---"
+          - paragraph [ref=e486]:
+            - strong [ref=e487]: 传播点：
+          - list [ref=e488]:
+            - listitem [ref=e489]:
+              - strong [ref=e490]: 出片
+              - text: —— 场景本身好看，拍照出来有质感，用户愿意发
+            - listitem [ref=e491]:
+              - strong [ref=e492]: 对比
+              - text: —— "随手拍也能看出差距"这个点容易引发讨论
+            - listitem [ref=e493]:
+              - strong [ref=e494]: 可带走
+              - text: —— 打印照片+周边，提供实物的社交分享素材
+            - listitem [ref=e495]:
+              - strong [ref=e496]: 话题性
+              - text: —— "原来手机夜景这么强"、"人像直出不用修"这类用户自发评价
+          - paragraph [ref=e497]: "---"
+          - paragraph [ref=e498]:
+            - strong [ref=e499]: 基础执行口径（假设）：
+          - list [ref=e500]:
+            - listitem [ref=e501]:
+              - strong [ref=e502]: 时间
+              - text: ：3-5天，周末+工作日傍晚
+            - listitem [ref=e503]:
+              - strong [ref=e504]: 场地
+              - text: ：商场中庭（或内场高客流通道），100-150㎡左右
+            - listitem [ref=e505]:
+              - strong [ref=e506]: 搭建
+              - text: ：标准化模块，主体可拆卸复用
+            - listitem [ref=e507]:
+              - strong [ref=e508]: 人员
+              - text: ：驻场执行3-4人 + 摄影志愿者1人
+            - listitem [ref=e509]:
+              - strong [ref=e510]: 预算参考
+              - text: ：中等（快闪店常规投入区间，具体需细化）
+            - listitem [ref=e511]:
+              - strong [ref=e512]: 物料
+              - text: ：KV主视觉、引导系统、场景道具、互动屏、打印机、周边
+          - paragraph [ref=e513]: "---"
+          - paragraph [ref=e514]: 这版可以直接内部过一轮。有漏掉的或者想调整的地方，随时说。
+        - paragraph [ref=e517]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e520]: 这版可以了，先不要再继续补案例了。你直接往下帮我生成 PPT 吧，先按这个方案出一版能汇报的结构和页面内容，我要看完整成品。
+        - paragraph [ref=e523]: 好，我需要先跑一下完整的策略方案，然后再生成PPT。1-2分钟。
+        - generic [ref=e525]:
+          - generic [ref=e526]:
+            - generic [ref=e527]: 📋
+            - generic [ref=e528]:
+              - generic [ref=e529]: 制定策划方案：国产中高端手机品牌
+              - generic [ref=e530]: 正在整理策划文档...
+          - generic [ref=e531]:
+            - generic [ref=e532]: 方案已形成，评分 7.8
+            - button "查看详情" [ref=e533] [cursor=pointer]
+        - generic [ref=e535] [cursor=pointer]:
+          - generic [ref=e536]:
+            - img [ref=e538]
+            - generic [ref=e540]:
+              - generic [ref=e541]: 方案草稿
+              - generic [ref=e542]: 方案草稿：追光计划——让夜色成为你的天然影棚
+          - generic [ref=e543]: 用真实的暗光场景替代传统的参数展示，让用户在「追光」过程中自然感知产品夜景人像能力，同时产出高质感社交素材形成二次传播。
+          - generic [ref=e544]:
+            - generic [ref=e545]: 暗光实验室用真实城市夜景场景替代布景，让体验可信度拉满
+            - generic [ref=e546]: 光影人像棚设置3种专业光效场景（城市霓虹、星空蓝调、落日逆光），普通人也能拍出专业感照片
+            - generic [ref=e547]: 对比互动屏实时展示竞品 vs 本机夜景人像直出对比，用眼见为实替代参数说服
+          - generic [ref=e549]: 在右侧查看
+        - generic [ref=e551] [cursor=pointer]:
+          - generic [ref=e552]:
+            - img [ref=e554]
+            - generic [ref=e556]:
+              - generic [ref=e557]: 策划文档
+              - generic [ref=e558]: 策划文档：追光计划——让夜色成为你的天然影棚
+          - generic [ref=e559]: 用真实的暗光场景替代传统的参数展示，让用户在「追光」过程中自然感知产品夜景人像能力，同时产出高质感社交素材形成二次传播。
+          - generic [ref=e560]:
+            - generic [ref=e561]: 暗光实验室用真实城市夜景场景替代布景，让体验可信度拉满
+            - generic [ref=e562]: 光影人像棚设置3种专业光效场景（城市霓虹、星空蓝调、落日逆光），普通人也能拍出专业感照片
+            - generic [ref=e563]: 对比互动屏实时展示竞品 vs 本机夜景人像直出对比，用眼见为实替代参数说服
+          - generic [ref=e565]: 在右侧查看
+        - generic [ref=e568]:
+          - generic [ref=e569]: 🎨
+          - generic [ref=e570]:
+            - generic [ref=e571]: 生成 PPT（按以下框架生成：1.封面：追光计划——手机夜景人像体验空间 2.活动概览：背景、目标、核心策略 3.核心创意：追光计划主题说明 4.现场分区：入口装置-暗光实验室-光影人像棚-对比互动屏-收尾区，配合简单场景描述 5.互动玩法：全程打卡+摄影师助拍+光效DIY+集章兑奖 6.传播亮点：出片-对比-可带走-话题性 7.执行口径：时间/场地/面积/人员/搭建形式 8.封底。视觉风格偏暗黑科技美学，深色基调用光线塑形，突出光影表现。）
+            - generic [ref=e572]: 正在生成 PPT 大纲...
+        - paragraph [ref=e727]: 好，我需要先跑一下完整的策略方案，然后再生成PPT。1-2分钟。
+        - generic [ref=e729]:
+          - generic [ref=e730]:
+            - generic [ref=e731]: 📋
+            - generic [ref=e732]:
+              - generic [ref=e733]: 制定策划方案：国产中高端手机品牌
+              - generic [ref=e734]: 正在整理策划文档...
+          - generic [ref=e735]:
+            - generic [ref=e736]: 方案已形成，评分 7.8
+            - button "查看详情" [ref=e737] [cursor=pointer]
+        - generic [ref=e739] [cursor=pointer]:
+          - generic [ref=e740]:
+            - img [ref=e742]
+            - generic [ref=e744]:
+              - generic [ref=e745]: 方案草稿
+              - generic [ref=e746]: 方案草稿：追光计划——让夜色成为你的天然影棚
+          - generic [ref=e747]: 用真实的暗光场景替代传统的参数展示，让用户在「追光」过程中自然感知产品夜景人像能力，同时产出高质感社交素材形成二次传播。
+          - generic [ref=e748]:
+            - generic [ref=e749]: 暗光实验室用真实城市夜景场景替代布景，让体验可信度拉满
+            - generic [ref=e750]: 光影人像棚设置3种专业光效场景（城市霓虹、星空蓝调、落日逆光），普通人也能拍出专业感照片
+            - generic [ref=e751]: 对比互动屏实时展示竞品 vs 本机夜景人像直出对比，用眼见为实替代参数说服
+          - generic [ref=e753]: 在右侧查看
+        - generic [ref=e755] [cursor=pointer]:
+          - generic [ref=e756]:
+            - img [ref=e758]
+            - generic [ref=e760]:
+              - generic [ref=e761]: 策划文档
+              - generic [ref=e762]: 策划文档：追光计划——让夜色成为你的天然影棚
+          - generic [ref=e763]: 用真实的暗光场景替代传统的参数展示，让用户在「追光」过程中自然感知产品夜景人像能力，同时产出高质感社交素材形成二次传播。
+          - generic [ref=e764]:
+            - generic [ref=e765]: 暗光实验室用真实城市夜景场景替代布景，让体验可信度拉满
+            - generic [ref=e766]: 光影人像棚设置3种专业光效场景（城市霓虹、星空蓝调、落日逆光），普通人也能拍出专业感照片
+            - generic [ref=e767]: 对比互动屏实时展示竞品 vs 本机夜景人像直出对比，用眼见为实替代参数说服
+          - generic [ref=e769]: 在右侧查看
+        - generic [ref=e772]:
+          - generic [ref=e773]: 🎨
+          - generic [ref=e774]:
+            - generic [ref=e775]: 生成 PPT（按以下框架生成：1.封面：追光计划——手机夜景人像体验空间 2.活动概览：背景、目标、核心策略 3.核心创意：追光计划主题说明 4.现场分区：入口装置-暗光实验室-光影人像棚-对比互动屏-收尾区，配合简单场景描述 5.互动玩法：全程打卡+摄影师助拍+光效DIY+集章兑奖 6.传播亮点：出片-对比-可带走-话题性 7.执行口径：时间/场地/面积/人员/搭建形式 8.封底。视觉风格偏暗黑科技美学，深色基调用光线塑形，突出光影表现。）
+            - generic [ref=e776]: 正在生成 PPT 大纲...
+      - generic [ref=e574]:
+        - textbox "描述活动需求，如：帮我为小米做一个大型新品发布会..." [ref=e576]
+        - generic [ref=e577]:
+          - button "附件" [ref=e777] [cursor=pointer]
+          - button [disabled] [ref=e778]:
+            - img [ref=e779]
+    - button "›" [ref=e584] [cursor=pointer]
+    - generic [ref=e587]:
+      - generic [ref=e588]:
+        - generic [ref=e589]:
+          - generic [ref=e590]:
+            - generic [ref=e591]: 策划文档
+            - generic [ref=e592]: 追光计划——让夜色成为你的天然影棚
+          - generic [ref=e593]: AI 已生成策划文档，可直接编辑后生成 PPT
+        - generic [ref=e594]:
+          - button "保存到空间" [ref=e595] [cursor=pointer]:
+            - img [ref=e597]
+            - text: 保存到空间
+          - button "生成 PPT" [active] [ref=e599] [cursor=pointer]:
+            - img [ref=e781]
+            - text: 生成 PPT
+      - textbox [ref=e606]:
+        - heading "「追光·夜拍」沉浸式夜景人像体验展" [level=1] [ref=e607]
+        - paragraph [ref=e608]:
+          - strong [ref=e609]: 我们判断：这场活动值得做的原因很简单——手机夜景人像是个「参数越强，感知越弱」的功能。用户永远搞不懂「5000万超感光」意味着什么，但他们一定知道「晚上拍照黑不黑、噪点多不多」。我们的策略就是让用户自己在暗光环境里拍一次，对比一次，然后「看见」产品力。
+        - paragraph [ref=e610]: "---"
+        - heading "核心策略：把「参数信任」变成「感官信任」" [level=2] [ref=e611]
+        - paragraph [ref=e612]: 我们不卖参数，卖的是「我能把你拍好看」的确定性。
+        - paragraph [ref=e613]: 对于中高端手机品牌，影像功能，尤其是夜景人像，是最重要的购买决策因素之一。但夜景拍摄的参数——光圈大小、感光度、算法优化——对普通消费者来说是完全抽象的。他们看过太多「发布会样张」，对「随手一拍就是大片」这句话早就免疫了。
+        - paragraph [ref=e614]:
+          - strong [ref=e615]: 所以我们不做发布会，要做一个「产品力沉浸展」。核心逻辑是三句话：
+        - list [ref=e616]:
+          - listitem [ref=e617]:
+            - paragraph [ref=e618]:
+              - strong [ref=e619]: 用场景替代说明
+              - text: ：不告诉用户我们的夜景模式多强，而是把他放进一个「他的手机肯定拍不好」的环境里，让他自己发现问题。
+          - listitem [ref=e620]:
+            - paragraph [ref=e621]:
+              - strong [ref=e622]: 用对比替代说服
+              - text: ：不靠导购推荐，而是让用户在屏幕上亲眼看见竞品和自己的差距。
+          - listitem [ref=e623]:
+            - paragraph [ref=e624]:
+              - strong [ref=e625]: 用出片替代告知
+              - text: ：不展示样张，而是让用户带着自己拍的高质量照片离开——这才是最有说服力的产品口碑。
+        - paragraph [ref=e626]:
+          - strong [ref=e627]: 我们的目标人群很清晰：22-35岁的年轻消费者，对手机摄影有需求，但对参数无感。他们要的是「我随手一拍能发朋友圈」的结果。
+        - paragraph [ref=e628]: "---"
+        - heading "空间与体验设计：「追光」动线的心理学逻辑" [level=2] [ref=e629]
+        - paragraph [ref=e630]:
+          - strong [ref=e631]: 我们设计的是一个30-40米动线的完整叙事：入口制造期待→暗光区制造焦虑→光影棚提供解决方案→对比屏完成说服→收尾区给出奖励。整个空间从亮到暗再回到亮，节奏感本身就是一种体验。
+        - heading "空间规划概要" [level=3] [ref=e632]
+        - paragraph [ref=e633]: 区域面积占比核心功能停留时长入口光影装置10%视觉悬念+引导打卡1-2分钟暗光实验室25%城市夜景场景+难度设置3-5分钟光影人像棚35%3种光效场景+摄影师驻场8-12分钟对比互动屏15%实时对比+社交分享3-4分钟收尾区15%照片打印+周边领取2-3分钟
+        - heading "五大分区设计逻辑" [level=3] [ref=e634]
+        - paragraph [ref=e635]:
+          - strong [ref=e636]: 入口光影装置：我们不追求网红墙的视觉冲击，而是用光线引导。
+          - text: 一面「追光」主题的光影墙配合Slogan，用引导性灯光指向体验入口。目的不是拍照打卡，而是制造「里面有什么」的悬念感。
+        - paragraph [ref=e637]:
+          - strong [ref=e638]: 暗光实验室：这是整个活动的「钩子」，核心是「让普通手机失效」。
+          - text: 我们模拟城市夜景的暗光环境，亮度控制在50lux以下——相当于深夜街头的光照水平。用户在这样的环境里用自己的手机拍摄，会发现噪点多、面部黑、背景糊。这就是我们要的「被难住」时刻。
+          - strong [ref=e639]: 当用户意识到自己手机拍不好的时候，产品出场的价值才被感知。
+        - paragraph [ref=e640]:
+          - strong [ref=e641]: 光影人像棚：这是用户「被拯救」的区域，也是产出社交素材的核心阵地。
+          - text: 我们设置三个主题场景：
+        - list [ref=e642]:
+          - listitem [ref=e643]:
+            - paragraph [ref=e644]:
+              - strong [ref=e645]: 城市霓虹
+              - text: ：冷色调高对比，还原都市夜晚的标志性光影
+          - listitem [ref=e646]:
+            - paragraph [ref=e647]:
+              - strong [ref=e648]: 星空蓝调
+              - text: ：低对比柔光，制造梦幻感的蓝紫色调
+          - listitem [ref=e649]:
+            - paragraph [ref=e650]:
+              - strong [ref=e651]: 落日逆光
+              - text: ：强光比轮廓光，模拟黄昏时分的戏剧性光效
+        - paragraph [ref=e652]:
+          - text: 每个场景都配备专业补光设备，但用户只需要用手机拍摄。我们安排专业人像摄影师驻场指导摆姿和用光——
+          - strong [ref=e653]: 这相当于为每个用户提供了「免费的人像摄影师」服务，这是极强的体验增值，也是用户愿意主动传播的核心素材。
+        - paragraph [ref=e654]:
+          - strong [ref=e655]: 对比互动屏：这是「临门一脚」的成交说服环节。
+          - text: 屏幕分屏显示：左边竞品默认模式拍摄，右边本机夜景人像模式拍摄。用户可以自己切换对比场景，实时感受产品力的差距。
+          - strong [ref=e656]: 视觉对比比任何参数都有说服力——尤其当左边的照片是自己的手机拍的时候。
+        - paragraph [ref=e657]:
+          - strong [ref=e658]: 收尾区：这是用户带着「战利品」离开的最后一环。
+          - text: 打印用户拍摄的最佳照片，配合品牌定制周边（手机壳/帆布包等）。用「带走你的夜」作为传播slogan——这个动作本身就制造了社交素材。
+        - paragraph [ref=e659]: "---"
+        - heading "玩法与传播设计：用户不是因为活动而来，是因为「能出片」而来" [level=2] [ref=e660]
+        - paragraph [ref=e661]:
+          - strong [ref=e662]: 我们设计的传播逻辑是：用户发的是「我的夜景人像照片」，而不是「这个活动好酷」。这是两个级别的传播量级——前者是炫耀个人成果，后者是给活动做广告。
+        - heading "打卡机制设计" [level=3] [ref=e663]
+        - paragraph [ref=e664]:
+          - text: 全程设置五个区域的打卡点，集齐印章兑换照片打印和品牌周边。这个机制确保用户不会中途离开——
+          - strong [ref=e665]: 我们卖的不是强制逛完的KPI，而是「完整打卡才能拿到最好看的照片」这个心理。
+        - heading "社交传播设计" [level=3] [ref=e666]
+        - paragraph [ref=e667]:
+          - strong [ref=e668]: 核心传播素材是用户自己拍出的照片，而非活动本身。
+          - text: 在光影人像棚的场景设计、摄影师的专业度、打印照片的质感这三个环节必须精品化——照片质量决定了用户愿不愿意发朋友圈。
+        - paragraph [ref=e669]:
+          - text: 互动屏区域设置扫码分享功能，用户对比完可以直接保存对比图发朋友圈。
+          - strong [ref=e670]: "话题天然具备讨论性：#原来我的手机夜景这么差# #新品夜景人像对比#。"
+        - paragraph [ref=e671]: "---"
+        - heading "执行计划：节奏清晰，责任到人" [level=2] [ref=e672]
+        - paragraph [ref=e673]: 阶段时间节点核心任务筹备期T-30至T-15方案确认、商场签约、供应商招标、搭建方案细化搭建期T-3至T-2空间搭建、灯光调试、设备安装、暗光场景效果确认预演期T-1全流程彩排、人员培训、应急预案确认、物料最后检查执行期T至T+4活动正式运营，共5天复盘期T+5至T+10数据复盘、传播效果评估、用户反馈整理
+        - paragraph [ref=e674]:
+          - strong [ref=e675]: 我们建议执行期选在周末+工作日组合，确保覆盖不同人群。T日建议选在周五晚间开始，承接周末人流高峰。
+        - paragraph [ref=e676]: "---"
+        - heading "预算分配：资源向体验和传播倾斜" [level=2] [ref=e677]
+        - paragraph [ref=e678]: 科目占比说明场地租赁及搭建**40%**商场中庭快闪核心成本，含5天场地、基础搭建、灯光音响专业设备租赁**20%**暗光场景补光灯、对比互动屏、相机+打印机等人工及驻场团队**15%**3-4人驻场团队（含1名专业人像摄影师）、管理人员物料及周边**10%**打卡物料、照片打印相纸、品牌周边礼品传播及运营**10%**KOL体验邀请、社交媒体投放、活动话题运营应急及管理**5%**备用金、临时增援、不可预见费用
+        - paragraph [ref=e679]:
+          - strong [ref=e680]: 我们优先保障的是体验品质（场地搭建+设备）和传播素材（摄影师+打印）——这两个环节直接影响用户感知和二次传播效果。
+        - paragraph [ref=e681]: "---"
+        - heading "预期效果：KPI是结果，不是目标" [level=2] [ref=e682]
+        - paragraph [ref=e683]: 指标目标值说明到店体验人数**3000-5000人**5天总计，按商场中庭常规人流转化率估算照片打印/领取率**60%以上**到店用户中至少6成完成完整打卡并领取照片社交媒体自发分享量**800-1200条**按到店人数的20-30%估算，检验「出片」体验是否达标留资/注册数量**1500-2500人**扫码参与互动时的留资，为新品上市蓄水媒体/KOL报道数量**10-15篇**通过邀请和自发报道产生外部声量
+        - paragraph [ref=e684]:
+          - strong [ref=e685]: 我们认为这些数字是「可检验的预期」，而非「必须达标的压力」。如果到店人数只有2000人，但社交分享率达到40%，说明体验设计是成功的——质量比数量重要。
+        - paragraph [ref=e686]: "---"
+        - heading "风险与应对：我们能想到的问题，都已有预案" [level=2] [ref=e687]
+        - paragraph [ref=e688]:
+          - strong [ref=e689]: 最大的风险不是活动本身，而是高峰期排队超过15分钟导致的用户体验下降。
+          - text: 暗光环境下同一时间能容纳的人数有限，这是物理限制。我们有三层应对：
+        - paragraph [ref=e690]: 1. 等候区设置互动内容（品牌故事墙、产品功能演示视频），让排队时间不无聊
+        - paragraph [ref=e691]: 2. 开放提前预约通道控制时段人流，减少现场排队压力
+        - paragraph [ref=e692]: 3. 高峰期放慢入场节奏但保证体验时长——宁可少接待用户，也要保证每个人体验完整
+        - paragraph [ref=e693]:
+          - strong [ref=e694]: 其他可预见的风险：
+        - list [ref=e695]:
+          - listitem [ref=e696]:
+            - paragraph [ref=e697]:
+              - strong [ref=e698]: 暗光场景下手机对焦不稳定
+              - text: ：现场提供手机支架/稳定器，驻场人员指导拍摄技巧，确保夜景模式正常触发
+          - listitem [ref=e699]:
+            - paragraph [ref=e700]:
+              - strong [ref=e701]: 照片打印机故障
+              - text: ：现场配置2台打印机（一主一备），提前进行压力测试，准备足量相纸和墨盒，打印前让用户确认照片
+          - listitem [ref=e702]:
+            - paragraph [ref=e703]:
+              - strong [ref=e704]: 商场消防安全检查
+              - text: ：搭建材料全部使用B1级阻燃材料，提前与商场物业沟通确认报审
+          - listitem [ref=e705]:
+            - paragraph [ref=e706]:
+              - strong [ref=e707]: 天气因素
+              - text: ：提前确认商场场地条件，如为半户外需准备雨棚方案
+        - paragraph [ref=e708]: "---"
+        - heading "结论：这场活动「怎么做到」的答案" [level=2] [ref=e709]
+        - paragraph [ref=e710]: 我们总结一下核心要点：
+        - paragraph [ref=e711]:
+          - text: "1."
+          - strong [ref=e712]: 定位清晰
+          - text: ：不是参数发布会，是「产品力沉浸展」，让用户在暗光场景里自己发现产品价值
+        - paragraph [ref=e713]:
+          - text: "2."
+          - strong [ref=e714]: 动线精心设计
+          - text: ：从亮到暗再到亮的节奏，制造「被难住→被拯救→被说服」的情绪转折
+        - paragraph [ref=e715]:
+          - text: "3."
+          - strong [ref=e716]: 体验必须精品化
+          - text: ：暗光实验室、光影人像棚、对比互动屏、照片打印——每个触点都要经得起用户挑刺
+        - paragraph [ref=e717]:
+          - text: "4."
+          - strong [ref=e718]: 传播素材优先
+          - text: ：用户拍出的照片才是社交货币，不是活动本身的视觉设计
+        - paragraph [ref=e719]:
+          - text: "5."
+          - strong [ref=e720]: 风险前置预案
+          - text: ：排队体验和打印环节是两大命门，必须有Plan B
+        - paragraph [ref=e721]:
+          - strong [ref=e722]: 如果决策层问「这场活动能带来什么」，我们的答案是：3000-5000个到店用户亲自感知产品夜景人像能力，800-1200条用户自发传播的高质量社交素材，以及1500-2500个留资的新品潜客。这些是发布会做不到的——参数说服不了的用户，沉浸式体验可以。

@@ -110,6 +110,7 @@ const props = defineProps({
   modelValue: { type: [String, Object], default: '' }
 })
 const emit = defineEmits(['update:modelValue', 'change'])
+const isUnmounting = ref(false)
 
 const Callout = Node.create({
   name: 'callout',
@@ -580,15 +581,22 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  isUnmounting.value = true
   document.removeEventListener('click', onDocClick)
-  if (editor.value?.view?.dom) {
-    editor.value.view.dom.removeEventListener('keyup', handleEditorInput)
-  }
-  editor.value?.destroy()
+  try {
+    const dom = editor.value?.isDestroyed ? null : editor.value?.view?.dom
+    dom?.removeEventListener('keyup', handleEditorInput)
+  } catch {}
+  try {
+    if (editor.value && !editor.value.isDestroyed) {
+      editor.value.destroy()
+    }
+  } catch {}
 })
 
 watch(() => props.modelValue, (val) => {
-  if (editor.value) {
+  if (isUnmounting.value) return
+  if (editor.value && !editor.value.isDestroyed) {
     const normalized = normalizeContent(val)
     const current = editor.value.getJSON()
     if (JSON.stringify(normalized) !== JSON.stringify(current)) {

@@ -57,10 +57,11 @@
       <div
         class="sv-wrapper"
         ref="wrapperRef"
-        :class="{ 'sv-wrapper--new': isNewSlide }"
+        :class="{ 'sv-wrapper--new': isNewSlide, 'sv-wrapper--zoom': useZoomScaling }"
       >
         <iframe
           v-if="internalSlides[current]"
+          ref="frameRef"
           class="sv-frame"
           :srcdoc="slideSrc(internalSlides[current])"
           scrolling="no"
@@ -104,10 +105,15 @@ const emit = defineEmits(['save', 'open-editor', 'update:currentIndex'])
 const panelRef   = ref(null)
 const stageRef   = ref(null)
 const wrapperRef = ref(null)
+const frameRef   = ref(null)
 const thumbsRef  = ref(null)
 const current    = ref(0)
 const isFullscreen = ref(false)
 const isNewSlide   = ref(false)  // 新页入场动画标记
+const useZoomScaling = ref(false)
+
+const SLIDE_WIDTH = 960
+const SLIDE_HEIGHT = 540
 
 // 内部幻灯片数组，支持流式追加
 const internalSlides = ref([])
@@ -134,13 +140,16 @@ defineExpose({ appendSlide })
 
 // ── prop slides 变化时同步（生成完成后的全量覆盖）──────────────
 watch(() => props.slides, (newSlides) => {
-  if (newSlides.length > 0) {
-    internalSlides.value = [...newSlides]
-    // 不重置 current，保持用户当前浏览位置
-    if (current.value >= newSlides.length) current.value = 0
-    nextTick(scaleSlide)
+  if (!Array.isArray(newSlides) || newSlides.length === 0) {
+    internalSlides.value = []
+    current.value = 0
+    return
   }
-})
+  internalSlides.value = [...newSlides]
+  // 不重置 current，保持用户当前浏览位置
+  if (current.value >= newSlides.length) current.value = 0
+  nextTick(scaleSlide)
+}, { immediate: true })
 
 watch(() => props.currentIndex, (nextIndex) => {
   if (!internalSlides.value.length) return
@@ -155,7 +164,7 @@ watch(() => props.currentIndex, (nextIndex) => {
 // 与 src/services/previewRenderer.js 的 SLIDE_CSS 保持同步
 const SLIDE_STYLES = `
 *,*::before,*::after{box-sizing:border-box}*{margin:0;padding:0}
-.slide{width:960px;height:540px;position:relative;overflow:hidden;font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei',system-ui,sans-serif;-webkit-font-smoothing:antialiased;background-color:#fff;color:#1A1A1A}
+.slide{width:960px;height:540px;position:relative;overflow:hidden;font-family:'PingFang SC','Noto Sans SC','Microsoft YaHei',system-ui,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision;background-color:#fff;color:#1A1A1A}
 .slide-cover{background-color:var(--secondary,#0F172A);display:flex;align-items:center}
 .cover-accent{position:absolute;left:0;top:0;width:8px;height:100%;background-color:var(--primary,#2563EB);z-index:2}
 .cover-deco{position:absolute;right:-60px;top:-80px;width:300px;height:300px;border-radius:50%;background-color:var(--primary,#2563EB);opacity:.07}
@@ -231,7 +240,7 @@ const SLIDE_STYLES = `
 `
 
 function slideSrc(html) {
-  return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><style>body{margin:0;overflow:hidden;background:#fff;width:960px;height:540px}${SLIDE_STYLES}</style></head><body>${html}</body></html>`
+  return `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8"><style>body{margin:0;overflow:hidden;background:#fff;width:${SLIDE_WIDTH}px;height:${SLIDE_HEIGHT}px}${SLIDE_STYLES}</style></head><body>${html}</body></html>`
 }
 
 // ── 缩放幻灯片 ─────────────────────────────────────────────────
@@ -239,13 +248,32 @@ function scaleSlide() {
   if (!stageRef.value || !wrapperRef.value) return
   const w = stageRef.value.clientWidth  - 40
   const h = stageRef.value.clientHeight - 40
-  const scale = Math.min(w / 960, h / 540, 1)
-  // 同步 CSS 变量，让入场动画 keyframe 使用正确的缩放值
+  const deviceScale = Math.max(1, window.devicePixelRatio || 1)
+  const rawScale = Math.min(w / SLIDE_WIDTH, h / SLIDE_HEIGHT, 1)
+  const scale = Math.max(0.2, Math.round(rawScale * deviceScale * 100) / (deviceScale * 100))
   wrapperRef.value.style.setProperty('--slide-scale', scale)
-  wrapperRef.value.style.transform = `scale(${scale})`
-  wrapperRef.value.style.transformOrigin = 'top center'
-  wrapperRef.value.style.width  = '960px'
-  wrapperRef.value.style.height = '540px'
+
+  if (useZoomScaling.value && frameRef.value) {
+    wrapperRef.value.style.transform = 'none'
+    wrapperRef.value.style.transformOrigin = 'top center'
+    wrapperRef.value.style.width = `${Math.round(SLIDE_WIDTH * scale)}px`
+    wrapperRef.value.style.height = `${Math.round(SLIDE_HEIGHT * scale)}px`
+    frameRef.value.style.width = `${SLIDE_WIDTH}px`
+    frameRef.value.style.height = `${SLIDE_HEIGHT}px`
+    frameRef.value.style.zoom = String(scale)
+    frameRef.value.style.transform = 'translateZ(0)'
+  } else {
+    wrapperRef.value.style.width  = `${SLIDE_WIDTH}px`
+    wrapperRef.value.style.height = `${SLIDE_HEIGHT}px`
+    wrapperRef.value.style.transform = `scale(${scale})`
+    wrapperRef.value.style.transformOrigin = 'top center'
+    if (frameRef.value) {
+      frameRef.value.style.width = `${SLIDE_WIDTH}px`
+      frameRef.value.style.height = `${SLIDE_HEIGHT}px`
+      frameRef.value.style.zoom = ''
+      frameRef.value.style.transform = 'translateZ(0)'
+    }
+  }
 }
 
 // ── 跳转 ────────────────────────────────────────────────────────
@@ -287,6 +315,7 @@ function onKeydown(e) {
 let ro = null
 
 onMounted(() => {
+  useZoomScaling.value = typeof document !== 'undefined' && 'zoom' in document.documentElement.style
   nextTick(scaleSlide)
   ro = new ResizeObserver(scaleSlide)
   if (stageRef.value) ro.observe(stageRef.value)
@@ -373,6 +402,7 @@ onUnmounted(() => {
   overflow: hidden;
   transition: opacity 0.1s;
   border: 1px solid rgba(226, 232, 240, 0.9);
+  will-change: transform;
 }
 
 .sv-frame {
@@ -382,6 +412,9 @@ onUnmounted(() => {
   border: none;
   background: #fff;
   pointer-events: none;
+  transform-origin: top center;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* 新页入场动画
@@ -392,6 +425,15 @@ onUnmounted(() => {
 }
 .sv-wrapper--new {
   animation: slideIn 0.35s ease-out forwards;
+}
+
+.sv-wrapper--zoom.sv-wrapper--new {
+  animation: fadeIn 0.26s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .sv-thumbs {

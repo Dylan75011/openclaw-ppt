@@ -154,15 +154,18 @@ const TOOL_DEFINITIONS = [
     type: 'function',
     function: {
       name: 'ask_user',
-      description: '向用户提问，获取缺失的关键信息。只在信息确实不足以继续工作时调用，不要过度提问。',
+      description: '暂停当前任务，向用户提出一个问题并等待回答。只在以下情况使用：(1) 缺少品牌/项目名称这类无法假设的信息；(2) 用户需要在两个截然不同的方向中做选择；(3) 需要用户确认策划文档才能进入下一步。禁止在可以合理假设的情况下使用（如受众、预算、风格等）。每次只问一个问题，用自然口语而非表单语气。',
       parameters: {
         type: 'object',
         properties: {
-          question: { type: 'string', description: '向用户提出的问题，要简洁明确' },
+          question: {
+            type: 'string',
+            description: '要问的问题，用自然对话语气。如果你有合理猜测，可先说出猜测再让用户确认，比"直接提问"更自然。'
+          },
           type: {
             type: 'string',
             enum: ['missing_info', 'ambiguous', 'confirmation', 'suggestion'],
-            description: 'missing_info=缺少必要信息，ambiguous=需求模糊，confirmation=需要用户确认，suggestion=建议用户考虑'
+            description: 'missing_info=缺少无法假设的核心信息；ambiguous=两个方向都合理，需用户选择；confirmation=需要用户明确同意才能执行高代价操作；suggestion=提供选项让用户选择偏好'
           }
         },
         required: ['question', 'type']
@@ -442,16 +445,6 @@ async function execRunStrategy(args, session, onEvent) {
   session.bestScore = bestScore;
 
   onEvent('tool_progress', { message: '正在整理策划文档...' });
-  const { markdown, html } = await writeDoc({ plan: bestPlan, userInput, reviewFeedback: previousFeedback }, session.apiKeys);
-  session.docMarkdown = markdown;
-  session.docHtml = html;
-  onEvent('doc_ready', {
-    docHtml: html,
-    title: bestPlan?.planTitle || userInput.topic || `${userInput.brand} 策划方案`,
-    score: bestScore
-  });
-
-  // 推送策划方案 artifact 供右侧预览
   onEvent('artifact', {
     artifactType: 'plan_draft',
     payload: {
@@ -464,6 +457,15 @@ async function execRunStrategy(args, session, onEvent) {
         keyPoints: s.keyPoints || []
       }))
     }
+  });
+
+  const { markdown, html } = await writeDoc({ plan: bestPlan, userInput, reviewFeedback: previousFeedback }, session.apiKeys);
+  session.docMarkdown = markdown;
+  session.docHtml = html;
+  onEvent('doc_ready', {
+    docHtml: html,
+    title: bestPlan?.planTitle || userInput.topic || `${userInput.brand} 策划方案`,
+    score: bestScore
   });
 
   // 返回摘要给 brain（不返回完整 plan，节省 token）

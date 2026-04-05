@@ -25,7 +25,7 @@ const COMPOSITION_HINTS = `
 优先输出结构化版式字段，而不是只给 layout 名称。
 
 每页尽量包含：
-- composition: "editorial-left" | "hero-asymmetric" | "split-editorial" | "stat-wall" | "manifesto-center"
+- composition: 可以是预设名，也可以是你自定义的对象；如果内容复杂，优先直接写自定义 regions，而不是套预设名
 - regions: 信息区数组，每个区写 x / y / w / h / stack / gap / align / valign
 - imagePlacement: 图片参与方式，例如 {"mode":"background","emphasis":"hero"} 或 {"mode":"panel","x":60,"y":10,"w":28,"h":72}
 - textBlocks: 文本块数组，每个块标明归属 region 和 kind
@@ -39,6 +39,12 @@ textBlocks.kind 可用：
 - fact-list
 - numbered-list
 - stats
+
+严格要求：
+- 不要复用同一套区域比例到多页
+- regions 要根据文案长度和图片安全区动态调整
+- 如果一页只有 2-3 个重点，就用更开阔的留白，而不是补出多余框
+- 如果一页内容较多，优先提炼文案，再做分栏，不要堆满整页
 
 目标不是“像模板”，而是让 AI 真正决定每页的版式结构。`;
 
@@ -54,7 +60,9 @@ Taste 设计规则（必须落实到每页）：
 5. 色彩保持单一体系，避免紫色 AI 光效。优先深石墨、暖中性色、深蓝灰，搭配一个控制过的强调色。
 6. 文案必须来源于策划方案，但表达可提炼得更像高端发布会或展览叙事。
 7. 每页都要写清 imageStrategy：是否需要背景图、搜索方向、文字避让区域、遮罩强度。
-8. 页面布局要形成“张弛关系”：信息页之间插入 statement / editorial / image-led 页面，避免连续同构。`;
+8. 页面布局要形成“张弛关系”：信息页之间插入 statement / editorial / image-led 页面，避免连续同构。
+9. 优先生成能落地的专业版式，不要为炫技牺牲信息密度与可读性。
+10. 文案允许提炼、缩写、重写，但必须忠于原策划方案，不要扩写空话。`;
 
   const systemPrompt = `你是一位顶级PPT设计师，擅长将活动策划方案转化为视觉冲击力强、风格独特的PPT。
 你需要为每一页选择最合适的设计：优先输出结构化版式(composition / regions / imagePlacement / textBlocks)，其次才是布局(layout) + 风格(style) + 内容。

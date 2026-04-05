@@ -1,342 +1,456 @@
 # 实施说明
 
-## 最新补充方案：空间索引 + 平台 Memory
-
-### 目标
-
-在正式任务开始前，Agent 不只看用户这一轮输入，还要补两层长期上下文：
-
-1. `空间索引`
-   - 面向当前空间/项目
-   - 记录这个空间下真正有参考价值的上下文、资产和最近任务
-   - 属于平台内部机制，对用户不可见
-
-2. `平台 Memory`
-   - 面向全局方法论
-   - 记录跨项目稳定有效的策划经验、模式和常见误区
-   - 同样属于平台内部机制，对用户不可见
-
-这两层都必须满足：
-- 正式任务开始前先读
-- 任务完成后自动更新
-- 更新方式是“重写整理”，不是流水账追加
-- 要有主动遗忘和淘汰机制，避免上下文无限膨胀
-
----
-
-### 职责边界
-
-#### 空间索引（Project/Space Index）
-
-适合记录：
-- 当前空间里已经确定的项目背景
-- 可复用的空间资产
-- 最近几次与这个空间直接相关的任务结论
-- 对下次进入这个空间最有帮助的判断
-
-不适合记录：
-- 跨项目通用方法论
-- 只在一个任务里偶然成立的经验
-- 测试文档、示例内容、占位内容
-
-#### 平台 Memory（Global Memory）
-
-适合记录：
-- 跨项目稳定有效的活动策划原则
-- 常见活动类型的结构模式
-- 高价值表达方式
-- 常见失误、误判和风险点
-
-不适合记录：
-- 某个空间私有的品牌背景
-- 某个具体项目的执行细节
-- 只在一次任务里出现的弱信号
-
-原则上：
-- `空间索引` 解决“这个项目之前做过什么、沉淀了什么”
-- `平台 Memory` 解决“平台在越来越多任务里学会了什么”
-
----
-
-### 正式任务前的读取顺序
-
-#### Step 1：需求确认完成
-- 用户输入足够启动任务后，不立即进入正式策划
-- 先进入“启动前回顾”
-
-#### Step 2：读取空间索引
-- 如果当前选择了空间，优先读取该空间的内部 `README / index`
-- 再按需补看空间中的其他文档摘要
-- 如果空间内没有有效信息，或者多为测试/占位内容，则不注入任务上下文
-
-#### Step 3：读取平台 Memory
-- 在同一个“启动前回顾”阶段，同时读取全局 `platform-memory`
-- 让 Agent 在正式开始前就带着平台方法论做判断，而不是到正式任务里才第一次加载
-
-#### Step 4：给用户反馈回顾结论
-- 用自然语言告诉用户：
-  - 我先看了空间已有内容
-  - 我也会带着平台已有经验往下推进
-- 但不需要把这些内部机制暴露成任务节点
-
-#### Step 5：正式进入任务
-- 只有这一步之后，才创建正式任务卡并进入多 Agent 流程
-
----
-
-### 更新策略
-
-#### 空间索引更新策略
-
-每次任务完成后：
-- 读取旧索引
-- 读取当前空间下仍然有效的文档资产
-- 结合本次任务结果
-- 由 AI 重写一版更优的空间索引
-
-更新重点：
-- 删除测试信息、噪声和弱相关内容
-- 对“最近任务”做压缩，不保留流水账
-- 只保留最值得回看的资产
-- 把“下一次进入这个空间最该先知道什么”提炼出来
-
-#### 平台 Memory 更新策略
-
-每次任务完成后：
-- 读取旧 memory
-- 提取本次任务中跨项目可复用的经验
-- 由 AI 重写平台 memory
-
-更新重点：
-- 合并重复原则
-- 压缩相似表达
-- 淘汰长期未被验证、弱相关或明显过时的经验
-- recent learnings 只保留最近少量高价值结论
-
----
-
-### 遗忘机制
-
-仅做“长度截断”是不够的，后续应补成真正的遗忘规则：
-
-#### 空间索引
-- 最近任务只保留 3-4 条最有代表性的
-- 资产列表只保留 5-6 条最值得参考的
-- 对长时间未再被引用、且无明显价值的资产逐步淘汰
-
-#### 平台 Memory
-- `principles / patterns / pitfalls` 保持短列表
-- `recentLearnings` 只保留最新 4-6 条
-- 对长期未再出现、也没有被新任务再次验证的方法论逐步删除
-
----
-
-### 用户可见性原则
-
-- `空间索引`：平台内部机制，不在文档空间树中展示
-- `平台 Memory`：平台内部机制，不直接暴露给用户
-- 用户只会看到启动前的自然反馈，例如：
-  - 我先快速看一下这个空间的索引和已有内容
-  - 我会结合已有上下文继续往下推进
-
-用户不需要看到：
-- 内部 README 文件
-- 平台 memory 文件
-- 系统如何更新这些内部索引
-
----
-
-### 当前实现状态
-
-#### 已完成
-- 每个空间自动具备内部索引文档
-- 对外工作空间树已隐藏索引文档
-- 正式任务开始前会先读取空间索引和空间内容
-- 无效/测试信息不会强行注入方案
-- 任务完成后会自动更新空间索引
-- 平台级 `platform-memory.json` 已建立
-- 正式任务执行时会加载平台 memory
-- 任务完成后会更新平台 memory
-
-#### 仍需继续补强
-- 平台 Memory 还需要前移到“正式任务开始前的回顾阶段”
-- 平台 Memory 的遗忘机制目前仍偏保守，主要靠重写和长度控制
-- 更新结果仍需继续观察是否足够稳定、是否会过度遗忘
-
----
-
-### 验证清单
-
-- [ ] 启动前回顾时，空间索引是否优先于普通文档被读取
-- [ ] 如果空间里只有测试文档，是否会明确判定为“无有效上下文”
-- [ ] 正式任务创建前，是否已经读取平台 Memory
-- [ ] 任务完成后，空间索引是否发生“重写优化”而不是简单追加
-- [ ] 任务完成后，平台 Memory 是否发生“重写优化”而不是简单追加
-- [ ] 长时间后，空间索引和平台 Memory 是否仍保持短小、可读、有效
-
----
-
-## 文件结构
-
-### 新增文件
+## 项目结构
 
 ```
-src/
-├── agents/
-│   ├── baseAgent.js              # Agent 基类（LLM 调用封装、重试、JSON 解析）
-│   ├── orchestratorAgent.js
-│   ├── researchAgent.js
-│   ├── strategyAgent.js
-│   ├── criticAgent.js
-│   └── pptBuilderAgent.js
+openclaw-ppt/
+├── src/                          # 后端
+│   ├── agents/
+│   │   ├── baseAgent.js          # Agent 基类（callLLMJson / callLLMStream）
+│   │   ├── brainAgent.js          # Brain Agent（ReAct 循环）
+│   │   ├── pptBuilderAgent.js    # PPT 结构生成
+│   │   └── imageAgent.js          # 配图搜索 + AI 生图
+│   │
+│   ├── services/
+│   │   ├── agentSession.js        # 会话管理（SSE 状态，内存 Map）
+│   │   ├── toolRegistry.js        # 工具定义与执行器
+│   │   ├── llmClients.js          # MiniMax / DeepSeek 客户端封装
+│   │   ├── webSearch.js           # 搜索服务（降级链）
+│   │   ├── webFetch.js            # 网页抓取（Jina Reader）
+│   │   ├── visionMcp.js           # 图片理解（MiniMax VLM）
+│   │   ├── documentParser.js      # PDF / DOCX 解析
+│   │   ├── previewRenderer.js     # PPT JSON → HTML
+│   │   ├── pptGenerator.js        # PPT JSON → PPTX（pptxgenjs）
+│   │   ├── slideDesigner.js       # 幻灯片设计器（新版 layout）
+│   │   ├── workspaceManager.js    # 文档空间管理（JSON 文件）
+│   │   ├── platformMemory.js      # 平台记忆（JSON 文件）
+│   │   ├── conversationStore.js   # 会话历史（SQLite）
+│   │   ├── imageSearch.js         # Pexels 搜索 + MiniMax 图片生成
+│   │   ├── imageAnalyzer.js       # 图片分析（亮度/对比度/安全区域）
+│   │   ├── outputPaths.js         # 输出路径工具
+│   │   └── ...
+│   │
+│   ├── skills/                    # 策划技能
+│   │   ├── strategize.js         # 方案生成（MiniMax）
+│   │   ├── critique.js           # 方案评审（DeepSeek-R1）
+│   │   └── writeDoc.js           # 文档渲染
+│   │
+│   ├── prompts/                  # 提示词模板
+│   │   ├── brain.js              # Brain Agent 系统提示词
+│   │   ├── strategy.js           # 策略提示词
+│   │   ├── critic.js             # 评审提示词
+│   │   ├── pptBuilder.js        # PPT Builder 提示词（16KB）
+│   │   └── docWriter.js          # 文档写作提示词
+│   │
+│   ├── utils/
+│   │   └── llmUtils.js           # LLM 调用封装（重试 / JSON 提取 / Markdown 过滤）
+│   │
+│   ├── routes/
+│   │   ├── agent.js              # Brain Agent 接口（SSE + HTTP）
+│   │   ├── workspace.js           # 文档空间 CRUD + Word 导入导出
+│   │   ├── files.js              # 文件管理接口
+│   │   ├── templates.js          # 模板接口
+│   │   └── ppt.js                # PPT 生成（旧版兼容）
+│   │
+│   ├── config.js                 # 配置文件（合并 env + defaults）
+│   └── server.js                 # Express 入口（路由注册 / 中间件 / SSE）
 │
-├── prompts/
-│   ├── orchestrator.js           # 系统提示词（参数化，品牌/产品/活动类型注入）
-│   ├── research.js
-│   ├── strategy.js               # 含首轮和修订轮两套指令
-│   ├── critic.js                 # 含评分规则和输出格式约束
-│   └── pptBuilder.js             # 含 PPT JSON Schema 约束 + 配色规则
+├── frontend/                     # 前端（Vue 3 + Vite）
+│   ├── src/
+│   │   ├── views/
+│   │   │   ├── AgentView.vue      # 智能体对话界面
+│   │   │   ├── WorkspaceView.vue  # 文档空间管理
+│   │   │   ├── TemplatesView.vue  # 模板中心
+│   │   │   └── SettingsView.vue   # 配置中心
+│   │   ├── components/
+│   │   │   ├── NotionEditor.vue   # 富文本编辑器（Tiptap）
+│   │   │   ├── PlanDocumentPanel.vue
+│   │   │   └── SlideViewer.vue    # 幻灯片预览
+│   │   ├── router/
+│   │   │   └── index.js
+│   │   └── App.vue
+│   └── package.json
 │
-├── services/
-│   ├── llmClients.js             # MiniMax / DeepSeek 客户端统一管理
-│   ├── multiAgentOrchestrator.js # 编排主逻辑（含评审循环）
-│   ├── previewRenderer.js        # PPT JSON → HTML 幻灯片（浏览器预览用）
-│   └── taskManager.js            # 任务状态管理（内存存储）
+├── data/                        # 数据存储
+│   ├── workspaces.json         # 空间树结构
+│   ├── docs/                   # 文档内容（JSON 文件，id.json 命名）
+│   ├── platform-memory.json    # 平台记忆（跨项目方法论）
+│   └── platform.sqlite         # SQLite（会话历史）
 │
-└── routes/
-    └── multiAgent.js             # SSE 接口 + 状态查询接口
-
-public/
-├── multi-agent.html              # 多 Agent 生成器页面（含预览区）
-└── js/
-    └── multiAgent.js             # SSE 客户端 + 进度 UI + 幻灯片预览渲染
-```
-
-### 修改的已有文件
-
-| 文件 | 改动内容 |
-|---|---|
-| `src/routes/index.js` | 注册 `multiAgent` 路由 |
-| `src/config.js` | 新增 LLM 配置项 |
-| `.env` / `.env.example` | 新增 API Key 变量 |
-| `package.json` | 新增 `openai` 依赖 |
-| `public/css/style.css` | 新增进度条、幻灯片预览样式 |
-| `src/services/pptGenerator.js` | 常量 `HUAWEI_RED` 改为 `PRIMARY_COLOR`，运行时由参数传入 |
-| `src/templates/*.json` | 清空品牌相关内容，改为纯结构占位符（内容字段留空） |
-
-### 不改动的文件
-
-`src/services/templateManager.js` / `aiAssistant.js` / `src/server.js`
-
----
-
-## 模板 JSON 重构说明
-
-现有模板 JSON 中硬编码了真实品牌数据（智界/华为/刘亦菲等），需要改为**纯结构模板**：
-
-```json
-// 改造前（❌ 绑定品牌）
-{
-  "mainTitle": "智界汽车",
-  "subtitle": "2025 上海国际车展策划方案",
-  "brand": "HUAWEI 鸿蒙智行"
-}
-
-// 改造后（✅ 通用占位）
-{
-  "mainTitle": "",
-  "subtitle": "",
-  "brand": ""
-}
-```
-
-模板只保留 `type`、`sectionNum`、页面结构字段，所有内容由 Agent 动态填充。
-
----
-
-## pptGenerator 配色改造说明
-
-```js
-// 改造前（❌ 品牌色硬编码）
-const COLORS = {
-  HUAWEI_RED: 'FA2F1F',
-  DEEP_BLUE: '002D6B',
-  ...
-}
-
-// 改造后（✅ 运行时传入）
-function generatePPT(templateData, outputFilename) {
-  const primaryColor   = templateData.theme?.primary   || '1A1A1A'
-  const secondaryColor = templateData.theme?.secondary || '333333'
-  ...
-}
+├── public/                     # 静态资源（前端构建输出）
+├── output/                     # 生成的 PPTX / 图片文件
+├── scripts/                    # 工具脚本
+├── docs/                       # 项目文档
+└── package.json
 ```
 
 ---
 
 ## 环境变量
 
-`.env` 新增以下变量：
-
 ```env
-# MiniMax（订阅制，主力）
-MINIMAX_API_KEY=sk-cp-RxVKwW4Ud...
-MINIMAX_MODEL=MiniMax-Text-01
+# 后端服务
+PORT=3000
 
-# DeepSeek（按量，仅 Critic Agent）
-DEEPSEEK_API_KEY=sk-3748c1731e...
+# MiniMax（主力模型）
+MINIMAX_API_KEY=sk-cp-xxx
+MINIMAX_BASE_URL=https://api.minimaxi.com/v1
+MINIMAX_MODEL=MiniMax-M2.5
+
+# DeepSeek（仅 Critic）
+DEEPSEEK_API_KEY=sk-xxx
+DEEPSEEK_BASE_URL=https://api.deepseek.com
 DEEPSEEK_REASONER_MODEL=deepseek-reasoner
+
+# 搜索服务（可选）
+TAVILY_API_KEY=
+JINA_API_KEY=
+
+# 图片搜索
+PEXELS_API_KEY=PicqD7mq8tG2jFWuJ2E18DbTDDhq54ycV8Pvp9fxTAY0HjzK9RhdFVxW
 
 # 评审配置
 CRITIC_PASS_SCORE=7.0
 CRITIC_MAX_ROUNDS=3
-```
 
-> Ones/GLM-5 暂作备用，不在主流程中使用
+# 文件输出
+OUTPUT_DIR=./output
+```
 
 ---
 
-## 依赖安装
+## 安装与运行
+
+### 后端
 
 ```bash
-npm install openai
+npm install
+npm run dev        # 开发模式（nodemon 监听）
+npm run build      # 前端构建（输出到 public/）
+npm start          # 生产运行
 ```
 
-> `openai` 包支持自定义 `baseURL`，MiniMax 和 DeepSeek 均兼容 OpenAI 格式
+### 前端
+
+```bash
+cd frontend
+npm install
+npm run dev        # 开发模式（Vite 热更新，端口由 Vite 分配）
+npm run build      # 生产构建（输出到 ../public/）
+```
+
+前端构建后会输出 `public/assets/index-*.js` 和 `public/index.html`，后端 `server.js` 将 `public/` 作为静态文件目录。
 
 ---
 
-## 实施路线图
+## 核心模块说明
 
-### Phase 1 — 基础设施
-- [ ] 安装 `openai` 依赖
-- [ ] 实现 `llmClients.js`（初始化 MiniMax + DeepSeek 客户端）
-- [ ] 验证 MiniMax `sk-cp-` key 的接口调用（确认 baseURL 和模型名）
-- [ ] 实现 `baseAgent.js`（封装调用、重试 2 次、JSON 强制解析）
-- [ ] 重构 `pptGenerator.js` 配色（去掉 `HUAWEI_RED`，改为运行时传参）
-- [ ] 清空 `src/templates/*.json` 中的品牌内容，改为占位结构
-- [ ] 更新 `config.js` 和 `.env.example`
+### Brain Agent（`agents/brainAgent.js`）
 
-### Phase 2 — Agent 实现
-- [ ] `orchestratorAgent.js` + `prompts/orchestrator.js`
-- [ ] `researchAgent.js` + `prompts/research.js`
-- [ ] `strategyAgent.js` + `prompts/strategy.js`
-- [ ] `criticAgent.js` + `prompts/critic.js`
-- [ ] `pptBuilderAgent.js` + `prompts/pptBuilder.js`
+ReAct 主循环实现：
 
-### Phase 3 — 编排与 API
-- [ ] `taskManager.js`（任务状态存内存，key = taskId）
-- [ ] `multiAgentOrchestrator.js`（串联所有 Agent，含评审循环）
-- [ ] `routes/multiAgent.js`（POST 触发 + GET SSE + GET 状态）
-- [ ] 注册路由到 `routes/index.js`
+```js
+while (turn < MAX_TURNS) {
+  // 1. 构建消息历史（含 system prompt + memory + space context + messages）
+  // 2. 调用 MiniMax + tools（Function Calling）
+  // 3. 若有 tool_calls：
+  //    - 执行工具（toolRegistry）
+  //    - SSE 推送 tool_call / tool_result
+  //    - 将结果注入消息历史
+  //    - 继续循环
+  // 4. 若无 tool_calls：返回回答，结束
+  turn++;
+}
+MAX_TURNS = 20
+```
 
-### Phase 4 — 预览与前端
-- [ ] `previewRenderer.js`（PPT JSON → HTML，与 pptGenerator 共用同一数据源）
-- [ ] `multi-agent.html`（输入表单 + 进度展示 + 幻灯片预览 + 下载按钮）
-- [ ] `public/js/multiAgent.js`（EventSource + 进度条 + 预览渲染）
-- [ ] 主页添加入口链接
+关键机制：
+- `ThinkFilter`：过滤 `<think>` 块后再推送 SSE
+- `injectWarningLoopDetected`：同参数工具 3 次调用时注入警告
+- `CONTEXT_TOKEN_WARN`：Token 超 60000 时注入警告
+- `TOOL_RESULT_MAX_CHARS`：工具结果截断到 4000 字符
 
-### Phase 5 — 调优
-- [ ] 多品类端到端测试（汽车展 / 手机发布会 / 智能硬件展览）
-- [ ] Prompt 调优（Strategy 方案质量 + Critic 评审准确性）
-- [ ] 评分阈值校准（默认 7.0，可通过环境变量调整）
+### LLM 客户端（`services/llmClients.js`）
+
+```js
+// MiniMax（文本 + Function Calling）
+callMinimax(messages, options)          // 流式
+callMinimaxJson(messages, options)      // JSON 模式
+
+// DeepSeek Reasoner（纯推理）
+callDeepseekReasoner(messages, options) // 流式输出，直接解析
+extractJson(raw)                        // 从纯文本推理中提取 JSON
+```
+
+所有调用均包含重试逻辑（2 次重试，间隔 2s）。
+
+### 会话管理（`services/agentSession.js`）
+
+```js
+// 内存 Map，最大 200 个 session
+const sessions = new Map(); // <sessionId, Session>
+
+// Session 结构
+{
+  id: string,
+  status: 'idle' | 'running' | 'waiting_for_answer' | 'stopped',
+  messages: Message[],           // 对话历史
+  attachments: Attachment[],     // 上传的图片
+  documents: Document[],        // 上传的文档
+  userInput: Brief,             // 当前简报
+  plan: Plan | null,            // 策划方案
+  brief: Brief,                 // 任务简报
+  todos: Todo[],                // 任务列表
+  eventBacklog: Event[],        // SSE 事件回放（最多 80 条）
+  spaceId: string,
+  createdAt: number,
+  lastSeen: number
+}
+```
+
+TTL 2 小时自动清理（`lastSeen` 作为依据）。
+
+### 对话持久化（`services/conversationStore.js`）
+
+SQLite 数据库，表结构：
+
+```sql
+CREATE TABLE conversations (
+  id TEXT PRIMARY KEY,
+  workspace_id TEXT NOT NULL,
+  title TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',
+  state_json TEXT NOT NULL DEFAULT '{}',  -- brief/todos/plan
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL,
+  last_message_at TEXT
+);
+
+CREATE TABLE conversation_messages (
+  id TEXT PRIMARY KEY,
+  conversation_id TEXT NOT NULL,          -- 外键 → conversations.id
+  sort_order INTEGER NOT NULL,
+  payload_json TEXT NOT NULL,              -- 完整消息对象
+  created_at TEXT NOT NULL
+);
+
+-- 索引
+CREATE INDEX idx_conversations_workspace_updated ON conversations(workspace_id, updated_at DESC);
+CREATE INDEX idx_messages_conversation_sort ON conversation_messages(conversation_id, sort_order ASC);
+```
+
+WAL 模式，外键开启。`saveConversationSnapshot` 使用事务批量写入。
+
+### 空间管理（`services/workspaceManager.js`）
+
+- `workspaces.json`：树形结构（spaces → folders → documents）
+- 每个 Space 的隐藏 `README` 节点（`systemType: space_index`）存储空间上下文
+- 节点 ID 格式：`space_` / `folder_` / `doc_` 前缀 + 16 位 UUID
+
+### 平台记忆（`services/platformMemory.js`）
+
+存储在 `data/platform-memory.json`，AI 重写策略：
+
+```js
+// 更新时机：run_strategy 成功后
+await updateMemoryFromTask({ taskId, userInput, planTitle, summary, highlights, score, apiKeys });
+
+// AI 重写：保持短小精炼
+const rewritten = await rewriteMemoryWithAI({ currentMemory, latestTask, apiKeys });
+```
+
+评分算法：
+```js
+score = freshness + usage
+freshness = max(0, 6 - ageDays / 20)   // 越新鲜越高
+usage = min(useCount, 8)                // 越常用越高
+```
+
+---
+
+## PPT 数据流
+
+```
+run_strategy 完成（session.plan 已填充）
+    │
+    ▼
+pptBuilderAgent.run()
+    │ plan + brief + docContent + imageMap
+    ▼
+PPT JSON（pages[], theme{}）
+    │
+    ├─→ pptGenerator.generatePPT(pptData)
+    │       输出：output/2024/04/ppt_xxx.pptx
+    │
+    └─→ previewRenderer.renderToHtml(pptData)
+            输出：slides[]（HTML 字符串数组）
+```
+
+---
+
+## PPT JSON Schema（完整）
+
+### 旧格式（type 驱动）
+
+```json
+{
+  "title": "策划方案标题",
+  "theme": {
+    "primary": "FF6B00",
+    "secondary": "1A1A1A"
+  },
+  "pages": [
+    {
+      "type": "cover",
+      "mainTitle": "品牌名",
+      "subtitle": "活动名称",
+      "date": "2024年4月",
+      "location": "上海",
+      "bgImagePath": "/output/images/xxx.jpg"
+    },
+    {
+      "type": "toc",
+      "items": [{ "num": "01", "title": "项目背景" }, { "num": "02", "title": "核心策略" }]
+    },
+    {
+      "type": "content",
+      "title": "项目背景与目标",
+      "sectionNum": "01",
+      "sections": [
+        { "title": "核心目标", "content": ["目标1", "目标2"] },
+        { "title": "市场背景", "content": ["背景1"] }
+      ],
+      "kpis": [{ "value": "500+", "label": "预计到场人数" }]
+    },
+    {
+      "type": "two_column",
+      "title": "竞品对比",
+      "left": { "title": "我方优势", "points": ["优势1", "优势2"] },
+      "right": { "title": "市场机会", "points": ["机会1", "机会2"] }
+    },
+    {
+      "type": "cards",
+      "title": "三大亮点",
+      "cards": [
+        { "icon": "🎯", "title": "亮点1", "desc": "描述", "features": ["特点1", "特点2"] }
+      ]
+    },
+    {
+      "type": "timeline",
+      "title": "执行时间线",
+      "phases": [
+        { "date": "T-4周", "title": "筹备", "tasks": ["场地确认", "嘉宾邀请"] },
+        { "date": "T-1周", "title": "预热", "tasks": ["传播启动"] }
+      ]
+    },
+    {
+      "type": "end",
+      "mainText": "感谢观看",
+      "subText": "活动口号",
+      "brand": "品牌名",
+      "contact": "contact@brand.com"
+    }
+  ]
+}
+```
+
+### 新格式（layout 驱动，来自 slideDesigner）
+
+```json
+{
+  "title": "策划方案标题",
+  "theme": {
+    "primary": "FF6B00",
+    "secondary": "1A1A1A",
+    "globalStyle": "dark_tech",
+    "bgImage": "/output/images/theme_bg.jpg"
+  },
+  "pages": [
+    {
+      "layout": "immersive_cover",
+      "content": { "title": "主标题", "subtitle": "副标题", "brand": "品牌", "date": "2024年4月" },
+      "bgImagePath": "/output/images/cover.jpg"
+    },
+    {
+      "layout": "bento_grid",
+      "content": {
+        "title": "亮点呈现",
+        "cards": [{ "title": "亮点1", "description": "..." }]
+      }
+    },
+    {
+      "layout": "timeline_flow",
+      "content": {
+        "title": "执行时间线",
+        "phases": [{ "date": "T-4周", "title": "筹备" }]
+      }
+    },
+    {
+      "layout": "end_card",
+      "content": { "brand": "品牌", "tagline": "口号", "contact": "contact@brand.com" }
+    }
+  ]
+}
+```
+
+### 页面类型（type）与布局（layout）对应关系
+
+| type（旧） | layout（新） | 说明 |
+|-----------|-------------|------|
+| `cover` | `immersive_cover` | 全出血深色封面 |
+| `toc` | `grid_toc` | 网格目录 |
+| `content` | `split_content` / `bento_grid` | 分栏/网格内容 |
+| `two_column` | `split_content` | 双栏对比 |
+| `cards` | `bento_grid` | 卡片展示 |
+| `timeline` | `timeline_flow` | 时间线 |
+| `end` | `end_card` | 结束页 |
+
+---
+
+## 前端路由
+
+| 路径 | 组件 | 说明 |
+|------|------|------|
+| `/` | → redirect `/workspace` | 首页重定向 |
+| `/workspace` | WorkspaceView | 文档空间管理（默认入口） |
+| `/workspace/:spaceId` | WorkspaceView | 打开指定空间 |
+| `/agent` | AgentView | Brain Agent 对话（主要工作入口） |
+| `/agent/:sessionId` | AgentView | 打开指定会话 |
+| `/templates` | TemplatesView | PPT 模板浏览 |
+| `/settings` | SettingsView | API Key 配置 |
+
+---
+
+## 依赖概览
+
+| 依赖 | 版本 | 用途 |
+|------|------|------|
+| `express` | ^4.x | Web 框架 |
+| `openai` | ^4.x | MiniMax / DeepSeek 客户端 |
+| `multer` | ^1.x | 文件上传（内存模式） |
+| `uuid` | ^9.x | ID 生成（sessionId / nodeId） |
+| `dotenv` | ^16.x | 环境变量 |
+| `pdf-parse` | ^1.x | PDF 文本提取 |
+| `mammoth` | ^1.x | DOCX 文本提取 |
+| `p-queue` | ^8.x | 并发控制（工具执行） |
+| `node-sqlite3` | ^4.x | SQLite 驱动 |
+| `marked` | ^11.x | Markdown → HTML |
+| `vue` | ^3.x | 前端框架 |
+| `vue-router` | ^4.x | 前端路由 |
+| `@tiptap/vue-3` | ^2.x | 富文本编辑器核心 |
+| `@phosphor-icons/vue` | ^2.x | 图标库 |
+| `@arco-design/web-vue` | ^2.x | UI 组件库 |
+| `vite` | ^5.x | 前端构建工具 |
+
+---
+
+## 数据文件说明
+
+| 文件 | 格式 | 说明 |
+|------|------|------|
+| `data/workspaces.json` | JSON | 空间树结构，含所有 Space/Folder/Document 节点 |
+| `data/docs/{id}.json` | JSON | 单个文档内容（Tiptap JSON 格式） |
+| `data/platform-memory.json` | JSON | 平台记忆（principles/patterns/pitfalls 等） |
+| `data/platform.sqlite` | SQLite | 会话历史（conversations + messages） |
+| `output/{year}/{month}/ppt_{timestamp}.pptx` | PPTX | 生成的 PPT 文件 |
+| `output/{year}/{month}/{taskId}_*.jpg` | JPEG | 下载的图片（已处理为 1920×1080 82%） |

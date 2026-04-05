@@ -1,0 +1,132 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e8]
+      - generic [ref=e12]: Luna
+    - navigation [ref=e13]:
+      - button "文档空间" [ref=e14] [cursor=pointer]:
+        - img [ref=e16]
+        - generic [ref=e20]: 文档空间
+      - button "智能体" [ref=e21] [cursor=pointer]:
+        - img [ref=e23]
+        - generic [ref=e27]: 智能体
+      - button "模版中心" [ref=e28] [cursor=pointer]:
+        - img [ref=e30]
+        - generic [ref=e34]: 模版中心
+      - button "配置中心" [ref=e35] [cursor=pointer]:
+        - img [ref=e37]
+        - generic [ref=e41]: 配置中心
+    - generic [ref=e42]:
+      - button [ref=e43] [cursor=pointer]:
+        - img [ref=e44]
+      - generic [ref=e47]: v2.0
+  - generic [ref=e49]:
+    - complementary [ref=e50]:
+      - generic [ref=e51]:
+        - generic [ref=e53]:
+          - generic [ref=e54]: 当前空间
+          - generic "华为" [ref=e55] [cursor=pointer]:
+            - textbox "选择工作空间"
+            - generic [ref=e56]: 华为
+            - img [ref=e59]
+        - button "+" [ref=e61] [cursor=pointer]
+      - generic [ref=e62]:
+        - generic [ref=e63]: 历史对话
+        - generic [ref=e65]:
+          - img [ref=e67]
+          - textbox "搜索历史对话" [ref=e69]
+        - generic [ref=e71]:
+          - generic [ref=e72]: 今天
+          - generic [ref=e73]:
+            - button "我们这边最近要提一个线下活动方案，先不用太正式。大概是给一个手机 11 条消息 · 1 分钟前 •••" [ref=e208] [cursor=pointer]:
+              - generic [ref=e75]:
+                - generic [ref=e76]: 我们这边最近要提一个线下活动方案，先不用太正式。大概是给一个手机
+                - generic [ref=e77]: 11 条消息 · 1 分钟前
+              - generic [ref=e78]: •••
+            - button "华为智界新车发布会 3 条消息 · 52 分钟前 •••" [ref=e207] [cursor=pointer]:
+              - generic [ref=e80]:
+                - generic [ref=e81]: 华为智界新车发布会
+                - generic [ref=e82]: 3 条消息 · 52 分钟前
+              - generic [ref=e83]: •••
+            - button "华为 PPT 40 条消息 · 1 小时前 •••" [ref=e84] [cursor=pointer]:
+              - generic [ref=e85]:
+                - generic [ref=e86]: 华为 PPT
+                - generic [ref=e87]: 40 条消息 · 1 小时前
+              - generic [ref=e88]: •••
+    - button "‹" [ref=e89] [cursor=pointer]
+    - generic [ref=e90]:
+      - generic [ref=e91]:
+        - generic [ref=e94]: 我们这边最近要提一个线下活动方案，先不用太正式。大概是给一个手机新品做预热，领导想要年轻一点、能出片一点，但预算应该不会特别高。你先别急着写整套方案，先帮我想想方向。
+        - generic [ref=e96]:
+          - paragraph [ref=e97]: 好的，先聊方向。
+          - paragraph [ref=e98]: 几个思路给你参考：
+          - paragraph [ref=e99]:
+            - strong [ref=e100]: 1. 快闪店 + 挑战打卡
+            - text: <br />在城市年轻人口聚集的地方（比如三里屯、国贸、前滩太古里这种），弄一个为期3-5天的限时体验空间。设置几个能出片的互动装置（比如光影隧道、产品合影墙、AR打卡点），让用户拍照分享然后领小礼品。成本可控，核心吃传播。
+          - paragraph [ref=e101]:
+            - strong [ref=e102]: 2. 联名快闪咖啡车 / 气泡站
+            - text: <br />现在年轻人对"喝一杯"打卡没什么抵抗力。搞个手机主题的移动咖啡车或者气泡水站，放个巨幅包装装置，往那儿一站就是朋友圈素材。场地灵活，成本比固定店低。
+          - paragraph [ref=e103]:
+            - strong [ref=e104]: 3. 校园 / 艺术区地下赛博风活动
+            - text: <br />如果产品偏性能或游戏属性，可以考虑这种调性——暗黑系灯光、霓虹元素、投篮机或电竞挑战。场地选大学城或者创意园区，氛围感到位，拍照也出片。
+          - paragraph [ref=e105]:
+            - strong [ref=e106]: 4. 盒子盲盒装置
+            - text: <br />堆一堆巨型产品盒子，做成可以打开的盲盒墙或者互动墙，年轻人就喜欢这种"拆"的仪式感。拍出来也有视觉冲击力。
+          - paragraph [ref=e107]: "---"
+          - paragraph [ref=e108]: 这几个方向你们倾向于哪个？或者你们产品有什么特别的卖点，我可以帮你往那个方向再收一收。
+        - paragraph [ref=e111]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e124]: 先别往校园和咖啡车那边走，感觉有点跑偏。我们大概率还是在商场中庭或者购物中心里做，品牌调性是国产中高端，卖点偏拍照，尤其是夜景和人像这块。还有一个点，领导会怕太像纯网红打卡，所以最好还是能看起来有产品体验逻辑。你帮我收两个更稳一点的方向。
+        - generic [ref=e137]:
+          - paragraph [ref=e138]: 明白了，再收两个：
+          - paragraph [ref=e139]:
+            - strong [ref=e140]: 1. 暗光摄影实验室
+            - text: <br />围绕夜景和人像的核心卖点，做一个"黑空间"——模拟夜晚城市街头、霓虹灯箱、弱光人像等场景，参观者现场用手机拍，现场对比效果。视觉上偏专业摄影棚调性（深灰/黑色系），不是那种花里胡哨的网红风，但拍照确实出片。逻辑很顺：让你亲身试验我们的夜景/人像到底强在哪。
+          - paragraph [ref=e141]:
+            - strong [ref=e142]: 2. 人像写真体验区
+            - text: <br />搭几个不同风格的人像场景（极简肖像、复古胶片感、艺术光影），强调"用手机也能拍出写真级人像"。可以设置现场打印照片的环节，增加一点"带走实物"的仪式感。比纯打卡更有体验内容，同时出片效果一点不差。
+          - paragraph [ref=e143]: "---"
+          - paragraph [ref=e144]: 这两个哪个更贴合你们想法？或者你们倾向于把两个揉在一起也行。
+        - paragraph [ref=e147]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e156]: 那就按两个揉在一起走吧，但名字别太土，也别太技术宅。我们内部汇报的时候还是需要一个好讲一点的总概念。你先帮我出一版主概念/KV说法，再顺一下现场分区和用户动线，按商场中庭能落地的逻辑讲。不要写得太像提案 final 稿，像我现在跟你来回碰方向就行。
+        - generic [ref=e169]:
+          - paragraph [ref=e170]: 好，拢一下：
+          - paragraph [ref=e171]: "---"
+          - paragraph [ref=e172]:
+            - strong [ref=e173]: 主概念：追光计划
+          - paragraph [ref=e174]: 比"实验室"轻，比"打卡"有内容。夜景捕光、人像追光，两边都能含。汇报的时候也好讲——"我们不是做个拍照布景，是让用户进来追一把光"。
+          - paragraph [ref=e175]: "---"
+          - paragraph [ref=e176]:
+            - strong [ref=e177]: 现场分区（从外往里）：
+          - list [ref=e178]:
+            - listitem [ref=e179]:
+              - strong [ref=e180]: 入口吸睛装置
+              - text: —— 商场外围先有个视觉点，不用复杂，一个能亮的抽象光影装置+主KV就行，起到"拉人"的作用
+          - list [ref=e181]:
+            - listitem [ref=e182]:
+              - strong [ref=e183]: 暗光区（夜景实验室）
+              - text: —— 模拟城市暗光环境（霓虹灯箱、夜 street 氛围），用户现场拍，现场看效果。侧重"怎么在这种环境里还能出片"
+          - list [ref=e184]:
+            - listitem [ref=e185]:
+              - strong [ref=e186]: 人像区（光影肖像）
+              - text: —— 两三个不同光效的Portrait角落（柔光、轮廓光、戏剧感），可以排队拍照，也可以让工作人员帮拍。侧重"手机直出的人像质感"
+          - list [ref=e187]:
+            - listitem [ref=e188]:
+              - strong [ref=e189]: 对比互动屏
+              - text: —— 拍完可以走到屏幕前，跟竞品或者前代机型同框对比夜景/人像的差异。一目了然，不用光靠嘴说
+          - list [ref=e190]:
+            - listitem [ref=e191]:
+              - strong [ref=e192]: 收尾区
+              - text: —— 打印照片带走 + 领个小周边（比如手机支架、镜头擦拭布这种实用不low的）
+          - paragraph [ref=e193]: "---"
+          - paragraph [ref=e194]:
+            - strong [ref=e195]: 动线逻辑：
+          - paragraph [ref=e196]: 进 → 被光影装置吸引 → 先进暗光区玩一圈 → 走到人像区拍一张 → 往前到对比屏看看自己拍得怎么样 → 最后打印/领周边走人
+          - paragraph [ref=e197]: 这样体验是有递进的：先试夜景功能，再拍人像，再对比确认，最后带着东西走。逻辑上是顺的，不是纯网红布景打卡。
+          - paragraph [ref=e198]: "---"
+          - paragraph [ref=e199]: 你觉得这个框架OK吗？OK的话我下个阶段可以帮你搜几个类似的案例参考，再往后就是具体方案和PPT了。
+        - paragraph [ref=e202]: 这一轮信息我已经整理完了，你可以继续补充方向，我再往下推进。
+        - generic [ref=e211]: 框架可以。你先别急着搜太散的案例，我现在更需要能拿去内部过一轮。你按这个方向先帮我整理成一个相对完整的活动方案，至少要有：活动主题、核心创意、现场区域、互动玩法、传播点、基础执行口径。如果你觉得信息还不够，就按商场中庭快闪这个常规场景先帮我补齐假设，先出一版。
+      - generic [ref=e113]:
+        - textbox "描述活动需求，如：帮我为小米做一个大型新品发布会..." [ref=e115]
+        - button [ref=e217] [cursor=pointer]:
+          - img [ref=e218]

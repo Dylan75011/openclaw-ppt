@@ -2,9 +2,265 @@ const BaseAgent = require('./baseAgent');
 const { buildPptBuilderPrompt, buildImageAwareRefinementPrompt } = require('../prompts/pptBuilder');
 const { analyzePagesForLayout } = require('../services/imageAnalyzer');
 
+const STABLE_LAYOUTS = new Set([
+  'immersive_cover',
+  'cover',
+  'toc',
+  'editorial_quote',
+  'data_cards',
+  'asymmetrical_story',
+  'split_content',
+  'timeline_flow',
+  'end_card',
+  'bento_grid'
+]);
+
 class PptBuilderAgent extends BaseAgent {
   constructor(apiKeys = {}) {
     super('PptBuilderAgent', 'minimax', apiKeys);
+  }
+
+  estimateTextWeight(text = '') {
+    const value = String(text || '').trim();
+    const cjkCount = (value.match(/[\u4e00-\u9fff]/g) || []).length;
+    const latinCount = value.length - cjkCount;
+    return cjkCount + latinCount * 0.45;
+  }
+
+  summarizeText(text = '', maxWeight = 42) {
+    const value = String(text || '').trim();
+    if (!value) return '';
+    const clauses = value
+      .split(/[。！？；]/)
+      .map(part => part.trim())
+      .filter(Boolean);
+    if (clauses.length > 1) {
+      let combined = '';
+      for (const clause of clauses) {
+        const candidate = combined ? `${combined}，${clause}` : clause;
+        if (this.estimateTextWeight(candidate) > maxWeight) break;
+        combined = candidate;
+      }
+      if (combined) return combined.length < value.length ? `${combined}...` : combined;
+    }
+    let weight = 0;
+    let result = '';
+    for (const char of value) {
+      weight += /[\u4e00-\u9fff]/.test(char) ? 1 : 0.45;
+      if (weight > maxWeight) break;
+      result += char;
+    }
+    return result.length < value.length ? `${result.trim()}...` : value;
+  }
+
+  trimLine(text = '', maxWeight = 24) {
+    const value = String(text || '').trim();
+    if (!value) return '';
+    return this.estimateTextWeight(value) > maxWeight ? this.summarizeText(value, maxWeight) : value;
+  }
+
+  inferPageRole(page = {}, index = 0, total = 0) {
+    if (index === 0) return 'cover';
+    if (total > 1 && index === total - 1) return 'closing';
+    return page?.visualIntent?.role || page?.layout || page?.type || 'section';
+  }
+
+  stableLayoutForRole(role = 'section', index = 0, total = 0) {
+    if (index === 0 || role === 'cover') return 'immersive_cover';
+    if (total > 1 && index === total - 1) return 'end_card';
+    if (role === 'toc') return 'toc';
+    if (role === 'manifesto') return 'editorial_quote';
+    if (role === 'highlights' || role === 'metrics') return 'data_cards';
+    if (role === 'timeline') return 'timeline_flow';
+    if (role === 'comparison') return 'split_content';
+    return 'asymmetrical_story';
+  }
+
+  sanitizeList(items, { maxItems = 4, maxWeight = 28 } = {}) {
+    return (Array.isArray(items) ? items : [])
+      .map(item => this.trimLine(item, maxWeight))
+      .filter(Boolean)
+      .slice(0, maxItems);
+  }
+
+  stabilizePage(page = {}, index = 0, total = 0) {
+    const next = { ...page };
+    const role = this.inferPageRole(next, index, total);
+    const targetLayout = STABLE_LAYOUTS.has(next.layout || next.type)
+      ? (next.layout || next.type)
+      : this.stableLayoutForRole(role, index, total);
+
+    next.layout = targetLayout;
+    next.type = targetLayout;
+    next.style = next.style || 'dark_tech';
+    next.title = this.trimLine(next.title || (index === 1 && role === 'toc' ? '目录' : ''), index === 0 ? 26 : 22);
+    next.subtitle = this.trimLine(next.subtitle, role === 'cover' ? 42 : 28);
+    next.quote = this.trimLine(next.quote, role === 'manifesto' ? 88 : role === 'closing' ? 56 : 44);
+    next.body = this.trimLine(next.body || next.story, role === 'section' ? 80 : 56);
+    next.story = next.body || next.story || '';
+    next.facts = this.sanitizeList(next.facts, {
+      maxItems: role === 'highlights' ? 5 : role === 'section' ? 3 : 4,
+      maxWeight: role === 'section' ? 34 : 30
+    });
+    next.leftItems = this.sanitizeList(next.leftItems, { maxItems: 4, maxWeight: 28 });
+    next.rightItems = this.sanitizeList(next.rightItems, { maxItems: 4, maxWeight: 28 });
+    next.metrics = (Array.isArray(next.metrics) ? next.metrics : [])
+      .slice(0, role === 'highlights' ? 5 : 4)
+      .map((item) => ({
+        ...item,
+        value: this.trimLine(item?.value, 18),
+        label: this.trimLine(item?.label, 26),
+        sub: this.trimLine(item?.sub, 16)
+      }));
+    next.phases = (Array.isArray(next.phases) ? next.phases : []).slice(0, 5).map((phase) => ({
+      ...phase,
+      date: this.trimLine(phase?.date, 16),
+      name: this.trimLine(phase?.name, 18),
+      tasks: this.sanitizeList(phase?.tasks, { maxItems: 3, maxWeight: 20 })
+    }));
+
+    if (Array.isArray(next.textBlocks)) {
+      next.textBlocks = next.textBlocks.map((block) => {
+        const normalized = { ...block };
+        if (typeof normalized.text === 'string') {
+          const maxWeight = normalized.kind === 'title'
+            ? 24
+            : normalized.kind === 'quote'
+              ? (role === 'manifesto' ? 84 : 52)
+              : normalized.kind === 'body'
+                ? (role === 'section' ? 84 : 56)
+                : 28;
+          normalized.text = this.trimLine(normalized.text, maxWeight);
+        }
+        if (Array.isArray(normalized.items)) {
+          normalized.items = this.sanitizeList(normalized.items, {
+            maxItems: normalized.kind === 'timeline' ? 5 : role === 'highlights' ? 5 : 4,
+            maxWeight: normalized.kind === 'stats' ? 18 : 28
+          });
+        }
+        return normalized;
+      }).filter(block => block.text || (Array.isArray(block.items) && block.items.length));
+    }
+
+    if (!next.visualIntent) next.visualIntent = {};
+    next.visualIntent.role = role;
+    return next;
+  }
+
+  stabilizePages(pages = []) {
+    return pages.map((page, index) => this.stabilizePage(page, index, pages.length));
+  }
+
+  computeDynamicRegions(page = {}) {
+    const role = page?.visualIntent?.role || page?.layout || 'content';
+    const placement = page?.imageAnalysis?.safestTextPlacement || page?.imageStrategy?.textPlacement || 'left';
+    const titleWeight = this.estimateTextWeight(page?.title || '');
+    const quoteWeight = this.estimateTextWeight(page?.quote || page?.subtitle || page?.story || page?.body || '');
+    const factCount = Array.isArray(page?.facts) ? page.facts.length : 0;
+    const timelineCount = Array.isArray(page?.phases) ? page.phases.length : 0;
+    const metricCount = Array.isArray(page?.metrics) ? page.metrics.length : 0;
+
+    if (role === 'cover') {
+      return placement === 'right'
+        ? [
+            { name: 'header', x: 48, y: 12, w: 36, h: titleWeight > 18 ? 24 : 20, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
+            { name: 'body', x: 48, y: 46, w: 28, h: 16, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
+            { name: 'rail', x: 10, y: 18, w: 22, h: Math.min(46, 22 + factCount * 6), stack: 'vertical', gap: 10, align: 'stretch', valign: 'start' }
+          ]
+        : [
+            { name: 'header', x: 7, y: 12, w: 38, h: titleWeight > 18 ? 24 : 20, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
+            { name: 'body', x: 7, y: 46, w: 30, h: 16, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
+            { name: 'rail', x: 64, y: 18, w: 22, h: Math.min(46, 22 + factCount * 6), stack: 'vertical', gap: 10, align: 'stretch', valign: 'start' }
+          ];
+    }
+
+    if (role === 'manifesto') {
+      const quoteHeight = quoteWeight > 42 ? 38 : quoteWeight > 28 ? 32 : 26;
+      const factsY = Math.min(54, 22 + Math.max(0, quoteHeight - 26));
+      return placement === 'right'
+        ? [
+            { name: 'header', x: 48, y: 12, w: 24, h: 16, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+            { name: 'quote', x: 40, y: 32, w: 36, h: quoteHeight, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
+            { name: 'facts', x: 10, y: factsY, w: 24, h: 20 + factCount * 6, stack: 'vertical', gap: 10, align: 'stretch', valign: 'start' }
+          ]
+        : [
+            { name: 'header', x: 8, y: 12, w: 24, h: 16, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+            { name: 'quote', x: 8, y: 32, w: 38, h: quoteHeight, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
+            { name: 'facts', x: 58, y: factsY, w: 28, h: 20 + factCount * 6, stack: 'vertical', gap: 10, align: 'stretch', valign: 'start' }
+          ];
+    }
+
+    if (role === 'highlights') {
+      const twoCol = factCount > 3;
+      return [
+        { name: 'header', x: 7, y: 10, w: 34, h: 15, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+        { name: 'facts', x: 7, y: 27, w: 84, h: twoCol ? 42 : 30, stack: twoCol ? 'grid' : 'vertical', columns: factCount >= 5 ? 3 : (twoCol ? 2 : undefined), gap: twoCol ? 20 : 14, align: 'stretch', valign: 'start' }
+      ];
+    }
+
+    if (role === 'timeline') {
+      const headerHeight = 13;
+      const timelineHeight = Math.min(62, 28 + timelineCount * 10);
+      return [
+        { name: 'header', x: 7, y: 8, w: 36, h: headerHeight, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+        { name: 'timeline', x: 7, y: 23, w: 86, h: timelineHeight, stack: 'vertical', gap: 0, align: 'stretch', valign: 'stretch' }
+      ];
+    }
+
+    if (role === 'metrics') {
+      const rightWidth = metricCount >= 3 ? 36 : 30;
+      return placement === 'right'
+        ? [
+            { name: 'header', x: 46, y: 10, w: 28, h: 16, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+            { name: 'left', x: 46, y: 34, w: 30, h: 34, stack: 'vertical', gap: 12, align: 'stretch', valign: 'start' },
+            { name: 'right', x: 8, y: 22, w: rightWidth, h: 42, stack: 'vertical', gap: 12, align: 'stretch', valign: 'start' }
+          ]
+        : [
+            { name: 'header', x: 8, y: 10, w: 28, h: 16, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+            { name: 'left', x: 8, y: 34, w: 30, h: 34, stack: 'vertical', gap: 12, align: 'stretch', valign: 'start' },
+            { name: 'right', x: 52, y: 20, w: rightWidth, h: 42, stack: 'vertical', gap: 12, align: 'stretch', valign: 'start' }
+          ];
+    }
+
+    if (role === 'comparison') {
+      return [
+        { name: 'header', x: 7, y: 10, w: 30, h: 12, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+        { name: 'left', x: 7, y: 22, w: 38, h: 56, stack: 'vertical', gap: 10, align: 'stretch', valign: 'start' },
+        { name: 'right', x: 56, y: 22, w: 32, h: 56, stack: 'vertical', gap: 10, align: 'stretch', valign: 'start' }
+      ];
+    }
+
+    if (role === 'closing') {
+      return placement === 'right'
+        ? [
+            { name: 'header', x: 48, y: 12, w: 26, h: 16, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+            { name: 'quote', x: 42, y: 34, w: 34, h: 24, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
+            { name: 'facts', x: 10, y: 24, w: 24, h: 18, stack: 'vertical', gap: 10, align: 'stretch', valign: 'start' }
+          ]
+        : [
+            { name: 'header', x: 8, y: 12, w: 26, h: 16, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+            { name: 'quote', x: 8, y: 34, w: 34, h: 24, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
+            { name: 'facts', x: 58, y: 22, w: 26, h: 18, stack: 'vertical', gap: 10, align: 'stretch', valign: 'start' }
+          ];
+    }
+
+    if (role === 'section') {
+      const headerWidth = quoteWeight > 34 ? 40 : 36;
+      const railHeight = 20 + factCount * 8;
+      return placement === 'right'
+        ? [
+            { name: 'header', x: 44, y: 12, w: headerWidth, h: 20, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
+            { name: 'body', x: 44, y: 38, w: 32, h: quoteWeight > 36 ? 28 : 24, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
+            { name: 'rail', x: 8, y: 18, w: 24, h: railHeight, stack: 'vertical', gap: 10, align: 'stretch', valign: 'start' }
+          ]
+        : [
+            { name: 'header', x: 7, y: 12, w: headerWidth, h: 20, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
+            { name: 'body', x: 7, y: 38, w: 34, h: quoteWeight > 36 ? 28 : 24, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
+            { name: 'rail', x: 64, y: 18, w: 22, h: railHeight, stack: 'vertical', gap: 10, align: 'stretch', valign: 'start' }
+          ];
+    }
+
+    return page.regions || [];
   }
 
   async run({ plan, userInput, docContent, imageMap = {}, onOutlineReady, onPageReady }) {
@@ -14,7 +270,7 @@ class PptBuilderAgent extends BaseAgent {
     try {
       result = await this.callLLMJson(
         [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-        { maxTokens: 4096, temperature: 0.4 }
+        { maxTokens: 4096, temperature: 0.22 }
       );
     } catch (err) {
       console.warn('[PptBuilderAgent] 首轮结构化 JSON 生成失败，回退到程序化结构化版式:', err.message);
@@ -23,6 +279,7 @@ class PptBuilderAgent extends BaseAgent {
 
     const theme = result.theme || {};
     theme.globalStyle = result.globalStyle || 'dark_tech';
+    result.pages = this.stabilizePages(Array.isArray(result.pages) ? result.pages : []);
     const pages = result.pages || [];
     const total = pages.length;
     console.log(`[PptBuilderAgent] 生成完成，共 ${total} 页`);
@@ -132,7 +389,8 @@ class PptBuilderAgent extends BaseAgent {
           content: nextPages[i]?.content || pages[i].content || {},
         };
       }
-      result.pages = pages;
+      this.applyProgrammaticImageAwareLayout(pages);
+      result.pages = this.stabilizePages(pages);
     } catch (err) {
       console.warn('[PptBuilderAgent] 图片感知二次排版失败，保留初版布局:', err.message);
       for (let i = 0; i < pages.length; i++) {
@@ -147,6 +405,7 @@ class PptBuilderAgent extends BaseAgent {
         }
       }
       this.applyProgrammaticImageAwareLayout(pages);
+      result.pages = this.stabilizePages(pages);
     }
   }
 
@@ -166,17 +425,22 @@ class PptBuilderAgent extends BaseAgent {
         page.textBlocks = page.textBlocks.map((block) => {
           if (block.kind === 'body' || block.kind === 'subtitle') {
             const text = String(block.text || '').trim();
+            const maxChars = role === 'section' ? 148 : role === 'manifesto' ? 120 : 108;
             return {
               ...block,
-              text: text.length > 96 ? `${text.slice(0, 96).trim()}...` : text,
-              clamp: block.kind === 'body' ? 5 : block.clamp,
+              text: text.length > maxChars ? this.summarizeText(text, role === 'section' ? 132 : role === 'manifesto' ? 96 : 84) : text,
+              clamp: block.kind === 'body' ? (role === 'section' ? 7 : role === 'timeline' ? 4 : 5) : block.clamp,
             };
           }
           if (block.kind === 'fact-list') {
             const compactItems = (block.items || []).map((item) => {
               const text = String(item || '').trim();
-              return text.length > 36 ? `${text.slice(0, 36).trim()}...` : text;
-            }).slice(0, role === 'section' ? 3 : 4);
+              if (text.length <= (role === 'highlights' ? 44 : role === 'comparison' ? 46 : role === 'section' ? 48 : 40)) return text;
+              return this.summarizeText(
+                text,
+                role === 'highlights' ? 34 : role === 'comparison' ? 40 : role === 'section' ? 42 : 32
+              );
+            }).slice(0, role === 'highlights' ? 5 : role === 'section' ? 3 : role === 'comparison' ? 4 : 4);
             return {
               ...block,
               items: compactItems,
@@ -186,17 +450,19 @@ class PptBuilderAgent extends BaseAgent {
                 ? (longestFact > 26 ? 'compact-notes' : 'side-notes')
                 : role === 'manifesto'
                   ? (longestFact > 28 ? 'compact-notes' : 'side-notes')
+                  : role === 'comparison'
+                    ? 'compact-notes'
                   : 'editorial-list'
             };
           }
           if (block.kind === 'stats') {
             return {
               ...block,
-              variant: role === 'metrics'
+              variant: block.variant || (role === 'metrics'
                 ? 'ledger'
                 : role === 'highlights'
                   ? 'staggered-notes'
-                  : 'annotation-strip'
+                  : 'annotation-strip')
             };
           }
           if (block.kind === 'timeline') {
@@ -210,17 +476,7 @@ class PptBuilderAgent extends BaseAgent {
       }
 
       if (page.composition === 'hero-asymmetric') {
-        page.regions = placement === 'right'
-          ? [
-              { name: 'header', x: 48, y: 12, w: 38, h: 24, stack: 'vertical', gap: 12, align: 'start', valign: 'start' },
-              { name: 'body', x: 48, y: 44, w: 34, h: 22, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
-              { name: 'rail', x: 10, y: 20, w: 20, h: 42, stack: 'vertical', gap: 10, align: 'stretch', valign: 'start' }
-            ]
-          : [
-              { name: 'header', x: 7, y: 12, w: 42, h: 24, stack: 'vertical', gap: 12, align: 'start', valign: 'start' },
-              { name: 'body', x: 7, y: 44, w: 38, h: 22, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
-              { name: 'rail', x: 68, y: 18, w: 18, h: 44, stack: 'vertical', gap: 10, align: 'stretch', valign: 'start' }
-            ];
+        page.regions = this.computeDynamicRegions(page);
       }
 
       if (page.composition === 'manifesto-center') {
@@ -237,25 +493,28 @@ class PptBuilderAgent extends BaseAgent {
             ];
       }
 
+      if (page.composition === 'annotation-runway') {
+        page.regions = this.computeDynamicRegions(page);
+      }
+
       if (page.composition === 'staggered-metrics') {
-        page.regions = [
-          { name: 'header', x: 7, y: 10, w: 36, h: 18, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
-          { name: 'stats', x: 7, y: 30, w: 84, h: 44, stack: 'grid', columns: 3, gap: 22, align: 'stretch', valign: 'start' }
-        ];
+        page.regions = this.computeDynamicRegions(page);
+      }
+
+      if (page.composition === 'compare-columns') {
+        page.regions = this.computeDynamicRegions(page);
       }
 
       if (page.composition === 'ledger-split') {
-        page.regions = placement === 'right'
-          ? [
-              { name: 'header', x: 48, y: 12, w: 28, h: 18, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
-              { name: 'left', x: 48, y: 36, w: 30, h: 30, stack: 'vertical', gap: 12, align: 'stretch', valign: 'start' },
-              { name: 'right', x: 10, y: 24, w: 32, h: 42, stack: 'vertical', gap: 12, align: 'stretch', valign: 'start' }
-            ]
-          : [
-              { name: 'header', x: 8, y: 12, w: 28, h: 18, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
-              { name: 'left', x: 8, y: 36, w: 32, h: 32, stack: 'vertical', gap: 12, align: 'stretch', valign: 'start' },
-              { name: 'right', x: 52, y: 24, w: 30, h: 42, stack: 'vertical', gap: 12, align: 'stretch', valign: 'start' }
-            ];
+        page.regions = this.computeDynamicRegions(page);
+      }
+
+      if (page.composition === 'highlights-board') {
+        page.regions = this.computeDynamicRegions(page);
+      }
+
+      if (role === 'timeline' && (!Array.isArray(page.regions) || !page.regions.length || page.composition === 'split-editorial')) {
+        page.regions = this.computeDynamicRegions(page);
       }
     }
   }
@@ -415,7 +674,7 @@ class PptBuilderAgent extends BaseAgent {
         textBlocks: [
           { region: 'header', kind: 'eyebrow', text: 'STRATEGY' },
           { region: 'header', kind: 'title', text: '核心策略', size: 34 },
-          { region: 'quote', kind: 'quote', text: plan?.coreStrategy || '用一场有仪式感的发布会，把产品实力翻译成时代性品牌语言。', size: 28, lineHeight: 1.48 },
+          { region: 'quote', kind: 'quote', text: plan?.coreStrategy || '用一场有仪式感的发布会，把产品实力翻译成时代性品牌语言。', size: 24, lineHeight: 1.42, clamp: 4 },
           { region: 'facts', kind: 'fact-list', items: highlights.slice(0, 3), variant: 'side-notes' }
         ],
         visualIntent: {
@@ -437,7 +696,7 @@ class PptBuilderAgent extends BaseAgent {
       {
         layout: 'data_cards',
         style: 'dark_tech',
-        composition: 'staggered-metrics',
+        composition: 'highlights-board',
         title: '活动亮点总览',
         metrics: highlights.slice(0, 6).map((item, index) => ({
           value: String(index + 1).padStart(2, '0'),
@@ -447,7 +706,7 @@ class PptBuilderAgent extends BaseAgent {
         textBlocks: [
           { region: 'header', kind: 'eyebrow', text: 'HIGHLIGHTS' },
           { region: 'header', kind: 'title', text: '活动亮点总览' },
-          { region: 'stats', kind: 'stats', variant: 'staggered-notes', items: highlights.slice(0, 6).map((item, index) => ({ value: String(index + 1).padStart(2, '0'), label: item, sub: 'Key Highlight' })) }
+          { region: 'facts', kind: 'fact-list', variant: 'floating-tags', items: highlights.slice(0, 5) }
         ],
         visualIntent: {
           role: 'highlights',
@@ -471,8 +730,8 @@ class PptBuilderAgent extends BaseAgent {
         style: 'dark_tech',
         composition: 'split-editorial',
         regions: [
-          { name: 'header', x: 7, y: 10, w: 34, h: 18, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
-          { name: 'timeline', x: 7, y: 34, w: 86, h: 42, stack: 'vertical', gap: 16, align: 'stretch', valign: 'start' }
+          { name: 'header', x: 7, y: 9, w: 36, h: 16, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+          { name: 'timeline', x: 7, y: 28, w: 86, h: 54, stack: 'vertical', gap: 0, align: 'stretch', valign: 'stretch' }
         ],
         title: '执行时间线',
         subtitle: '从预热、发布到转化的完整节奏推进',
@@ -538,10 +797,10 @@ class PptBuilderAgent extends BaseAgent {
           textPlacement: 'left'
         }
       }] : []),
-      ...(risks.length ? [{
+        ...(risks.length ? [{
         layout: 'split_content',
         style: 'dark_tech',
-        composition: 'split-editorial',
+        composition: 'compare-columns',
         title: '风险与应对',
         leftTitle: '关键风险',
         leftItems: risks.slice(0, 4),
@@ -551,6 +810,17 @@ class PptBuilderAgent extends BaseAgent {
           '舆情监控与现场应急机制',
           '媒体、嘉宾与用户动线分流',
           '线上线下联动保持信息一致'
+        ],
+        textBlocks: [
+          { region: 'header', kind: 'eyebrow', text: 'RISK CONTROL' },
+          { region: 'header', kind: 'title', text: '风险与应对' },
+          { region: 'left', kind: 'fact-list', title: '关键风险', variant: 'compact-notes', size: 11, clamp: 2, items: risks.slice(0, 4) },
+          { region: 'right', kind: 'fact-list', title: '应对原则', variant: 'editorial-list', items: [
+            '提前彩排与多套技术备份',
+            '舆情监控与现场应急机制',
+            '媒体、嘉宾与用户动线分流',
+            '线上线下联动保持信息一致'
+          ], size: 11, clamp: 2 }
         ],
         visualIntent: {
           role: 'comparison',
