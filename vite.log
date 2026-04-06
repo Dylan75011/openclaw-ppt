@@ -2,25 +2,9 @@
 > luna-ppt@1.0.0 dev:ui
 > vite
 
-12:08:44 AM [vite] (client) Re-optimizing dependencies because vite config has changed
+00:07:14 [vite] (client) Re-optimizing dependencies because vite config has changed
 
-  VITE v8.0.3  ready in 523 ms
+  VITE v8.0.3  ready in 352 ms
 
   ➜  Local:   http://localhost:5173/
   ➜  Network: use --host to expose
-12:19:01 AM [vite] http proxy error: /api/workspace
-AggregateError [ECONNREFUSED]: 
-    at internalConnectMultiple (node:net:1139:18)
-    at afterConnectMultiple (node:net:1714:7)
-12:19:28 AM [vite] http proxy error: /api/workspace
-AggregateError [ECONNREFUSED]: 
-    at internalConnectMultiple (node:net:1139:18)
-    at afterConnectMultiple (node:net:1714:7)
-12:19:29 AM [vite] http proxy error: /api/workspace
-AggregateError [ECONNREFUSED]: 
-    at internalConnectMultiple (node:net:1139:18)
-    at afterConnectMultiple (node:net:1714:7)
-12:19:32 AM [vite] http proxy error: /api/workspace
-AggregateError [ECONNREFUSED]: 
-    at internalConnectMultiple (node:net:1139:18)
-    at afterConnectMultiple (node:net:1714:7)

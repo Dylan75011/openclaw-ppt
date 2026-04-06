@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-06T15:41:25.310Z",
+  "updatedAt": "2026-04-06T15:54:11.222Z",
   "spaces": [
     {
       "id": "space_c3b5dce94dbb",
@@ -236,6 +236,23 @@
           ],
           "createdAt": "2026-04-06T09:04:41.604Z",
           "updatedAt": "2026-04-06T09:04:41.604Z"
+        },
+        {
+          "id": "folder_3f2d49cc11dc",
+          "type": "folder",
+          "name": "「智感空间」——理想汽车2025上海车展",
+          "children": [
+            {
+              "id": "doc_2270fb697e27",
+              "type": "document",
+              "name": "策划方案",
+              "createdAt": "2026-04-06T15:50:18.452Z",
+              "updatedAt": "2026-04-06T15:54:11.221Z",
+              "docType": "document"
+            }
+          ],
+          "createdAt": "2026-04-06T15:50:18.449Z",
+          "updatedAt": "2026-04-06T15:50:18.449Z"
         }
       ],
       "indexDocId": "doc_e25fc617fdbe"
@@ -257,19 +274,19 @@
           "systemType": "space_index"
         },
         {
-          "id": "doc_44e71a551927",
-          "type": "document",
-          "name": "岚图汽车区域车展运营项目方案_v2",
-          "createdAt": "2026-03-29T14:23:12.170Z",
-          "updatedAt": "2026-04-05T09:06:25.391Z",
-          "docType": "document"
-        },
-        {
           "id": "doc_f6a2a2d3892b",
           "type": "document",
           "name": "岚图汽车区域车展运营项目方案_v2",
           "createdAt": "2026-04-05T07:44:25.918Z",
-          "updatedAt": "2026-04-05T15:21:56.458Z",
+          "updatedAt": "2026-04-06T15:53:44.692Z",
+          "docType": "document"
+        },
+        {
+          "id": "doc_6d27cdde908a",
+          "type": "document",
+          "name": "岚图汽车区域车展运营项目方案_v2",
+          "createdAt": "2026-04-06T15:53:53.964Z",
+          "updatedAt": "2026-04-06T15:53:53.965Z",
           "docType": "document"
         }
       ],

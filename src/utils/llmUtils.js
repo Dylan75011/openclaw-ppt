@@ -8,15 +8,81 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+function stripCodeFences(text = '') {
+  const value = String(text || '').trim();
+  const fenced = value.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  return fenced ? fenced[1].trim() : value;
+}
+
+function findBalancedJsonSlice(text = '') {
+  const value = String(text || '');
+  const start = value.search(/[\[{]/);
+  if (start === -1) return '';
+
+  let depth = 0;
+  let inString = false;
+  let escape = false;
+
+  for (let i = start; i < value.length; i++) {
+    const char = value[i];
+    if (inString) {
+      if (escape) {
+        escape = false;
+      } else if (char === '\\') {
+        escape = true;
+      } else if (char === '"') {
+        inString = false;
+      }
+      continue;
+    }
+
+    if (char === '"') {
+      inString = true;
+      continue;
+    }
+
+    if (char === '{' || char === '[') depth += 1;
+    if (char === '}' || char === ']') {
+      depth -= 1;
+      if (depth === 0) return value.slice(start, i + 1).trim();
+    }
+  }
+
+  return value.slice(start).trim();
+}
+
+function sanitizeJsonCandidate(text = '') {
+  return String(text || '')
+    .trim()
+    .replace(/^\uFEFF/, '')
+    .replace(/^[`]+|[`]+$/g, '')
+    .replace(/,\s*([}\]])/g, '$1');
+}
+
 /**
  * 从文本中提取 JSON
  * 兼容：<think>...</think> 推理标签、markdown 代码块、裸 JSON
  */
 function extractJson(text) {
-  text = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
-  const codeBlockMatch = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const jsonStr = codeBlockMatch ? codeBlockMatch[1] : text;
-  return JSON.parse(jsonStr.trim());
+  const cleaned = String(text || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+  const candidates = [
+    cleaned,
+    stripCodeFences(cleaned),
+    findBalancedJsonSlice(stripCodeFences(cleaned)),
+    sanitizeJsonCandidate(stripCodeFences(cleaned)),
+    sanitizeJsonCandidate(findBalancedJsonSlice(stripCodeFences(cleaned)))
+  ].filter(Boolean);
+
+  let lastError = null;
+  for (const candidate of [...new Set(candidates)]) {
+    try {
+      return JSON.parse(candidate);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error('无法解析 JSON');
 }
 
 /**

@@ -1,28 +1,26 @@
-(node:43627) ExperimentalWarning: SQLite is an experimental feature and might change at any time
+
+> luna-ppt@1.0.0 dev:api
+> node src/server.js
+
+(node:27470) ExperimentalWarning: SQLite is an experimental feature and might change at any time
 (Use `node --trace-warnings ...` to show where the warning was created)
-node:events:496
-      throw er; // Unhandled 'error' event
-      ^
 
-Error: listen EADDRINUSE: address already in use :::3000
-    at Server.setupListenHandle [as _listen2] (node:net:1939:16)
-    at listenInCluster (node:net:1996:12)
-    at Server.listen (node:net:2101:7)
-    at Function.listen (/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/express/lib/application.js:635:24)
-    at Object.<anonymous> (/Users/yangdi/Documents/GitHub/openclaw-ppt/src/server.js:45:5)
-    at Module._compile (node:internal/modules/cjs/loader:1730:14)
-    at Object..js (node:internal/modules/cjs/loader:1895:10)
-    at Module.load (node:internal/modules/cjs/loader:1465:32)
-    at Function._load (node:internal/modules/cjs/loader:1282:12)
-    at TracingChannel.traceSync (node:diagnostics_channel:322:14)
-Emitted 'error' event on Server instance at:
-    at emitErrorNT (node:net:1975:8)
-    at process.processTicksAndRejections (node:internal/process/task_queues:90:21) {
-  code: 'EADDRINUSE',
-  errno: -48,
-  syscall: 'listen',
-  address: '::',
-  port: 3000
-}
-
-Node.js v22.16.0
+╔═══════════════════════════════════════════════╗
+║                                               ║
+║   Luna PPT 服务已启动                      ║
+║                                               ║
+║   本地访问: http://localhost:3000             ║
+║   API状态:  http://localhost:3000/api/health ║
+║                                               ║
+║   按 Ctrl+C 停止服务                          ║
+║                                               ║
+╚═══════════════════════════════════════════════╝
+  
+[webSearch] Tavily 失败: Tavily HTTP 401
+[webSearch] 多源合并: 5 条 → 评分后取 5 条 (minimax)
+[webSearch] Tavily 失败: Tavily HTTP 401
+[webSearch] 多源合并: 5 条 → 评分后取 5 条 (minimax)
+[webSearch] Tavily 失败: Tavily HTTP 401
+[webSearch] 多源合并: 5 条 → 评分后取 5 条 (minimax)
+[BrainAgent] LLM 调用失败: 400 invalid params, invalid function arguments json string, tool_call_id: call_function_y4osdqv7vgdu_1 (2013)
+[BrainAgent] LLM 调用失败: 400 invalid params, invalid function arguments json string, tool_call_id: call_function_y4osdqv7vgdu_1 (2013)
