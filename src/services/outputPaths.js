@@ -47,6 +47,22 @@ function toOutputUrl(absolutePath) {
   return relative ? `/output/${relative}` : '';
 }
 
+// 生成公网可访问的绝对 URL（PUBLIC_BASE_URL 未设置时退化为相对路径，本地开发不受影响）
+function toPublicUrl(absolutePath) {
+  const relative = toOutputRelative(absolutePath);
+  if (!relative) return '';
+  const base = config.publicBaseUrl || '';
+  return `${base}/output/${relative}`;
+}
+
+// 将任意相对 URL（/output/... 或 /api/...）转为绝对 URL
+function toAbsoluteUrl(relativeUrl) {
+  if (!relativeUrl) return '';
+  if (relativeUrl.startsWith('http')) return relativeUrl;
+  const base = config.publicBaseUrl || '';
+  return `${base}${relativeUrl}`;
+}
+
 function resolveOutputRelative(relativePath = '') {
   const normalized = String(relativePath || '').replace(/^\/+/, '');
   return path.resolve(getOutputRoot(), normalized);
@@ -64,6 +80,8 @@ module.exports = {
   getRunAssetDir,
   toOutputRelative,
   toOutputUrl,
+  toPublicUrl,
+  toAbsoluteUrl,
   resolveOutputRelative,
   createRunFilePath,
 };

@@ -7,11 +7,33 @@ function dedupeStrings(values = []) {
     .map(value => [value.toLowerCase(), value])).values()];
 }
 
+function readPageText(page = {}) {
+  return [
+    page?.title,
+    page?.subtitle,
+    page?.pageTitle,
+    page?.content?.title,
+    page?.content?.subtitle,
+    page?.content?.story,
+    page?.content?.body
+  ].filter(Boolean).join(' ').toLowerCase();
+}
+
+function isExecutionScenePage(page = {}) {
+  const role = String(page?.visualIntent?.role || page?.layout || page?.type || '').toLowerCase();
+  const text = readPageText(page);
+  return (
+    /现场|效果|效果图|执行|落地|场景|空间|舞台|签到|展区|体验区|互动|装置|动线|氛围/.test(text) ||
+    /stage|scenography|scene|render|spatial|experience zone|booth|installation|check-?in|walkthrough|execution/.test(text) ||
+    ['image_statement', 'execution', 'activation', 'experience'].includes(role)
+  );
+}
+
 function inferSceneType(page = {}, index = 0, total = 0) {
   const role = String(page?.visualIntent?.role || page?.layout || page?.type || '').toLowerCase();
-  const title = `${page?.title || ''} ${page?.content?.title || ''} ${page?.pageTitle || ''}`.toLowerCase();
+  const title = readPageText(page);
 
-  if (index === 0 || role === 'cover') return 'main_stage';
+  if (role === 'cover') return 'brand_space';
   if (role === 'toc') return 'data';
   if (role === 'metrics' || /数据|预算|kpi|metric/.test(title)) return 'data';
   if (role === 'timeline' || /timeline|流程|phase|schedule/.test(title)) return 'timeline';
@@ -28,6 +50,7 @@ function fallbackAssetPlan(page = {}, index = 0, total = 0) {
   const sceneType = inferSceneType(page, index, total);
   const role = String(page?.visualIntent?.role || page?.layout || '').toLowerCase();
   const layout = String(page?.layout || page?.type || '').toLowerCase();
+  const executionScene = isExecutionScenePage(page);
   if (role === 'toc' || role === 'timeline' || role === 'metrics' || sceneType === 'data' || sceneType === 'timeline') {
     return {
       assetType: 'none',
@@ -37,21 +60,45 @@ function fallbackAssetPlan(page = {}, index = 0, total = 0) {
       insertMode: 'background'
     };
   }
-  const isPriorityScene = (
-    index === 0 ||
-    role === 'cover' ||
-    role === 'section' ||
-    role === 'manifesto' ||
-    layout === 'image_statement' ||
-    /main_stage|checkin|exhibition_zone|interaction_installation|brand_space|finale/.test(sceneType)
-  );
+
+  if (index === 0 || role === 'cover') {
+    return {
+      assetType: 'searched_background',
+      priority: 'low',
+      reason: '封面更适合使用抽象品牌氛围底图，不把现场效果图放在首页。',
+      sceneType,
+      insertMode: 'background'
+    };
+  }
+
+  if (executionScene || /main_stage|checkin|exhibition_zone|interaction_installation/.test(sceneType)) {
+    return {
+      assetType: 'generated_scene',
+      priority: index > 0 && index < total - 1 ? 'high' : 'medium',
+      reason: '这一页在讲述现场效果或活动执行，需要由设计师输出更具体的空间效果图。',
+      sceneType,
+      insertMode: layout === 'image_statement' ? 'full_page' : 'panel'
+    };
+  }
+
+  if (role === 'section' || role === 'manifesto' || layout === 'image_statement') {
+    return {
+      assetType: 'searched_background',
+      priority: 'medium',
+      reason: '这一页更适合用抽象氛围图承接章节，而不是使用具体现场效果图。',
+      sceneType,
+      insertMode: layout === 'image_statement' ? 'full_page' : 'background'
+    };
+  }
 
   return {
-    assetType: isPriorityScene ? 'generated_scene' : (layout === 'toc' ? 'none' : 'searched_background'),
-    priority: index === 0 ? 'high' : (isPriorityScene ? 'medium' : 'low'),
-    reason: isPriorityScene ? '这一页需要用更具说服力的空间氛围图来承接方案想象。' : '这一页以信息表达为主，不需要额外生图。',
+    assetType: total > 1 && index === total - 1 ? 'searched_background' : 'none',
+    priority: total > 1 && index === total - 1 ? 'low' : 'low',
+    reason: total > 1 && index === total - 1
+      ? '结尾页可使用轻氛围图收束，但不需要现场效果图。'
+      : '这一页以信息表达为主，不需要额外生图。',
     sceneType,
-    insertMode: (layout === 'image_statement' || index === 0) ? 'full_page' : 'background'
+    insertMode: 'background'
   };
 }
 
@@ -86,7 +133,9 @@ class EventVisualDesignerAgent extends BaseAgent {
       pages: pages.map((page, index) => {
         const assetPlan = fallbackAssetPlan(page, index, pages.length);
         const sceneLabel = assetPlan.sceneType.replace(/_/g, ' ');
+        const executionScene = isExecutionScenePage(page);
         const focus = dedupeStrings([
+          ...(executionScene ? ['stage layers', 'visitor journey', 'installation details'] : []),
           ...(visualExecutionHints?.mustRenderScenes || []).slice(0, 3),
           ...(visualExecutionHints?.spatialKeywords || []).slice(0, 3),
           ...(visualTheme?.imageKeywords || []).slice(0, 3)
@@ -146,11 +195,12 @@ class EventVisualDesignerAgent extends BaseAgent {
 你要做的不是普通配图，而是判断哪些页面值得出效果图，以及每页应该生出什么样的现场场景。
 
 原则：
-1. 封面、章节开场、主舞台、重点体验区、互动装置页优先考虑生图。
-2. KPI、预算、时间线、目录页通常不生图，除非确实需要轻氛围背景。
-3. prompt 必须偏“空间、灯光、材质、装置、构图”，不要写成平面海报。
-4. 尽量避免强依赖人物脸部特写，优先做建筑空间和活动现场氛围图。
-5. 输出必须是合法 JSON。`
+1. 活动现场效果图通常出现在中间几页，用来讲现场效果、执行落地、舞台空间、体验分区、互动装置，不要默认放在封面。
+2. 封面和章节开场更适合抽象品牌氛围图或轻场景图，除非用户明确要求封面就是主舞台效果图。
+3. KPI、预算、时间线、目录页通常不生图，除非确实需要轻氛围背景。
+4. prompt 必须偏“空间、灯光、材质、装置、构图”，不要写成平面海报。
+5. 尽量避免强依赖人物脸部特写，优先做建筑空间和活动现场氛围图。
+6. 输出必须是合法 JSON。`
       },
       {
         role: 'user',

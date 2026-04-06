@@ -69,7 +69,7 @@ const upload = multer({
 });
 
 function isMockHoldMode() {
-  return process.env.OPENCLAW_MOCK_AGENT_HOLD === '1';
+  return process.env.LUNA_MOCK_AGENT_HOLD === '1';
 }
 
 function safeJsonParse(value, fallback = {}) {
@@ -116,6 +116,10 @@ function restoreSessionFromSnapshot(session, snapshot = {}) {
   session.userInput = snapshot.userInput || null;
   session.docHtml = typeof snapshot.docHtml === 'string' ? snapshot.docHtml : '';
   session.brief = snapshot.brief || null;
+  session.taskIntent = snapshot.taskIntent || null;
+  session.executionPlan = snapshot.executionPlan || null;
+  session.taskSpec = snapshot.taskSpec || null;
+  session.routeToolSequence = Array.isArray(snapshot.routeToolSequence) ? snapshot.routeToolSequence : [];
   session.planItems = Array.isArray(snapshot.planItems) ? snapshot.planItems : [];
   session.researchStore = Array.isArray(snapshot.researchStore) ? snapshot.researchStore : [];
   session.attachments = Array.isArray(snapshot.attachments)

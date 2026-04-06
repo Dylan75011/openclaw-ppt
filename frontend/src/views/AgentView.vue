@@ -2,7 +2,7 @@
   <div
     ref="layoutRef"
     class="chat-layout"
-    :class="{ 'preview-open': previewVisible, resizing: isResizing }"
+    :class="{ 'preview-open': previewVisible && !previewCollapsed, resizing: isResizing }"
     :style="{ '--preview-width': `${previewWidth}px`, '--conversation-width': `${conversationSidebarCollapsed ? 56 : 280}px` }"
   >
     <aside class="chat-conversation-sidebar" :class="{ collapsed: conversationSidebarCollapsed }">
@@ -113,7 +113,7 @@
       <!-- 消息历史 -->
       <div class="chat-history" ref="historyRef">
         <!-- 按时间顺序渲染所有消息 -->
-        <div v-for="msg in messages" :key="msg.id" class="bubble-wrap" :class="msg.role">
+        <div v-for="msg in displayMessages" :key="msg.id" class="bubble-wrap" :class="msg.role">
           
           <!-- 用户消息 -->
           <template v-if="msg.role === 'user'">
@@ -210,6 +210,30 @@
               </div>
             </template>
 
+            <template v-else-if="msg.kind === 'process-summary'">
+              <div class="process-summary-bubble">
+                <button
+                  type="button"
+                  class="process-summary-head"
+                  @click="toggleProcessSummary(msg.summaryId)"
+                >
+                  <div class="process-summary-copy">
+                    <div class="process-summary-title">{{ msg.title }}</div>
+                    <div v-if="msg.preview" class="process-summary-preview">{{ msg.preview }}</div>
+                  </div>
+                  <span class="process-summary-toggle">
+                    {{ isProcessSummaryCollapsed(msg.summaryId, msg.collapsedByDefault) ? `展开 ${msg.count} 条` : '收起' }}
+                  </span>
+                </button>
+                <div v-if="!isProcessSummaryCollapsed(msg.summaryId, msg.collapsedByDefault)" class="process-summary-list">
+                  <div v-for="item in msg.logs" :key="item.id" class="process-summary-item">
+                    <span class="process-summary-time">{{ item.time }}</span>
+                    <span class="process-summary-text">{{ item.text }}</span>
+                  </div>
+                </div>
+              </div>
+            </template>
+
             <!-- 普通AI消息 -->
             <template v-else>
               <div class="ai-message-card" v-html="msg.html" />
@@ -252,7 +276,10 @@
             >
               <icon-file-pdf v-if="doc.docType === 'ppt'" class="at-mention-icon" />
               <icon-file v-else class="at-mention-icon" />
-              <span class="at-mention-name">{{ doc.name }}</span>
+              <div class="at-mention-info">
+                <span class="at-mention-name">{{ doc.name }}</span>
+                <span v-if="doc._folder" class="at-mention-folder">{{ doc._folder }}</span>
+              </div>
             </div>
           </div>
 
@@ -268,19 +295,25 @@
               <span class="ws-picker-hint">点击引用 · 再次点击取消</span>
             </div>
             <div class="ws-picker-list">
-              <div v-if="!workspacePickerResults.length" class="ws-picker-empty">无匹配文档</div>
-              <div
-                v-for="doc in workspacePickerResults"
-                :key="doc.id"
-                class="ws-picker-item"
-                :class="{ selected: pendingWorkspaceRefs.some(r => r.id === doc.id) }"
-                @click="pendingWorkspaceRefs.some(r => r.id === doc.id) ? removeWorkspaceRef(doc.id) : addWorkspaceRef(doc)"
-              >
-                <icon-file-pdf v-if="doc.docType === 'ppt'" class="ws-picker-icon" />
-                <icon-file v-else class="ws-picker-icon" />
-                <span class="ws-picker-name">{{ doc.name }}</span>
-                <span v-if="pendingWorkspaceRefs.some(r => r.id === doc.id)" class="ws-picker-check">✓</span>
-              </div>
+              <div v-if="!workspacePickerGroups.length" class="ws-picker-empty">无匹配文档</div>
+              <template v-for="group in workspacePickerGroups" :key="group.folder || '__root__'">
+                <div v-if="group.folder" class="ws-picker-folder-header">
+                  <icon-folder class="ws-picker-folder-icon" />
+                  <span>{{ group.folder }}</span>
+                </div>
+                <div
+                  v-for="doc in group.docs"
+                  :key="doc.id"
+                  class="ws-picker-item"
+                  :class="{ selected: pendingWorkspaceRefs.some(r => r.id === doc.id), 'ws-picker-item--indented': !!group.folder }"
+                  @click="pendingWorkspaceRefs.some(r => r.id === doc.id) ? removeWorkspaceRef(doc.id) : addWorkspaceRef(doc)"
+                >
+                  <icon-file-pdf v-if="doc.docType === 'ppt'" class="ws-picker-icon" />
+                  <icon-file v-else class="ws-picker-icon" />
+                  <span class="ws-picker-name">{{ doc.name }}</span>
+                  <span v-if="pendingWorkspaceRefs.some(r => r.id === doc.id)" class="ws-picker-check">✓</span>
+                </div>
+              </template>
             </div>
           </div>
 
@@ -556,6 +589,10 @@
               </div>
             </template>
 
+            <template v-else-if="displayedArtifact.artifactType === 'image_canvas' || displayedArtifact.artifactType === 'image_search_result'">
+              <ImageCanvasPanel :payload="displayedArtifact.payload || {}" />
+            </template>
+
             <!-- ppt_outline -->
             <template v-else-if="displayedArtifact.artifactType === 'ppt_outline'">
               <template v-if="isBuilding || resultSlides.length === 0">
@@ -731,10 +768,11 @@ import { workspaceApi } from '../api/workspace'
 import SlideViewer from '../components/SlideViewer.vue'
 import PlanDocumentPanel from '../components/PlanDocumentPanel.vue'
 import PptEditor from '../components/PptEditor.vue'
+import ImageCanvasPanel from '../components/ImageCanvasPanel.vue'
 import {
   IconMobile, IconCompass, IconCamera, IconRecordStop,
   IconBulb, IconSearch, IconEdit, IconCheckCircle, IconLayout, IconAttachment,
-  IconLayers, IconFile, IconFilePdf
+  IconLayers, IconFile, IconFilePdf, IconFolder
 } from '@arco-design/web-vue/es/icon'
 
 const router   = useRouter()
@@ -756,10 +794,22 @@ const waitingForClarification = ref(false) // Brain 正在等待用户回答
 const clarificationReplyText  = ref('')    // 澄清回答输入框内容
 const wasManuallyStopped      = ref(false) // 用户手动中止后，允许在同一会话继续
 const processedStreamEvents = new Set()
+const activeTaskIntent = ref(null)
+const currentTaskTurnId = ref('')
+const processSummaryState = ref({})
 
 // 工具图标映射
 function toolIcon(tool) {
-  return { web_search: '🔍', web_fetch: '🌐', run_strategy: '📋', build_ppt: '🎨' }[tool] || '🔧'
+  return { search_images: '🖼️', web_search: '🔍', web_fetch: '🌐', run_strategy: '📋', build_ppt: '🎨' }[tool] || '🔧'
+}
+
+function createTaskTurnId() {
+  return `task_turn_${Date.now()}_${Math.random().toString(16).slice(2, 8)}`
+}
+
+function beginTaskTurn() {
+  currentTaskTurnId.value = createTaskTurnId()
+  return currentTaskTurnId.value
 }
 
 function resetProcessedStreamEvents() {
@@ -804,6 +854,7 @@ async function submitClarificationReply(msg) {
   msg.answered = true
 
   pushMsg('user', reply || (docs.length ? `（补充了 ${docs.length} 份文档）` : '（补充了图片）'), '', {
+    taskTurnId: currentTaskTurnId.value || '',
     attachments: buildMessageAttachments(images),
     documents: docs.map(d => ({ id: d.id, name: d.name, size: d.size, mimeType: d.mimeType }))
   })
@@ -839,7 +890,7 @@ const pendingDocs   = ref([])
 const historyRef = ref(null)
 const isRunning  = ref(false)
 const conversations = ref([])
-const activeConversationId = ref('')
+const activeConversationId = ref(loadPersistedConversationId())
 const lastBoundConversationId = ref('')
 const quickReplyLabel = ref('你可以直接这样回复')
 const quickReplyQuestion = ref('')
@@ -1220,6 +1271,7 @@ function pushMsg(role, text, html, extra = {}) {
     text: text || '',
     html: resolvedHtml,
     createdAt: new Date().toISOString(),
+    taskTurnId: extra.taskTurnId ?? (role === 'ai' ? (currentTaskTurnId.value || '') : ''),
     ...extra
   }
   if (role === 'ai') Object.assign(nextMessage, buildAiMessageMeta(text, resolvedHtml))
@@ -1235,6 +1287,7 @@ function pushAiMessage(message) {
     id: createMessageId('ai'),
     role: 'ai',
     createdAt: new Date().toISOString(),
+    taskTurnId: message.taskTurnId ?? (currentTaskTurnId.value || ''),
     ...message
   })
   scheduleConversationPersist()
@@ -1422,12 +1475,16 @@ const editorVisible = ref(false)
 const currentTask = ref(null)
 const taskMode = ref('idle')
 const brainPlanItems = ref([])
+const activeExecutionPlan = ref(null)
+const activeTaskSpec = ref(null)
+const routeToolSequence = ref([])
 const failedReason = ref('')
 const failedStage = ref('')
 const artifacts = ref([])
 const executionLogs = ref([])
 const PROCESS_MESSAGE_KINDS = new Set(['thinking', 'tool-call', 'task-log', 'narration'])
 const PROCESS_STREAM_VISIBLE_COUNT = 3
+const COLLAPSIBLE_HISTORY_KINDS = new Set(['thinking', 'tool-call', 'task-log'])
 
 // ── Steps ────────────────────────────────────────────────────────
 const summarySteps = computed(() => {
@@ -1516,7 +1573,11 @@ const hasStrategyPreview = computed(() =>
   !!focusedPlanDraft.value ||
   planSectionArtifacts.value.length > 0 ||
   !!latestReviewFeedback.value ||
-  !!latestPptOutline.value
+  !!latestPptOutline.value ||
+  artifacts.value.some(item =>
+    item.artifactType === 'image_search_result' ||
+    item.artifactType === 'image_canvas'
+  )
 )
 const previewVisible = computed(() => {
   if (docContent.value || resultSlides.value.length > 0) return true
@@ -1534,6 +1595,19 @@ const strategySnapshotLabel = computed(() => {
   if (latestTaskBrief.value) return '已完成任务理解'
   return '正在准备'
 })
+const taskIntentLabel = computed(() => {
+  return activeTaskIntent.value?.label || ''
+})
+const taskRouteLabel = computed(() => {
+  return activeTaskSpec.value?.primaryRoute || activeExecutionPlan.value?.mode || ''
+})
+const routeSequenceLabel = computed(() => {
+  if (!Array.isArray(routeToolSequence.value) || !routeToolSequence.value.length) return ''
+  return routeToolSequence.value
+    .slice(0, 3)
+    .map(item => item.toolName)
+    .join(' -> ')
+})
 const failedStageLabel = computed(() => {
   if (!failedStage.value) return '未知阶段'
   return failedStage.value
@@ -1546,6 +1620,11 @@ const currentPreviewHint = computed(() => {
     return '任务已手动中止，当前上下文会保留，你可以直接继续补充要求并接着推进。'
   }
   if (taskMode.value === 'brain') {
+    if (taskIntentLabel.value && !isBuilding.value && !isDocStreaming.value && !waitingForClarification.value) {
+      const routeText = taskRouteLabel.value ? `，主执行路径是「${taskRouteLabel.value}」` : ''
+      const sequenceText = routeSequenceLabel.value ? `，默认序列是 ${routeSequenceLabel.value}` : ''
+      return `当前识别到的任务类型是“${taskIntentLabel.value}”${routeText}${sequenceText}，系统会按这个方向优先调用合适的工具。`
+    }
     if (waitingForClarification.value) return '正在等待你补充一个关键信息，收到后会继续推进。'
     if (wsState.value === 'document' && docContent.value) {
       return '策划文档已经生成。是否进入 PPT 会在对话里确认；如果还想优化方案，也可以直接继续聊。'
@@ -1642,9 +1721,11 @@ function artifactTypeLabel(type) {
   return {
     task_brief: '任务理解',
     research_result: '搜索研究',
+    image_search_result: '找图结果',
     plan_draft: '方案草稿',
     plan_document: '策划文档',
     review_feedback: '评审意见',
+    image_canvas: '图片画布',
     ppt_outline: 'PPT大纲',
     ppt_slides: 'PPT成稿',
     ppt_page: 'PPT页面'
@@ -1655,9 +1736,11 @@ function artifactMsgIcon(type) {
   return {
     task_brief: IconBulb,
     research_result: IconSearch,
+    image_search_result: IconCamera,
     plan_draft: IconEdit,
     plan_document: IconEdit,
     review_feedback: IconCheckCircle,
+    image_canvas: IconCamera,
     ppt_outline: IconLayout,
     ppt_slides: IconFile,
   }[type] || IconEdit
@@ -1690,9 +1773,11 @@ function artifactTimelineText(item) {
   const payload = item.payload || {}
   if (item.artifactType === 'task_brief') return payload.parsedGoal || '已完成任务拆解'
   if (item.artifactType === 'research_result') return payload.focus || payload.summary || '已完成一条搜索研究'
+  if (item.artifactType === 'image_search_result') return `已找到 ${payload.summary?.totalImages || 0} 张图片`
   if (item.artifactType === 'plan_draft') return payload.planTitle || payload.coreStrategy || '已生成方案草稿'
   if (item.artifactType === 'plan_document') return payload.title || '策划文档已生成'
   if (item.artifactType === 'review_feedback') return `第 ${payload.round} 轮评分 ${payload.score}${payload.passed ? '，通过' : '，待优化'}`
+  if (item.artifactType === 'image_canvas') return `已收集 ${payload.summary?.totalImages || 0} 张图片，覆盖 ${payload.summary?.coveredPages || 0} 页`
   if (item.artifactType === 'ppt_outline') return `已生成 ${payload.total || 0} 页 PPT大纲`
   if (item.artifactType === 'ppt_page') return `第 ${payload.index + 1} / ${payload.total} 页：${payload.title}`
   return '已生成中间产物'
@@ -1709,6 +1794,103 @@ function processMessageLabel(message) {
   if (message.kind === 'task-log') return message.text || '过程更新'
   if (message.kind === 'narration') return stripHtmlText(message.html || message.text || '')
   return message.text || ''
+}
+
+function isCollapsibleHistoryMessage(message) {
+  return message?.role === 'ai' && COLLAPSIBLE_HISTORY_KINDS.has(message.kind)
+}
+
+function taskTurnSummaryTitle(segment = [], count = 0) {
+  const userText = segment.find(item => item.role === 'user' && item.text)?.text?.trim() || ''
+  const normalized = userText.replace(/^（/, '').replace(/）$/, '').trim()
+  if (normalized) {
+    return `上一轮任务过程 · ${normalized.slice(0, 28)}${normalized.length > 28 ? '…' : ''}`
+  }
+  return `上一轮任务过程 · ${count} 条`
+}
+
+function buildCollapsedHistorySegment(segment = []) {
+  const logs = segment
+    .filter(isCollapsibleHistoryMessage)
+    .map(item => ({
+      id: item.id,
+      time: item.time || formatLogTime(item.timestamp || item.createdAt || Date.now()),
+      text: processMessageLabel(item)
+    }))
+    .filter(item => item.text)
+
+  if (!logs.length) return segment
+
+  const summaryId = `process_summary_${segment[0]?.taskTurnId || segment[0]?.id || createMessageId('summary')}`
+  const summaryItem = {
+    id: summaryId,
+    role: 'ai',
+    kind: 'process-summary',
+    summaryId,
+    taskTurnId: segment[0]?.taskTurnId || '',
+    title: taskTurnSummaryTitle(segment, logs.length),
+    preview: logs[logs.length - 1]?.text || '',
+    count: logs.length,
+    logs,
+    collapsedByDefault: true
+  }
+
+  const result = []
+  let inserted = false
+  segment.forEach((item) => {
+    if (isCollapsibleHistoryMessage(item)) {
+      if (!inserted) {
+        result.push(summaryItem)
+        inserted = true
+      }
+      return
+    }
+    result.push(item)
+  })
+  return result
+}
+
+const displayMessages = computed(() => {
+  const orderedTurns = []
+  messages.value.forEach((item) => {
+    if (!item?.taskTurnId) return
+    if (!orderedTurns.includes(item.taskTurnId)) orderedTurns.push(item.taskTurnId)
+  })
+  const latestTurnId = orderedTurns.at(-1) || ''
+
+  const result = []
+  let index = 0
+  while (index < messages.value.length) {
+    const message = messages.value[index]
+    const turnId = message?.taskTurnId || ''
+    if (!turnId || turnId === latestTurnId) {
+      result.push(message)
+      index += 1
+      continue
+    }
+
+    const segment = []
+    while (index < messages.value.length && messages.value[index]?.taskTurnId === turnId) {
+      segment.push(messages.value[index])
+      index += 1
+    }
+    result.push(...buildCollapsedHistorySegment(segment))
+  }
+
+  return result
+})
+
+function isProcessSummaryCollapsed(summaryId, defaultCollapsed = true) {
+  const saved = processSummaryState.value[summaryId]
+  return typeof saved === 'boolean' ? saved : defaultCollapsed
+}
+
+function toggleProcessSummary(summaryId) {
+  const next = !isProcessSummaryCollapsed(summaryId, true)
+  processSummaryState.value = {
+    ...processSummaryState.value,
+    [summaryId]: next
+  }
 }
 
 function humanizeActivityText(text) {
@@ -1824,8 +2006,18 @@ function defaultBrainPlan() {
 }
 
 // ── 工作空间 ────────────────────────────────────────────────────
+const SELECTED_SPACE_KEY = 'oc_selected_space_id'
+const ACTIVE_CONVERSATION_KEY = 'oc_active_conversation_id'
+
+function loadPersistedSpaceId() {
+  try { return localStorage.getItem(SELECTED_SPACE_KEY) || '' } catch { return '' }
+}
+function loadPersistedConversationId() {
+  try { return localStorage.getItem(ACTIVE_CONVERSATION_KEY) || '' } catch { return '' }
+}
+
 const spaces = ref([])
-const selectedSpaceId = ref('')
+const selectedSpaceId = ref(loadPersistedSpaceId())
 
 // ── 工作空间文档引用 ─────────────────────────────────────────────
 const pendingWorkspaceRefs = ref([])       // [{id, name, docType}]
@@ -1836,10 +2028,10 @@ const atMentionQuery = ref('')             // @ 后的匹配词
 const atMentionIndex = ref(0)              // 键盘高亮项
 const textareaRef = ref(null)              // a-textarea 组件 ref
 
-function flattenDocs(nodes, result = []) {
+function flattenDocs(nodes, result = [], folderName = null) {
   for (const node of nodes || []) {
-    if (node.type === 'document') result.push(node)
-    if (node.children?.length) flattenDocs(node.children, result)
+    if (node.type === 'document') result.push({ ...node, _folder: folderName })
+    if (node.children?.length) flattenDocs(node.children, result, node.type === 'folder' ? node.name : folderName)
   }
   return result
 }
@@ -1861,6 +2053,24 @@ const workspacePickerResults = computed(() => {
   const q = workspacePickerQuery.value.toLowerCase()
   return spaceDocsFlat.value
     .filter(d => !q || d.name.toLowerCase().includes(q))
+})
+
+const workspacePickerGroups = computed(() => {
+  if (!selectedSpaceId.value) return []
+  const space = spaces.value.find(s => s.id === selectedSpaceId.value)
+  if (!space) return []
+  const q = workspacePickerQuery.value.toLowerCase()
+  const groups = []
+  const rootDocs = (space.children || [])
+    .filter(n => n.type === 'document' && !n.system && (!q || n.name.toLowerCase().includes(q)))
+  if (rootDocs.length) groups.push({ folder: null, docs: rootDocs.map(d => ({ ...d, _folder: null })) })
+  for (const node of (space.children || [])) {
+    if (node.type === 'folder') {
+      const docs = flattenDocs(node.children || []).filter(d => !d.system && (!q || d.name.toLowerCase().includes(q)))
+      if (docs.length) groups.push({ folder: node.name, docs })
+    }
+  }
+  return groups
 })
 
 function addWorkspaceRef(doc) {
@@ -1969,8 +2179,17 @@ async function loadSpaces() {
   try {
     const res = await workspaceApi.getTree()
     spaces.value = ((res.data?.spaces) || []).filter(n => n.type === 'space')
-    if (spaces.value.length && !selectedSpaceId.value) {
+    if (!spaces.value.length) return
+
+    const savedId = selectedSpaceId.value
+    const validSaved = savedId && spaces.value.some(s => s.id === savedId)
+
+    if (!validSaved) {
+      // 没有有效的持久化选择，选第一个（watcher 会触发 loadConversationsForSpace）
       selectedSpaceId.value = spaces.value[0].id
+    } else {
+      // 空间 ID 没有改变，watcher 不会触发，手动加载对话
+      await loadConversationsForSpace(savedId)
     }
   } catch {}
 }
@@ -1979,8 +2198,13 @@ loadSpaces()
 function serializeState() {
   return {
     currentSessionId: currentSessionId.value,
+    currentTaskTurnId: currentTaskTurnId.value,
     wasManuallyStopped: wasManuallyStopped.value,
     taskMode: taskMode.value,
+    activeTaskIntent: activeTaskIntent.value,
+    activeExecutionPlan: activeExecutionPlan.value,
+    activeTaskSpec: activeTaskSpec.value,
+    routeToolSequence: routeToolSequence.value,
     brainPlanItems: brainPlanItems.value,
     wsState: wsState.value,
     progress: progress.value,
@@ -2075,6 +2299,12 @@ function buildRestoreSessionPayload() {
     userInput: currentTask.value ? { ...currentTask.value } : null,
     docHtml: docContent.value || '',
     brief: currentTask.value ? { ...currentTask.value } : null,
+    taskIntent: activeTaskIntent.value ? { ...activeTaskIntent.value } : null,
+    executionPlan: activeExecutionPlan.value ? { ...activeExecutionPlan.value } : null,
+    taskSpec: activeTaskSpec.value ? { ...activeTaskSpec.value } : null,
+    routeToolSequence: Array.isArray(routeToolSequence.value)
+      ? routeToolSequence.value.map(item => ({ ...item }))
+      : [],
     planItems: Array.isArray(brainPlanItems.value)
       ? brainPlanItems.value.map(item => ({ ...item }))
       : [],
@@ -2085,6 +2315,7 @@ function buildRestoreSessionPayload() {
 function restoreFromConversation(detail) {
   const state = detail?.state || {}
   restoringConversation.value = true
+  processSummaryState.value = {}
   messages.value = Array.isArray(detail?.messages)
     ? detail.messages.map(msg => ({
         ...msg,
@@ -2095,9 +2326,16 @@ function restoreFromConversation(detail) {
     : []
 
   currentSessionId.value = state.currentSessionId || ''
+  currentTaskTurnId.value = state.currentTaskTurnId
+    || [...messages.value].reverse().find(msg => msg.taskTurnId)?.taskTurnId
+    || ''
   wasManuallyStopped.value = !!state.wasManuallyStopped
   currentTask.value = state.currentTask || null
   taskMode.value = state.taskMode || 'idle'
+  activeTaskIntent.value = state.activeTaskIntent || null
+  activeExecutionPlan.value = state.activeExecutionPlan || null
+  activeTaskSpec.value = state.activeTaskSpec || null
+  routeToolSequence.value = Array.isArray(state.routeToolSequence) ? state.routeToolSequence : []
   brainPlanItems.value = Array.isArray(state.brainPlanItems) ? state.brainPlanItems : []
   progress.value = state.progress || 0
   progressLabel.value = state.progressLabel || '已恢复历史对话'
@@ -2140,12 +2378,18 @@ function restoreFromConversation(detail) {
 function clearConversationView() {
   restoringConversation.value = true
   messages.value = []
+  processSummaryState.value = {}
   clearPendingImages()
   clearQuickReplies()
   currentSessionId.value = ''
+  currentTaskTurnId.value = ''
   wasManuallyStopped.value = false
   currentTask.value = null
   taskMode.value = 'idle'
+  activeTaskIntent.value = null
+  activeExecutionPlan.value = null
+  activeTaskSpec.value = null
+  routeToolSequence.value = []
   brainPlanItems.value = []
   resetSteps()
   wsState.value = 'welcome'
@@ -2388,7 +2632,12 @@ async function persistConversationSnapshot(immediate = false) {
 
 watch(selectedSpaceId, async (spaceId, prevId) => {
   if (spaceId === prevId) return
+  try { localStorage.setItem(SELECTED_SPACE_KEY, spaceId || '') } catch {}
   await loadConversationsForSpace(spaceId)
+})
+
+watch(activeConversationId, (id) => {
+  try { localStorage.setItem(ACTIVE_CONVERSATION_KEY, id || '') } catch {}
 })
 
 watch(conversationSidebarCollapsed, (value) => {
@@ -2510,13 +2759,14 @@ async function send() {
 
   const wsRefs = pendingWorkspaceRefs.value.map(r => ({ ...r }))
   const displayText = text || (docs.length ? `（发送了 ${docs.length} 份文档）` : wsRefs.length ? `（引用了 ${wsRefs.length} 份空间文档）` : '（发送了图片）')
+  const taskTurnId = beginTaskTurn()
   pushMsg('user', displayText, '', {
+    taskTurnId,
     attachments: buildMessageAttachments(images),
     documents: docs.map(d => ({ id: d.id, name: d.name, size: d.size, mimeType: d.mimeType })),
     workspaceRefs: wsRefs
   })
   clearPendingImages()
-  pendingWorkspaceRefs.value = []
   workspacePickerVisible.value = false
   await nextTick()
   if (historyRef.value) historyRef.value.scrollTop = historyRef.value.scrollHeight
@@ -2648,6 +2898,9 @@ function connectBrainSSE(url, resolve = () => {}) {
       resultDetails: '',
       expanded: false
     })
+    if (d.auto) {
+      publishActivity(`系统预执行：${d.display || d.tool}${d.reason ? `，${d.reason}` : ''}`, d.timestamp || Date.now())
+    }
     if (['run_strategy', 'build_ppt'].includes(d.tool)) {
       publishActivity(`开始${d.display || d.tool}`)
     }
@@ -2691,6 +2944,7 @@ function connectBrainSSE(url, resolve = () => {}) {
         text: '',
         html: '',
         kind: 'narration',
+        taskTurnId: currentTaskTurnId.value || '',
         createdAt: new Date().toISOString()
       })
       streamingMsgId = msgId
@@ -2755,6 +3009,36 @@ function connectBrainSSE(url, resolve = () => {}) {
     }
   })
 
+  sse.addEventListener('execution_plan', e => {
+    const d = JSON.parse(e.data)
+    activeExecutionPlan.value = d.plan || null
+    if (activeExecutionPlan.value?.summary) {
+      publishActivity(`执行规划已更新：${activeExecutionPlan.value.summary}`, d.timestamp || Date.now())
+    }
+    scheduleConversationPersist()
+  })
+
+  sse.addEventListener('task_spec', e => {
+    const d = JSON.parse(e.data)
+    activeTaskSpec.value = d.taskSpec || null
+    if (activeTaskSpec.value?.primaryRoute) {
+      publishActivity(`任务主路径：${activeTaskSpec.value.primaryRoute}`, d.timestamp || Date.now())
+    }
+    scheduleConversationPersist()
+  })
+
+  sse.addEventListener('route_update', e => {
+    const d = JSON.parse(e.data)
+    routeToolSequence.value = Array.isArray(d.toolSequence) ? d.toolSequence : []
+    if (d.primaryRoute) {
+      const suffix = routeToolSequence.value.length
+        ? `，默认序列：${routeToolSequence.value.slice(0, 3).map(item => item.toolName).join(' -> ')}`
+        : ''
+      publishActivity(`任务主路径：${d.primaryRoute}${suffix}`, d.timestamp || Date.now())
+    }
+    scheduleConversationPersist()
+  })
+
   sse.addEventListener('brief_update', e => {
     const d = JSON.parse(e.data)
     currentTask.value = {
@@ -2764,6 +3048,16 @@ function connectBrainSSE(url, resolve = () => {}) {
     if (currentTask.value?.topic || currentTask.value?.brand) {
       publishActivity(`已整理任务简报：${currentTask.value.topic || currentTask.value.brand}`, d.timestamp || Date.now())
     }
+  })
+
+  sse.addEventListener('task_intent', e => {
+    const d = JSON.parse(e.data)
+    if (shouldSkipStreamEvent('task_intent', d)) return
+    activeTaskIntent.value = d.taskIntent || null
+    if (activeTaskIntent.value?.label) {
+      publishActivity(`任务已识别为「${activeTaskIntent.value.label}」`, d.timestamp || Date.now())
+    }
+    scheduleConversationPersist()
   })
 
   sse.addEventListener('tool_result', e => {
@@ -2843,29 +3137,49 @@ function connectBrainSSE(url, resolve = () => {}) {
 }
 
 function handleArtifact(d) {
-  const artifact = {
-    id: `${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
-    artifactType: d.artifactType,
-    payload: d.payload || {}
+  const payload = d.payload || {}
+  const existingIndex = payload.artifactKey
+    ? artifacts.value.findIndex(item => item.artifactType === d.artifactType && item.payload?.artifactKey === payload.artifactKey)
+    : -1
+  const artifact = existingIndex >= 0
+    ? {
+        ...artifacts.value[existingIndex],
+        artifactType: d.artifactType,
+        payload
+      }
+    : {
+        id: `${Date.now()}_${Math.random().toString(16).slice(2, 8)}`,
+        artifactType: d.artifactType,
+        payload
+      }
+  if (existingIndex >= 0) {
+    artifacts.value.splice(existingIndex, 1)
   }
   artifacts.value.unshift(artifact)
   if (d.artifactType === 'ppt_page') return
 
   // 在对话流中插入产出物卡片，并自动切换右侧面板
-  const cardTypes = ['task_brief', 'research_result', 'plan_draft', 'review_feedback', 'ppt_outline']
+  const cardTypes = ['task_brief', 'research_result', 'image_search_result', 'plan_draft', 'review_feedback', 'image_canvas', 'ppt_outline']
   if (cardTypes.includes(d.artifactType)) {
-    const cardMsg = {
+    const cardMsg = existingIndex >= 0
+      ? messages.value.find(msg => msg.kind === 'artifact-card' && msg.artifactId === artifact.id)
+      : null
+    const nextCard = {
       kind: 'artifact-card',
       artifactType: d.artifactType,
       artifactId: artifact.id,
-      title: artifactCardTitle(d.artifactType, d.payload || {}),
-      summary: artifactCardSummary(d.artifactType, d.payload || {}),
-      chips: artifactCardChips(d.artifactType, d.payload || {}),
-      payload: d.payload || {}
+      title: artifactCardTitle(d.artifactType, payload),
+      summary: artifactCardSummary(d.artifactType, payload),
+      chips: artifactCardChips(d.artifactType, payload),
+      payload
     }
-    pushAiMessage(cardMsg)
+    if (cardMsg) {
+      Object.assign(cardMsg, nextCard)
+    } else {
+      pushAiMessage(nextCard)
+    }
     // 自动切换右侧面板到最新产出物
-    activeArtifact.value = cardMsg
+    activeArtifact.value = cardMsg || nextCard
   }
   if (d.artifactType === 'ppt_outline') {
     isBuilding.value = true
@@ -2875,7 +3189,7 @@ function handleArtifact(d) {
       : 'PPT 结构已确认，开始生成页面...'
     if (wsState.value !== 'done') wsState.value = 'execution'
   }
-  if (['plan_draft', 'review_feedback', 'ppt_outline'].includes(d.artifactType)) {
+  if (['plan_draft', 'review_feedback', 'image_canvas', 'image_search_result', 'ppt_outline'].includes(d.artifactType)) {
     publishActivity(`${artifactTypeLabel(d.artifactType)}已更新：${artifactTimelineText({ artifactType: d.artifactType, payload: d.payload || {} })}`, d.timestamp || Date.now())
   }
 
@@ -2884,9 +3198,11 @@ function handleArtifact(d) {
 function artifactCardTitle(type, payload) {
   if (type === 'task_brief') return `任务理解：${payload.brand || payload.topic || '已整理'}`
   if (type === 'research_result') return `搜索研究：${payload.focus || '行业资讯'}`
+  if (type === 'image_search_result') return `找图结果：${payload.summary?.totalImages || 0} 张候选图`
   if (type === 'plan_draft') return `方案草稿：${payload.planTitle || '已生成'}`
   if (type === 'plan_document') return `策划文档：${payload.title || '已生成'}`
   if (type === 'review_feedback') return `评审意见：第 ${payload.round || 1} 轮，评分 ${payload.score || 0}`
+  if (type === 'image_canvas') return `图片画布：${payload.summary?.totalImages || 0} 张候选图`
   if (type === 'ppt_outline') return `PPT大纲：共 ${payload.total || 0} 页`
   if (type === 'ppt_slides') return `PPT成稿：共 ${payload.pageCount || 0} 页`
   return artifactTypeLabel(type)
@@ -2895,11 +3211,16 @@ function artifactCardTitle(type, payload) {
 function artifactCardSummary(type, payload) {
   if (type === 'task_brief') return payload.parsedGoal || payload.goal || ''
   if (type === 'research_result') return payload.summary || ''
+  if (type === 'image_search_result') return payload.summaryText || `已找到 ${payload.summary?.totalImages || 0} 张图片，可在右侧继续筛选。`
   if (type === 'plan_draft') return payload.coreStrategy || ''
   if (type === 'plan_document') return payload.summary || '完整策划方案文档已生成，可在右侧继续编辑和确认。'
   if (type === 'review_feedback') {
     if (payload.passed) return payload.specificFeedback || '方案通过评审，当前可以进入下一步。'
     return payload.weaknesses?.[0] || payload.suggestions?.[0] || '方案待优化'
+  }
+  if (type === 'image_canvas') {
+    const summary = payload.summary || {}
+    return `已汇总 ${summary.totalImages || 0} 张图片，其中生图 ${summary.generatedImages || 0} 张、搜图 ${summary.searchedImages || 0} 张。`
   }
   if (type === 'ppt_outline') {
     const pages = Array.isArray(payload.pages) ? payload.pages : []
@@ -2921,6 +3242,20 @@ function artifactCardChips(type, payload) {
   if (type === 'task_brief') return (payload.keyThemes || []).slice(0, 3)
   if (type === 'plan_draft') return (payload.highlights || []).slice(0, 3)
   if (type === 'plan_document') return (payload.highlights || []).slice(0, 3)
+  if (type === 'image_canvas') {
+    const chips = []
+    if (payload.summary?.coveredPages) chips.push(`覆盖${payload.summary.coveredPages}页`)
+    if (payload.summary?.generatedImages) chips.push(`${payload.summary.generatedImages}张生图`)
+    if (payload.summary?.searchedImages) chips.push(`${payload.summary.searchedImages}张搜图`)
+    return chips.slice(0, 3)
+  }
+  if (type === 'image_search_result') {
+    const chips = []
+    if (payload.intent) chips.push(payload.intent)
+    if (payload.summary?.totalImages) chips.push(`${payload.summary.totalImages}张图`)
+    if (payload.summary?.searchedImages) chips.push(`${payload.summary.searchedImages}张搜图`)
+    return chips.slice(0, 3)
+  }
   if (type === 'ppt_outline') {
     return (Array.isArray(payload.pages) ? payload.pages : [])
       .slice(0, 3)
@@ -3021,6 +3356,7 @@ function handleSlideAdded(d) {
     wsState.value = 'streaming'
     isBuilding.value = true
     activeArtifact.value = { artifactType: 'ppt_slides' }
+    previewCollapsed.value = false
   }
   buildTotal.value = d.total || 0
   const current = d.index + 1
@@ -5321,7 +5657,7 @@ onUnmounted(() => {
 
 .at-mention-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   padding: 8px 12px;
   cursor: pointer;
@@ -5338,9 +5674,24 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
+.at-mention-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
 .at-mention-name {
   font-size: 13px;
   color: #1c1917;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.at-mention-folder {
+  font-size: 11px;
+  color: #a8a29e;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -5419,6 +5770,30 @@ onUnmounted(() => {
   font-size: 13px;
   color: #a8a29e;
   text-align: center;
+}
+
+.ws-picker-folder-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #78716c;
+  letter-spacing: 0.02em;
+  background: #fafaf9;
+  border-top: 1px solid #f3f4f6;
+}
+.ws-picker-folder-header:first-child { border-top: none; }
+
+.ws-picker-folder-icon {
+  font-size: 12px;
+  color: #a8a29e;
+  flex-shrink: 0;
+}
+
+.ws-picker-item--indented {
+  padding-left: 24px;
 }
 
 .ws-picker-item {
@@ -7320,10 +7695,23 @@ onUnmounted(() => {
   text-align: left;
 }
 
+.process-summary-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
 .process-summary-title {
   font-size: 12px;
   font-weight: 700;
   color: #57534e;
+}
+
+.process-summary-preview {
+  font-size: 12px;
+  line-height: 1.5;
+  color: #8c8279;
 }
 
 .process-summary-toggle {

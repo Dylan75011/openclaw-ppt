@@ -9,18 +9,34 @@ const DEFAULTS = {
   criticMaxRounds: 3
 }
 
+function sanitizeSettings(raw = {}) {
+  return {
+    minimaxApiKey:  raw.minimaxApiKey  || '',
+    deepseekApiKey: raw.deepseekApiKey || '',
+    minimaxModel:   raw.minimaxModel   || DEFAULTS.minimaxModel,
+    tavilyApiKey:   raw.tavilyApiKey   || '',
+    serpApiKey:     raw.serpApiKey     || '',
+    bingApiKey:     raw.bingApiKey     || '',
+    pexelsApiKey:   raw.pexelsApiKey   || '',
+    criticPassScore: raw.criticPassScore ?? DEFAULTS.criticPassScore,
+    criticMaxRounds: raw.criticMaxRounds ?? DEFAULTS.criticMaxRounds
+  }
+}
+
 export const useSettingsStore = defineStore('settings', () => {
   const data = ref(load())
 
   function load() {
     try {
       const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {}
-      return { ...DEFAULTS, ...stored }   // DEFAULTS 兜底，stored 覆盖
+      const sanitized = sanitizeSettings(stored)
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sanitized))
+      return sanitized
     } catch { return { ...DEFAULTS } }
   }
 
   function save(payload) {
-    data.value = { ...payload }
+    data.value = sanitizeSettings(payload)
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data.value))
   }
 
@@ -35,7 +51,10 @@ export const useSettingsStore = defineStore('settings', () => {
     minimaxApiKey:  data.value.minimaxApiKey  || '',
     deepseekApiKey: data.value.deepseekApiKey || '',
     minimaxModel:   data.value.minimaxModel   || 'MiniMax-M2.5',
-    tavilyApiKey:   data.value.tavilyApiKey   || ''
+    tavilyApiKey:   data.value.tavilyApiKey   || '',
+    serpApiKey:     data.value.serpApiKey     || '',
+    bingApiKey:     data.value.bingApiKey     || '',
+    pexelsApiKey:   data.value.pexelsApiKey   || '',
   }))
 
   return { data, save, hasMinimaxKey, hasDeepseekKey, minimaxModel, criticPassScore, criticMaxRounds, apiKeys }

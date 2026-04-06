@@ -62,23 +62,54 @@
           </div>
         </div>
 
-        <!-- Tavily -->
+        <!-- 图片搜索 -->
         <div class="settings-section">
           <div class="section-header">
-            <span class="section-title">Tavily</span>
-            <span class="section-badge">可选兜底搜索</span>
+            <span class="section-title">图片搜索</span>
+            <span class="section-badge">搜图功能 · 三源优先级：SerpAPI → Bing → Pexels</span>
           </div>
           <div class="section-fields">
-            <a-form-item label="API Key">
+            <a-form-item label="SerpAPI Key（首选，支持谷歌/百度图片）">
+              <a-input-password
+                v-model="form.serpApiKey"
+                placeholder="serpapi key..."
+                allow-clear
+              />
+              <template #extra>中文查询走谷歌图片，英文查询走 Bing 图片，结果最丰富</template>
+            </a-form-item>
+            <a-form-item label="Bing Image Search Key（备选）">
+              <a-input-password
+                v-model="form.bingApiKey"
+                placeholder="Azure Cognitive Services key..."
+                allow-clear
+              />
+              <template #extra>Azure 认知服务 Bing Image Search v7，SerpAPI 无结果时启用</template>
+            </a-form-item>
+            <a-form-item label="Pexels API Key（兜底，已内置免费 Key）">
+              <a-input-password
+                v-model="form.pexelsApiKey"
+                placeholder="留空使用内置 Key..."
+                allow-clear
+              />
+              <template #extra>Pexels 免版权摄影图库，无中文产品图，适合氛围背景图</template>
+            </a-form-item>
+          </div>
+        </div>
+
+        <!-- 网络搜索 -->
+        <div class="settings-section">
+          <div class="section-header">
+            <span class="section-title">网络搜索</span>
+            <span class="section-badge">方案调研 · 双源优先级：MiniMax → Tavily</span>
+          </div>
+          <div class="section-fields">
+            <a-form-item label="Tavily API Key（备选）">
               <a-input-password
                 v-model="form.tavilyApiKey"
                 placeholder="tvly-..."
                 allow-clear
               />
-              <template #extra>
-                默认优先走 MiniMax Web Search，仅作降级兜底。
-                <a href="https://tavily.com" target="_blank" class="settings-link">获取 Key</a>
-              </template>
+              <template #extra>MiniMax 无结果或不可用时降级使用</template>
             </a-form-item>
           </div>
         </div>
@@ -126,6 +157,9 @@ const form = reactive({
   minimaxApiKey:   store.data.minimaxApiKey   || '',
   minimaxModel:    store.data.minimaxModel    || 'MiniMax-M2.5',
   deepseekApiKey:  store.data.deepseekApiKey  || '',
+  serpApiKey:      store.data.serpApiKey      || '',
+  bingApiKey:      store.data.bingApiKey      || '',
+  pexelsApiKey:    store.data.pexelsApiKey    || '',
   tavilyApiKey:    store.data.tavilyApiKey    || '',
   criticPassScore: store.data.criticPassScore ?? 7.0,
   criticMaxRounds: store.data.criticMaxRounds ?? 3,

@@ -2,16 +2,16 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "openclaw-api",
+      "name": "luna-api",
       "runtimeExecutable": "/Users/yangdi/.nvm/versions/node/v22.16.0/bin/node",
       "runtimeArgs": ["src/server.js"],
       "port": 3000,
       "autoPort": false
     },
     {
-      "name": "openclaw-ui",
+      "name": "luna-ui",
       "runtimeExecutable": "/Users/yangdi/.nvm/versions/node/v22.16.0/bin/node",
-      "runtimeArgs": ["/Users/yangdi/Documents/GitHub/openclaw-ppt/node_modules/.bin/vite", "--port", "5173"],
+      "runtimeArgs": ["/Users/yangdi/Documents/GitHub/luna-ppt/node_modules/.bin/vite", "--port", "5173"],
       "port": 5173,
       "autoPort": false
     }

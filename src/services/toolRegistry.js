@@ -11,7 +11,10 @@ const { renderToHtml } = require('./previewRenderer');
 const config = require('../config');
 const wm = require('./workspaceManager');
 const { htmlToTiptap, markdownToTiptap } = require('./richText');
-const { toOutputUrl } = require('./outputPaths');
+const { toPublicUrl, getRunAssetDir } = require('./outputPaths');
+const { buildImageCanvasPayload, buildImageSearchPayload } = require('./imageCanvas');
+const { searchImages, generateMiniMaxImage, downloadImage, processImageForPpt } = require('./imageSearch');
+const path = require('path');
 
 function createEmptyTiptapDoc() {
   return { type: 'doc', content: [{ type: 'paragraph' }] };
@@ -124,6 +127,38 @@ function buildPlanDraftMarkdown(plan = {}, userInput = {}) {
 // ── OpenAI function calling 工具定义 ────────────────────────────
 
 const TOOL_DEFINITIONS = [
+  {
+    type: 'function',
+    function: {
+      name: 'search_images',
+      description: '从图库中搜索现有图片素材，包括参考图、氛围图、展台效果图、海报视觉参考等。注意：这是搜索已有图片，不是 AI 生成图片。适用于”找图/搜图/配图/来点参考图”等请求；不适用于”生成图/画一张/AI作图”等需要创作全新图像的请求。如果用户想找某个品牌官网的图（如”华为官网””小米官网”），可用 site 参数指定域名。',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: '搜图关键词，尽量描述主体、场景、风格和用途，例如”车展展台 科技感 概念氛围图”' },
+          intent: { type: 'string', description: '用户想找什么图，例如”车展展台参考图””PPT背景图””KV 灵感图”' },
+          site: { type: 'string', description: '可选。限定搜索来源域名，例如 “huawei.com”、”mi.com”、”apple.com”。适合用户说”从华为官网找图””小米官网的产品图”时使用。' },
+          max_results: { type: 'number', description: '最多返回图片数，默认 8，建议 4-12' }
+        },
+        required: ['query']
+      }
+    }
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'generate_image',
+      description: '使用 MiniMax AI 生成一张全新的图片。适用于用户明确说"生成图/画一张/AI生图/重新生成这张/换一张"的场景。生成结果会直接展示在对话中。注意：生成图片约需 10-20 秒，请提前告知用户。',
+      parameters: {
+        type: 'object',
+        properties: {
+          prompt: { type: 'string', description: '图片描述，英文，50字以内。描述主体、风格、氛围，例如：dark cinematic stage with volumetric light beams, moody atmosphere, 16:9' },
+          intent: { type: 'string', description: '用户想要的图片用途，例如"发布会封面图""活动现场效果图""展台概念图"，用于展示给用户看' }
+        },
+        required: ['prompt']
+      }
+    }
+  },
   {
     type: 'function',
     function: {
@@ -362,6 +397,10 @@ async function executeTool(toolName, args, session, onEvent) {
   switch (toolName) {
     case 'write_todos':
       return execWriteTodos(args, session, onEvent);
+    case 'generate_image':
+      return execGenerateImage(args, session, onEvent);
+    case 'search_images':
+      return execSearchImages(args, session, onEvent);
     case 'update_brief':
       return execUpdateBrief(args, session, onEvent);
     case 'review_uploaded_images':
@@ -402,6 +441,111 @@ async function execWriteTodos(args, session, onEvent) {
   return {
     success: true,
     count: todos.length
+  };
+}
+
+async function execGenerateImage(args, session, onEvent) {
+  const prompt = String(args.prompt || '').trim();
+  const intent = String(args.intent || '').trim();
+  if (!prompt) return { success: false, error: '请提供图片描述（prompt）' };
+
+  const minimaxKey = session.apiKeys?.minimaxApiKey;
+  if (!minimaxKey) return { success: false, error: '需要配置 MiniMax API Key 才能生成图片' };
+
+  onEvent('tool_progress', { message: `正在生成图片：${intent || prompt.slice(0, 30)}…（约 10-20 秒）` });
+
+  try {
+    const imageUrl = await generateMiniMaxImage(prompt, minimaxKey);
+    if (!imageUrl) return { success: false, error: 'MiniMax 生图返回为空，请稍后重试' };
+
+    const runId = `gen_${Date.now()}`;
+    const outputBase = getRunAssetDir(runId, 'images');
+    const localPath = path.join(outputBase, `${runId}.jpg`);
+    await downloadImage(imageUrl, localPath);
+    await processImageForPpt(localPath);
+
+    const previewUrl = toPublicUrl(localPath);
+    onEvent('tool_progress', { message: '图片已生成' });
+    onEvent('artifact', {
+      artifactType: 'generated_image',
+      payload: {
+        prompt,
+        intent,
+        url: previewUrl,
+        localPath
+      }
+    });
+
+    return { success: true, url: previewUrl, localPath, prompt, intent };
+  } catch (e) {
+    return { success: false, error: `生成失败：${e.message}` };
+  }
+}
+
+async function execSearchImages(args, session, onEvent) {
+  const rawQuery = String(args.query || '').trim();
+  if (!rawQuery) {
+    return { success: false, error: '缺少搜图关键词', images: [] };
+  }
+
+  const site = String(args.site || '').trim().replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+  const finalQuery = site ? `site:${site} ${rawQuery}` : rawQuery;
+  const maxResults = Math.min(Math.max(Number(args.max_results) || 8, 1), 12);
+  const progressMsg = site ? `正在从 ${site} 找图：${rawQuery}` : `正在找图：${rawQuery}`;
+  onEvent('tool_progress', { message: progressMsg });
+
+  const images = await searchImages(finalQuery, {
+    perPage: maxResults,
+    serpApiKey:   session?.apiKeys?.serpApiKey,
+    bingApiKey:   session?.apiKeys?.bingApiKey,
+    pexelsApiKey: session?.apiKeys?.pexelsApiKey,
+  });
+  if (!images.length) {
+    return {
+      success: false,
+      error: '暂时没有找到合适的图片结果',
+      images: [],
+      query: rawQuery,
+      intent: String(args.intent || '').trim()
+    };
+  }
+
+  const normalizedImages = images.map((item, index) => ({
+    id: String(item.id || `pexels_${index}`),
+    url: item.url,
+    thumb: item.thumb || item.url,
+    previewUrl: item.thumb || item.url,
+    originQuery: rawQuery,
+    source: 'pexels',
+    selected: index === 0,
+    photographer: item.photographer || '',
+    photographerUrl: item.photographerUrl || ''
+  }));
+
+  onEvent('tool_progress', { message: `已找到 ${normalizedImages.length} 张图片` });
+  onEvent('artifact', {
+    artifactType: 'image_search_result',
+    payload: buildImageSearchPayload({
+      query: rawQuery,
+      intent: String(args.intent || '').trim(),
+      images: normalizedImages,
+      title: args.intent ? `找图结果：${args.intent}` : `找图结果：${rawQuery}`,
+      summary: `共找到 ${normalizedImages.length} 张图片，可直接继续筛选或指定风格细化。`
+    })
+  });
+
+  return {
+    success: true,
+    query: rawQuery,
+    intent: String(args.intent || '').trim(),
+    count: normalizedImages.length,
+    images: normalizedImages.map((item) => ({
+      id: item.id,
+      url: item.url,
+      thumb: item.thumb,
+      photographer: item.photographer,
+      photographerUrl: item.photographerUrl
+    }))
   };
 }
 
@@ -729,6 +873,8 @@ async function execRunStrategy(args, session, onEvent) {
       session.taskFolderId = folder.id;   // 供 build_ppt 复用
       const node = wm.createNode({ parentId: folder.id, name: '策划方案', type: 'document', docType: 'document' });
       wm.saveContent(node.id, tiptapDoc, 'tiptap-json');
+      session.lastSavedDocId = node.id;
+      session.lastSavedDocName = planTitle || '策划方案';
       try { session.spaceContext = wm.getSpaceContext(session.spaceId); } catch {}
       onEvent('workspace_updated', { spaceId: session.spaceId, folderId: folder.id, folderName: rawFolderName, docId: node.id, docName: '策划方案', docType: 'document' });
     } catch (e) {
@@ -808,6 +954,10 @@ async function execBuildPpt(args, session, onEvent) {
             .map(item => [item.pageIndex, item])
         );
         onEvent('artifact', {
+          artifactType: 'image_canvas',
+          payload: buildImageCanvasPayload(imageCandidates, visualPlan, outline)
+        });
+        onEvent('artifact', {
           artifactType: 'ppt_outline',
           payload: { title: outline.title, total, pages: outline.pages || [] }
         });
@@ -845,6 +995,7 @@ async function execBuildPpt(args, session, onEvent) {
             .flatMap((category) => Array.isArray(imageCandidates?.[category]) ? imageCandidates[category].slice(0, 1) : []))
         ];
 
+        const imagesFolderId = wm.ensureChildFolder(targetParent, 'images').id;
         candidateImages.forEach((item, index) => {
           const localPath = String(item?.localPath || '').trim();
           if (!localPath || seenImagePaths.has(localPath)) return;
@@ -856,11 +1007,11 @@ async function execBuildPpt(args, session, onEvent) {
             : `${brand} ${String(baseLabel).slice(0, 24) || `配图 ${index + 1}`}.jpg`;
           wm.saveAssetToSpace({
             spaceId: session.spaceId,
-            parentId: targetParent,
+            parentId: imagesFolderId,
             name: imageName,
             docType: 'image',
             filePath: localPath,
-            previewUrl: toOutputUrl(localPath),
+            previewUrl: toPublicUrl(localPath),
             meta: {
               sourcePageTitle: item?.pageTitle || '',
               role: item?.role || '',
@@ -989,6 +1140,8 @@ async function execSaveToWorkspace(args, session, onEvent) {
 
 function getToolDisplay(toolName, args) {
   switch (toolName) {
+    case 'generate_image': return `AI生图：${args.intent || args.prompt?.slice(0, 30) || ''}`;
+    case 'search_images': return `找图：${args.intent || args.query || ''}`;
     case 'write_todos': return `更新计划（${Array.isArray(args.todos) ? args.todos.length : 0} 项）`;
     case 'update_brief': return '整理任务简报';
     case 'review_uploaded_images': return `查看已上传图片：${(args.prompt || '').slice(0, 24)}`;

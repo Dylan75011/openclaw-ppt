@@ -24,8 +24,15 @@ const STYLE_HINTS = `
 const COMPOSITION_HINTS = `
 优先输出结构化版式字段，而不是只给 layout 名称。
 
+活动策划页面优先考虑这些 composition preset：
+- budget-table: 预算明细，左侧摘要，右侧纵向账本
+- risk-matrix: 风险预案，两列对照卡片
+- team-grid: 团队分工，网格卡片
+- schedule-strip: 日程安排，横向步骤条 / 分阶段时间带
+- kpi-ledger: KPI 页，大数字主指标 + 右侧说明账本
+
 每页尽量包含：
-- composition: 可以是预设名，也可以是你自定义的对象；如果内容复杂，优先直接写自定义 regions，而不是套预设名
+- composition: 仅在你明确要使用已知 preset 时再写字符串；默认更推荐写成自定义对象，或直接让 regions 成为主结构
 - regions: 信息区数组，每个区写 x / y / w / h / stack / gap / align / valign
 - imagePlacement: 图片参与方式，例如 {"mode":"background","emphasis":"hero"} 或 {"mode":"panel","x":60,"y":10,"w":28,"h":72}
 - textBlocks: 文本块数组，每个块标明归属 region 和 kind
@@ -41,6 +48,7 @@ textBlocks.kind 可用：
 - stats
 
 严格要求：
+- 不要发明抽象的 composition 名称字符串来代替布局决策；如果不是已知 preset，就直接给 regions
 - 不要复用同一套区域比例到多页
 - regions 要根据文案长度和图片安全区动态调整
 - 如果一页只有 2-3 个重点，就用更开阔的留白，而不是补出多余框
@@ -60,7 +68,7 @@ Taste 设计规则（必须落实到每页）：
 5. 色彩保持单一体系，避免紫色 AI 光效。优先深石墨、暖中性色、深蓝灰，搭配一个控制过的强调色。
 6. 文案必须来源于策划方案，但表达可提炼得更像高端发布会或展览叙事。
 7. 每页都要写清 imageStrategy：是否需要背景图、搜索方向、文字避让区域、遮罩强度。
-8. 每页都尽量补充 visualAssetPlan：这一页更适合用现场效果图、搜图背景，还是纯版式。
+8. 每页都尽量补充 visualAssetPlan：现场效果图优先留给中段讲述现场效果和执行落地的页面，封面通常只放抽象氛围图。
 9. 页面布局要形成“张弛关系”：信息页之间插入 statement / editorial / image-led 页面，避免连续同构。
 10. 优先生成能落地的专业版式，不要为炫技牺牲信息密度与可读性。
 11. 文案允许提炼、缩写、重写，但必须忠于原策划方案，不要扩写空话。`;
@@ -87,7 +95,16 @@ ${tasteDirectives}
 ## 策划方案
 ${planText}
 
-请输出以下JSON格式（12-16页左右）：
+根据策划方案的复杂度自主决定页数，不做人为限制。活动策划方案通常需要 20-30 页才能完整表达所有章节，不要为了控制数量而压缩或合并内容。
+
+页面结构原则：
+- 每页只讲一个完整概念，内容精炼但概念不截断
+- 宁可拆成两页说清，也不要在一页内堆砌或删减关键信息
+- 信息类页面（执行计划、预算、风险、KPI）每项数据要写完整，不要只列标题
+- 文字表达要像高端发布会叙事：提炼观点，不是罗列清单；每句话能站住脚
+- 必须包含的章节（如有对应内容）：活动概述、目标与受众、核心策略/亮点、执行计划/时间轴、各执行模块详情、传播与推广、预算分配、KPI与效果预期、风险预案、团队分工（如有）、结语
+
+请输出以下JSON格式：
 {
   "globalStyle": "dark_tech",
   "title": "${plan?.planTitle || brand + ' ' + description}",
@@ -123,11 +140,11 @@ ${planText}
         "reason": "为什么适合做封面"
       },
       "visualAssetPlan": {
-        "assetType": "generated_scene",
-        "priority": "high",
-        "reason": "封面需要更强的场景想象和发布会氛围",
-        "sceneType": "main_stage",
-        "insertMode": "full_page"
+        "assetType": "searched_background",
+        "priority": "low",
+        "reason": "封面更适合抽象品牌氛围图，不默认使用现场效果图",
+        "sceneType": "brand_space",
+        "insertMode": "background"
       },
       "imageStrategy": {
         "useBackground": true,
@@ -383,7 +400,7 @@ ${planText}
 重要规则：
 1. 内容要真实来自策划方案，不要编造
 2. globalStyle 是全局风格约束，但页面结构必须形成节奏变化，不能连续 3 页使用同一个 composition
-3. 优先输出 composition / regions / imagePlacement / textBlocks。layout 只是兜底，不要把设计思考压缩成模板名
+3. 优先输出 composition / regions / imagePlacement / textBlocks。layout 只是兜底，不要把设计思考压缩成模板名或抽象 composition 字符串
 4. imageStrategy.query 必须是可以直接用于搜图的英文短语，和该页内容相关，但偏氛围、材质、空间、光影，不要直白描述具体会议场景
 5. visualAssetPlan 要明确回答：这页是否值得提前做活动现场效果图建议
 6. 如果某页信息很多，先提炼，不要把所有要点都塞进去；一页最多一个主要观点

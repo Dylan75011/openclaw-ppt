@@ -9,7 +9,7 @@
     </div>
 
     <!-- Body: tree + content -->
-    <div class="ws-body">
+    <div class="ws-body" ref="layoutRef" :class="{ resizing: isTreeResizing }" :style="{ '--tree-panel-width': `${treePanelWidth}px` }">
       <!-- 左侧树形面板 -->
       <div class="ws-tree-panel">
         <div class="tree-toolbar">
@@ -90,6 +90,16 @@
           <p class="tree-empty-text">暂无工作空间</p>
           <button class="tree-empty-btn" @click="showNewSpaceModal = true">新建空间</button>
         </div>
+      </div>
+
+      <div
+        class="tree-resizer"
+        role="separator"
+        aria-orientation="vertical"
+        aria-label="调整文档目录宽度"
+        @mousedown="startTreeResize"
+      >
+        <div class="tree-resizer-line" />
       </div>
 
       <!-- 右侧内容区 -->
@@ -249,6 +259,13 @@ const rawTree     = ref({ spaces: [] })
 const treeData    = computed(() => buildArcoTree(rawTree.value.spaces || []))
 const selectedKeys = ref([])
 const selectedNode = ref(null)
+const layoutRef = ref(null)
+const isTreeResizing = ref(false)
+const TREE_PANEL_WIDTH_KEY = 'oc_workspace_tree_width'
+const TREE_PANEL_MIN_WIDTH = 200
+const TREE_PANEL_DEFAULT_WIDTH = 280
+const TREE_PANEL_MAX_GAP = 360
+const treePanelWidth = ref(TREE_PANEL_DEFAULT_WIDTH)
 
 function buildArcoTree(spaces) {
   return spaces.map(buildArcoNode)
@@ -262,6 +279,42 @@ async function loadTree() {
 }
 
 loadTree()
+
+function clampTreePanelWidth(nextWidth) {
+  const total = layoutRef.value?.clientWidth || window.innerWidth
+  const maxWidth = Math.max(TREE_PANEL_MIN_WIDTH, total - TREE_PANEL_MAX_GAP)
+  return Math.min(Math.max(nextWidth, TREE_PANEL_MIN_WIDTH), maxWidth)
+}
+
+function syncTreePanelWidth() {
+  treePanelWidth.value = clampTreePanelWidth(treePanelWidth.value)
+}
+
+function onTreeResizeMove(event) {
+  if (!isTreeResizing.value || window.innerWidth <= 768) return
+  const rect = layoutRef.value?.getBoundingClientRect()
+  if (!rect) return
+  treePanelWidth.value = clampTreePanelWidth(event.clientX - rect.left)
+}
+
+function stopTreeResize() {
+  if (!isTreeResizing.value) return
+  isTreeResizing.value = false
+  document.body.style.cursor = ''
+  document.body.style.userSelect = ''
+  localStorage.setItem(TREE_PANEL_WIDTH_KEY, String(Math.round(treePanelWidth.value)))
+  window.removeEventListener('mousemove', onTreeResizeMove)
+  window.removeEventListener('mouseup', stopTreeResize)
+}
+
+function startTreeResize() {
+  if (window.innerWidth <= 768) return
+  isTreeResizing.value = true
+  document.body.style.cursor = 'col-resize'
+  document.body.style.userSelect = 'none'
+  window.addEventListener('mousemove', onTreeResizeMove)
+  window.addEventListener('mouseup', stopTreeResize)
+}
 
 // ── 节点选中 ────────────────────────────────────────────────────
 const pptSlides      = ref([])
@@ -511,12 +564,21 @@ onMounted(() => {
     _wsBroadcast = new BroadcastChannel('oc_workspace_updated')
     _wsBroadcast.onmessage = () => loadTree()
   } catch {}
+
+  const storedWidth = Number(localStorage.getItem(TREE_PANEL_WIDTH_KEY))
+  if (Number.isFinite(storedWidth) && storedWidth > 0) {
+    treePanelWidth.value = storedWidth
+  }
+  syncTreePanelWidth()
+  window.addEventListener('resize', syncTreePanelWidth)
 })
 
 onUnmounted(() => {
   clearTimeout(saveTimer)
   clearTimeout(renameTimer)
+  stopTreeResize()
   _wsBroadcast?.close()
+  window.removeEventListener('resize', syncTreePanelWidth)
 })
 </script>
 
@@ -573,16 +635,25 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
+.ws-body.resizing {
+  cursor: col-resize;
+}
+
 /* ── Tree panel ── */
 .ws-tree-panel {
-  width: 240px;
-  min-width: 180px;
+  width: var(--tree-panel-width);
+  min-width: var(--tree-panel-width);
   flex-shrink: 0;
   background: #faf9f7;
   border-right: 1px solid rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transition: width 0.16s ease, min-width 0.16s ease;
+}
+
+.ws-body.resizing .ws-tree-panel {
+  transition: none;
 }
 
 .tree-toolbar {
@@ -737,6 +808,31 @@ onUnmounted(() => {
 }
 
 :deep(.danger-option) { color: rgb(var(--red-6)) !important; }
+
+.tree-resizer {
+  width: 10px;
+  flex-shrink: 0;
+  position: relative;
+  cursor: col-resize;
+  background: transparent;
+}
+
+.tree-resizer-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  background: rgba(214, 211, 209, 0.95);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tree-resizer:hover .tree-resizer-line,
+.ws-body.resizing .tree-resizer-line {
+  background: rgba(68, 64, 60, 0.28);
+  box-shadow: 0 0 0 3px rgba(68, 64, 60, 0.08);
+}
 
 /* ── Content panel ── */
 .ws-content-panel {
@@ -1005,5 +1101,17 @@ onUnmounted(() => {
   max-width: none;
   width: 100%;
   margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .ws-tree-panel {
+    width: 240px;
+    min-width: 240px;
+    transition: none;
+  }
+
+  .tree-resizer {
+    display: none;
+  }
 }
 </style>

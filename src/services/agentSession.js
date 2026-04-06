@@ -42,6 +42,10 @@ function createSession({ apiKeys = {}, spaceId = '', sessionId: providedSessionI
     docMarkdown: '',
     docHtml: '',
     brief: null,              // 当前会话已确认/推断的任务简报
+    taskIntent: null,         // 当前轮次识别出的任务意图
+    executionPlan: null,      // 当前轮次生成的执行规划
+    taskSpec: null,           // 当前轮次的任务规格与路由约束
+    routeToolSequence: [],    // 当前 route 推荐的工具序列
     planItems: [],            // 当前任务计划
     attachments: [],          // 当前会话累计上传的图片
     researchStore: [],        // 累积所有 web_search 结果，供 run_strategy 强制引用

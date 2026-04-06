@@ -3,6 +3,13 @@ const { callMinimaxWithToolsStream } = require('../services/llmClients');
 const { TOOL_DEFINITIONS, executeTool, getToolDisplay } = require('../services/toolRegistry');
 const { analyzeAgentImages } = require('../services/visionMcp');
 const { buildBrainSystemPrompt } = require('../prompts/brain');
+const {
+  createExecutionPlan,
+  buildExecutionPlanContextBlock,
+  createTaskSpec,
+  buildTaskSpecContextBlock
+} = require('../services/taskPlanner');
+const { buildRouteToolSequence } = require('../services/routeExecutor');
 const wm = require('../services/workspaceManager');
 
 const MAX_TURNS = 15;
@@ -122,7 +129,19 @@ function stripThinkingBlocks(text) {
 }
 
 function buildMessages(session) {
-  const systemPrompt = buildBrainSystemPrompt(session.spaceContext || null);
+  const spaceContextWithLastDoc = session.spaceContext
+    ? {
+        ...session.spaceContext,
+        lastSavedDocId: session.lastSavedDocId || null,
+        lastSavedDocName: session.lastSavedDocName || null
+      }
+    : null;
+  const systemPrompt = buildBrainSystemPrompt(
+    spaceContextWithLastDoc,
+    session.executionPlan || null,
+    session.taskSpec || null,
+    session.routeToolSequence || []
+  );
 
   // 第一步：对每条 tool 消息的 content 做截断，防止搜索/抓取结果撑爆 token
   const trimmed = session.messages.map((message) => {
@@ -145,9 +164,31 @@ function buildMessages(session) {
     + trimmed.reduce((sum, m) => sum + estimateTokens(JSON.stringify(m)), 0);
 
   if (totalTokens > CONTEXT_TOKEN_WARN && trimmed.length > 6) {
-    // 保留最近 6 条，其余只保留 user/assistant 文字，丢弃 tool 结果
-    const recent = trimmed.slice(-6);
-    const older  = trimmed.slice(0, -6).filter(m => m.role !== 'tool').map(m => {
+    // 保留最近 6 条，但要确保消息完整性
+    // 1. tool 消息必须紧跟在对应的 assistant(tool_calls) 之后
+    // 2. 如果最近 6 条的第一条是 tool 或 assistant(tool_calls)，需要调整截断点
+    
+    let splitIndex = trimmed.length - 6;
+    
+    // 检查最近6条的第一条消息
+    const firstRecentMsg = trimmed[splitIndex];
+    
+    // 如果第一条是 tool 消息，需要向前找对应的 assistant(tool_calls)
+    if (firstRecentMsg.role === 'tool') {
+      // 向前找对应的 assistant
+      for (let i = splitIndex - 1; i >= 0; i--) {
+        const msg = trimmed[i];
+        if (msg.role === 'assistant' && msg.tool_calls) {
+          if (msg.tool_calls.some(tc => tc.id === firstRecentMsg.tool_call_id)) {
+            splitIndex = i; // 找到了对应的 assistant，从这里开始截断
+            break;
+          }
+        }
+      }
+    }
+    
+    const recent = trimmed.slice(splitIndex);
+    const older  = trimmed.slice(0, splitIndex).filter(m => m.role !== 'tool').map(m => {
       if (m.role === 'assistant' && m.tool_calls) {
         // assistant 只保留文字部分，去掉 tool_calls
         return { role: 'assistant', content: m.content || '[工具调用，已归档]' };
@@ -236,9 +277,211 @@ function buildWorkspaceDocContextBlock(workspaceDocs = []) {
   ].join('\n\n---\n\n');
 }
 
+async function runAutoRoutePrelude(session, onEvent, context = {}) {
+  const routeToolSequence = buildRouteToolSequence(session.taskSpec, {
+    planItems: session.planItems,
+    workspaceDocs: context.workspaceDocs || []
+  });
+  session.routeToolSequence = routeToolSequence;
+
+  onEvent('route_update', {
+    taskMode: session.taskSpec?.taskMode || '',
+    primaryRoute: session.taskSpec?.primaryRoute || '',
+    fallbackRoutes: session.taskSpec?.fallbackRoutes || [],
+    toolSequence: routeToolSequence.map((step) => ({
+      toolName: step.toolName,
+      autoExecutable: step.autoExecutable,
+      reason: step.reason || ''
+    }))
+  });
+
+  const autoSteps = routeToolSequence.filter((step) => step.autoExecutable);
+  if (!autoSteps.length) return;
+
+  const assistantToolCalls = autoSteps.map((step, index) => ({
+    id: `route_auto_${Date.now()}_${index}`,
+    type: 'function',
+    function: {
+      name: step.toolName,
+      arguments: JSON.stringify(step.args || {})
+    }
+  }));
+
+  session.messages.push({
+    role: 'assistant',
+    content: null,
+    tool_calls: assistantToolCalls
+  });
+
+  for (let index = 0; index < autoSteps.length; index += 1) {
+    const step = autoSteps[index];
+    const toolCall = assistantToolCalls[index];
+    onEvent('tool_call', {
+      tool: step.toolName,
+      display: getToolDisplay(step.toolName, step.args || {}),
+      toolCallId: toolCall.id,
+      auto: true,
+      reason: step.reason || ''
+    });
+    const toolResult = await executeTool(step.toolName, step.args || {}, session, onEvent);
+    onEvent('tool_result', buildToolResultEvent(step.toolName, toolResult));
+    session.messages.push({
+      role: 'tool',
+      tool_call_id: toolCall.id,
+      content: JSON.stringify(toolResult)
+    });
+  }
+}
+
+function detectTaskIntent(text = '', { documents = [], workspaceDocs = [], session = null } = {}) {
+  const normalized = String(text || '').trim().toLowerCase();
+  const sourceText = normalized.replace(/\s+/g, '');
+  if (!sourceText && !documents.length && !workspaceDocs.length) {
+    return {
+      type: 'chat',
+      label: '普通对话',
+      confidence: 0.2,
+      hint: ''
+    };
+  }
+
+  const imageGenerateSignals = /(生成图|生成.*图片|生成一张|生成几张|画一张|画几张|ai生图|ai.*图|重新生成.*图|改.*这张|换.*这张|这张.*换|这张.*改|重新画|生图)/;
+  const imageSearchSignals = /(找图|搜图|配图|参考图|效果图|海报图|kv|主视觉|意向图|素材图|展台图|现场图|氛围图|背景图|找一下.*图|来几张.*图|找几张.*图|配几张.*图|.*的图么|.*的图吗)/;
+  const researchSignals = /(案例|竞品|趋势|数据|信息|新闻|资料|关键点|关键词|调研|研究|搜一下|查一下)/;
+  const docEditSignals = /(改文档|改一下文档|修改文档|润色|重写|改写|扩写|缩写|压缩|补充|完善文档|整理文档|优化文案|改方案|补一段|补一版|改一下这段|续写|精简这份文档|调整这份文档|更新文档|更新一下文档|写进文档|加进文档|写到文档|加到文档|放进文档|插进文档|追加到|补到文档|补充到文档)/;
+  const pptSignals = /(生成ppt|做ppt|出ppt|转成ppt|汇报页|排成ppt|修改ppt|优化ppt|改ppt|重做ppt|重排ppt|精简成.*页|这一页重做|这一页改一下|基于.*ppt)/;
+  const strategySignals = /(策划|方案|活动方案|发布会方案|创意方向|整合方案)/;
+
+  if (imageGenerateSignals.test(sourceText)) {
+    return {
+      type: 'image_generate',
+      label: 'AI生图',
+      confidence: 0.95,
+      hint: '用户想用 AI 生成全新图片，或修改/替换已有图片。调用 generate_image，不要用 search_images 代替。'
+    };
+  }
+
+  if (imageSearchSignals.test(sourceText) && !researchSignals.test(sourceText)) {
+    return {
+      type: 'image_search',
+      label: '找图配图',
+      confidence: 0.95,
+      hint: '用户当前主要意图是”找图/配图/图片参考”。优先调用 search_images，除非用户明确要案例、数据或行业信息，否则不要改走 web_search。'
+    };
+  }
+
+  const hasSessionDoc = !!(session?.lastSavedDocId || session?.docJson);
+  if ((documents.length || workspaceDocs.length || hasSessionDoc) && docEditSignals.test(sourceText)) {
+    return {
+      type: 'doc_edit',
+      label: '文档修改',
+      confidence: 0.94,
+      hint: '用户当前主要意图是”基于现有文档修改/续写/润色”。优先读取并更新文档，不要默认重走完整 research -> strategy 流程。'
+    };
+  }
+
+  if ((documents.length || workspaceDocs.length || hasSessionDoc) && /(基于|按照|参考).*(文档|提案|方案|那份|这份)|开场文案|摘要|前言/.test(sourceText)) {
+    return {
+      type: 'doc_edit',
+      label: '文档修改',
+      confidence: 0.88,
+      hint: '用户当前主要意图是”在已有文档基础上补充或修改内容”。优先读取上下文文档并直接编辑。'
+    };
+  }
+
+  if (pptSignals.test(sourceText)) {
+    return {
+      type: 'ppt',
+      label: 'PPT生成',
+      confidence: 0.93,
+      hint: '用户当前主要意图是“生成或修改 PPT”。如果还没有方案，先确认依据；如果已有方案，再判断是否进入 build_ppt。'
+    };
+  }
+
+  if (researchSignals.test(sourceText) && !imageGenerateSignals.test(sourceText) && !imageSearchSignals.test(sourceText)) {
+    return {
+      type: 'research',
+      label: '信息搜索',
+      confidence: 0.92,
+      hint: '用户当前主要意图是“搜索信息/案例/关键事实”。优先调用 web_search；只有值得深读的页面再调用 web_fetch。'
+    };
+  }
+
+  if (strategySignals.test(sourceText)) {
+    return {
+      type: 'strategy',
+      label: '方案策划',
+      confidence: 0.9,
+      hint: '用户当前主要意图是“做策划方案”。信息足够时直接推进 update_brief -> write_todos -> web_search -> run_strategy。'
+    };
+  }
+
+  return {
+    type: 'chat',
+    label: '普通对话',
+    confidence: 0.45,
+    hint: ''
+  };
+}
+
 async function prepareUserInputMessage(text, attachments = [], documents = [], session, onEvent, workspaceDocs = []) {
   const normalizedText = String(text || '').trim();
   const parts = [];
+  const detectedIntent = detectTaskIntent(normalizedText, { documents, workspaceDocs, session });
+  const executionPlan = createExecutionPlan({
+    text: normalizedText,
+    intent: detectedIntent,
+    session,
+    documents,
+    workspaceDocs,
+    attachments
+  });
+  const taskSpec = createTaskSpec(executionPlan);
+  const routeToolSequence = buildRouteToolSequence(taskSpec, {
+    planItems: executionPlan?.planItems || [],
+    workspaceDocs
+  });
+
+  session.taskIntent = detectedIntent;
+  session.executionPlan = executionPlan;
+  session.taskSpec = taskSpec;
+  session.routeToolSequence = routeToolSequence;
+  if (Array.isArray(executionPlan?.planItems)) {
+    session.planItems = executionPlan.planItems;
+  }
+  onEvent('task_intent', {
+    taskIntent: detectedIntent
+  });
+  onEvent('plan_update', {
+    items: Array.isArray(executionPlan?.planItems) ? executionPlan.planItems : [],
+    source: 'task_planner',
+    mode: executionPlan?.mode || '',
+    targetType: executionPlan?.targetType || ''
+  });
+  onEvent('execution_plan', { plan: executionPlan });
+  onEvent('task_spec', { taskSpec });
+  onEvent('route_update', {
+    taskMode: taskSpec?.taskMode || '',
+    primaryRoute: taskSpec?.primaryRoute || '',
+    fallbackRoutes: taskSpec?.fallbackRoutes || [],
+    toolSequence: routeToolSequence.map((step) => ({
+      toolName: step.toolName,
+      autoExecutable: step.autoExecutable,
+      reason: step.reason || ''
+    }))
+  });
+
+  if (detectedIntent?.hint) {
+    parts.push(`【任务意图提示】${detectedIntent.hint}`);
+  }
+  const executionPlanBlock = buildExecutionPlanContextBlock(executionPlan);
+  if (executionPlanBlock) {
+    parts.push(executionPlanBlock);
+  }
+  const taskSpecBlock = buildTaskSpecContextBlock(taskSpec);
+  if (taskSpecBlock) {
+    parts.push(taskSpecBlock);
+  }
 
   if (attachments.length) {
     onEvent('text', { text: '我先看一下你发来的图片内容。' });
@@ -305,6 +548,7 @@ async function run(session, userMessage, onEvent, options = {}) {
   session.status = 'running';
   session.stopRequested = false;
   session.doneEmitted = false;
+  await runAutoRoutePrelude(session, onEvent, options);
   await runLoop(session, onEvent);
 }
 
@@ -329,6 +573,7 @@ async function resume(session, userReply, onEvent, options = {}) {
   session.status = 'running';
   session.stopRequested = false;
   session.doneEmitted = false;
+  await runAutoRoutePrelude(session, onEvent, options);
   await runLoop(session, onEvent);
 }
 
@@ -523,7 +768,10 @@ async function runLoop(session, onEvent) {
     session.doneEmitted = true;
     onEvent('done', {
       mode: 'brain',
+      taskIntent: session.taskIntent || null,
       brief: session.brief || null,
+      executionPlan: session.executionPlan || null,
+      taskSpec: session.taskSpec || null,
       planItems: Array.isArray(session.planItems) ? session.planItems : [],
       hasPlan: !!session.bestPlan,
       score: session.bestScore || 0
@@ -536,6 +784,24 @@ function buildToolResultEvent(toolName, toolResult) {
   const details = JSON.stringify(safeResult, null, 2);
 
   switch (toolName) {
+    case 'generate_image':
+      return {
+        tool: toolName,
+        ok: !!safeResult.success,
+        summary: safeResult.success
+          ? `图片已生成：${safeResult.intent || safeResult.prompt?.slice(0, 30) || ''}`
+          : (safeResult.error || 'AI生图失败'),
+        details
+      };
+    case 'search_images':
+      return {
+        tool: toolName,
+        ok: !!safeResult.success,
+        summary: safeResult.success
+          ? `找到 ${safeResult.count || 0} 张图片`
+          : (safeResult.error || '找图失败'),
+        details
+      };
     case 'write_todos':
       return {
         tool: toolName,
@@ -644,4 +910,4 @@ function stableStringify(obj) {
   }
 }
 
-module.exports = { run, resume };
+module.exports = { run, resume, detectTaskIntent };

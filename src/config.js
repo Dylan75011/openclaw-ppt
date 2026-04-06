@@ -21,6 +21,12 @@ module.exports = {
   criticPassScore: parseFloat(process.env.CRITIC_PASS_SCORE || '7.0'),
   criticMaxRounds: parseInt(process.env.CRITIC_MAX_ROUNDS || '3', 10),
 
-  // Pexels 图片搜索
-  pexelsApiKey: process.env.PEXELS_API_KEY || 'PicqD7mq8tG2jFWuJ2E18DbTDDhq54ycV8Pvp9fxTAY0HjzK9RhdFVxW'
+  // 图片搜索优先级：SerpAPI（Bing/百度/谷歌）→ 直接 Bing → Pexels
+  bingApiKey:   process.env.BING_API_KEY   || '',
+  serpApiKey:   process.env.SERP_API_KEY   || '',
+  pexelsApiKey: process.env.PEXELS_API_KEY || 'PicqD7mq8tG2jFWuJ2E18DbTDDhq54ycV8Pvp9fxTAY0HjzK9RhdFVxW',
+
+  // 公网部署时设置此项，所有生成的下载链接将带上完整域名
+  // 例如：PUBLIC_BASE_URL=https://your-domain.com 或 http://1.2.3.4:3000
+  publicBaseUrl: (process.env.PUBLIC_BASE_URL || '').replace(/\/$/, '')
 };

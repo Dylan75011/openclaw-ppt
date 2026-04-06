@@ -3,3 +3,4 @@ output/
 .env
 *.pptx
 .DS_Store
+tmp/

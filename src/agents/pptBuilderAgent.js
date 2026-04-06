@@ -71,16 +71,48 @@ class PptBuilderAgent extends BaseAgent {
     if (role === 'toc') return 'toc';
     if (role === 'manifesto') return 'editorial_quote';
     if (role === 'highlights' || role === 'metrics') return 'data_cards';
+    if (role === 'team') return 'bento_grid';
     if (role === 'timeline') return 'timeline_flow';
     if (role === 'comparison') return 'split_content';
     return 'asymmetrical_story';
   }
 
-  sanitizeList(items, { maxItems = 4, maxWeight = 28 } = {}) {
+  sanitizeList(items, { maxItems = 8, maxWeight = 56 } = {}) {
     return (Array.isArray(items) ? items : [])
       .map(item => this.trimLine(item, maxWeight))
       .filter(Boolean)
       .slice(0, maxItems);
+  }
+
+  extractTeamItems(plan = {}) {
+    const pools = [
+      plan?.team,
+      plan?.teamRoles,
+      plan?.teamAssignments,
+      plan?.executionTeam,
+      plan?.staffing,
+      plan?.organization,
+    ];
+
+    const normalizeEntry = (entry) => {
+      if (!entry) return '';
+      if (typeof entry === 'string') return this.trimLine(entry, 48);
+      const role = this.trimLine(entry.role || entry.title || entry.position || entry.name, 24);
+      const owner = this.trimLine(entry.owner || entry.person || entry.lead || entry.member, 20);
+      const note = this.trimLine(entry.responsibility || entry.scope || entry.desc || entry.description, 28);
+      return [role, owner ? ` / ${owner}` : '', note ? `: ${note}` : ''].join('').trim();
+    };
+
+    for (const pool of pools) {
+      if (!Array.isArray(pool) || !pool.length) continue;
+      const items = pool.map(normalizeEntry).filter(Boolean).slice(0, 6);
+      if (items.length) return items;
+    }
+
+    const sections = Array.isArray(plan?.sections) ? plan.sections : [];
+    const teamSection = sections.find(section => /团队|分工|组织|保障|执行团队|team|staff/i.test(section?.title || ''));
+    if (!teamSection) return [];
+    return this.sanitizeList(teamSection.keyPoints || [], { maxItems: 6, maxWeight: 44 });
   }
 
   stabilizePage(page = {}, index = 0, total = 0) {
@@ -93,30 +125,30 @@ class PptBuilderAgent extends BaseAgent {
     next.layout = targetLayout;
     next.type = targetLayout;
     next.style = next.style || 'dark_tech';
-    next.title = this.trimLine(next.title || (index === 1 && role === 'toc' ? '目录' : ''), index === 0 ? 26 : 22);
-    next.subtitle = this.trimLine(next.subtitle, role === 'cover' ? 42 : 28);
-    next.quote = this.trimLine(next.quote, role === 'manifesto' ? 88 : role === 'closing' ? 56 : 44);
-    next.body = this.trimLine(next.body || next.story, role === 'section' ? 80 : 56);
+    next.title = this.trimLine(next.title || (index === 1 && role === 'toc' ? '目录' : ''), 32);
+    next.subtitle = this.trimLine(next.subtitle, role === 'cover' ? 80 : 60);
+    next.quote = this.trimLine(next.quote, role === 'manifesto' ? 140 : role === 'closing' ? 100 : 80);
+    next.body = this.trimLine(next.body || next.story, role === 'section' ? 160 : 120);
     next.story = next.body || next.story || '';
     next.facts = this.sanitizeList(next.facts, {
-      maxItems: role === 'highlights' ? 5 : role === 'section' ? 3 : 4,
-      maxWeight: role === 'section' ? 34 : 30
+      maxItems: role === 'highlights' ? 8 : 6,
+      maxWeight: 56
     });
-    next.leftItems = this.sanitizeList(next.leftItems, { maxItems: 4, maxWeight: 28 });
-    next.rightItems = this.sanitizeList(next.rightItems, { maxItems: 4, maxWeight: 28 });
+    next.leftItems = this.sanitizeList(next.leftItems, { maxItems: 6, maxWeight: 48 });
+    next.rightItems = this.sanitizeList(next.rightItems, { maxItems: 6, maxWeight: 48 });
     next.metrics = (Array.isArray(next.metrics) ? next.metrics : [])
-      .slice(0, role === 'highlights' ? 5 : 4)
+      .slice(0, 8)
       .map((item) => ({
         ...item,
-        value: this.trimLine(item?.value, 18),
-        label: this.trimLine(item?.label, 26),
-        sub: this.trimLine(item?.sub, 16)
+        value: this.trimLine(item?.value, 24),
+        label: this.trimLine(item?.label, 36),
+        sub: this.trimLine(item?.sub, 28)
       }));
-    next.phases = (Array.isArray(next.phases) ? next.phases : []).slice(0, 5).map((phase) => ({
+    next.phases = (Array.isArray(next.phases) ? next.phases : []).slice(0, 10).map((phase) => ({
       ...phase,
-      date: this.trimLine(phase?.date, 16),
-      name: this.trimLine(phase?.name, 18),
-      tasks: this.sanitizeList(phase?.tasks, { maxItems: 3, maxWeight: 20 })
+      date: this.trimLine(phase?.date, 24),
+      name: this.trimLine(phase?.name, 28),
+      tasks: this.sanitizeList(phase?.tasks, { maxItems: 5, maxWeight: 36 })
     }));
 
     if (Array.isArray(next.textBlocks)) {
@@ -124,19 +156,35 @@ class PptBuilderAgent extends BaseAgent {
         const normalized = { ...block };
         if (typeof normalized.text === 'string') {
           const maxWeight = normalized.kind === 'title'
-            ? 24
+            ? 36
             : normalized.kind === 'quote'
-              ? (role === 'manifesto' ? 84 : 52)
+              ? (role === 'manifesto' ? 140 : 100)
               : normalized.kind === 'body'
-                ? (role === 'section' ? 84 : 56)
-                : 28;
+                ? (role === 'section' ? 160 : 120)
+                : 60;
           normalized.text = this.trimLine(normalized.text, maxWeight);
         }
         if (Array.isArray(normalized.items)) {
-          normalized.items = this.sanitizeList(normalized.items, {
-            maxItems: normalized.kind === 'timeline' ? 5 : role === 'highlights' ? 5 : 4,
-            maxWeight: normalized.kind === 'stats' ? 18 : 28
-          });
+          if (normalized.kind === 'stats') {
+            normalized.items = normalized.items.slice(0, 8).map((item) => ({
+              ...item,
+              value: this.trimLine(item?.value, 24),
+              label: this.trimLine(item?.label, 36),
+              sub: this.trimLine(item?.sub, 28)
+            })).filter(item => item.value || item.label);
+          } else if (normalized.kind === 'timeline') {
+            normalized.items = normalized.items.slice(0, 10).map((item) => ({
+              ...item,
+              date: this.trimLine(item?.date, 24),
+              name: this.trimLine(item?.name, 28),
+              tasks: this.sanitizeList(item?.tasks, { maxItems: 5, maxWeight: 36 })
+            })).filter(item => item.date || item.name || (Array.isArray(item.tasks) && item.tasks.length));
+          } else {
+            normalized.items = this.sanitizeList(normalized.items, {
+              maxItems: role === 'highlights' ? 8 : 6,
+              maxWeight: 56
+            });
+          }
         }
         return normalized;
       }).filter(block => block.text || (Array.isArray(block.items) && block.items.length));
@@ -222,6 +270,13 @@ class PptBuilderAgent extends BaseAgent {
           ];
     }
 
+    if (role === 'team') {
+      return [
+        { name: 'header', x: 7, y: 10, w: 30, h: 14, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+        { name: 'facts', x: 7, y: 28, w: 84, h: 44, stack: 'grid', columns: factCount >= 5 ? 3 : 2, gap: 18, align: 'stretch', valign: 'start' }
+      ];
+    }
+
     if (role === 'comparison') {
       return [
         { name: 'header', x: 7, y: 10, w: 30, h: 12, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
@@ -270,7 +325,7 @@ class PptBuilderAgent extends BaseAgent {
     try {
       result = await this.callLLMJson(
         [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-        { maxTokens: 4096, temperature: 0.22 }
+        { maxTokens: 16000, temperature: 0.22 }
       );
     } catch (err) {
       console.warn('[PptBuilderAgent] 首轮结构化 JSON 生成失败，回退到程序化结构化版式:', err.message);
@@ -333,6 +388,8 @@ class PptBuilderAgent extends BaseAgent {
       if (typeof onPageReady === 'function') {
         onPageReady(page, i, total, theme);
       }
+      // 让事件循环有机会将 SSE 事件真正发出，实现逐页流式预览
+      await new Promise(r => setImmediate(r));
     }
 
     console.log(`[PptBuilderAgent] 全部 ${processedPages.length} 页处理完成`);
@@ -390,7 +447,7 @@ class PptBuilderAgent extends BaseAgent {
       });
       const refined = await this.callLLMJson(
         [{ role: 'system', content: systemPrompt }, { role: 'user', content: userPrompt }],
-        { maxTokens: 4096, temperature: 0.35 }
+        { maxTokens: 16000, temperature: 0.35 }
       );
       const nextPages = Array.isArray(refined?.pages) ? refined.pages : [];
       if (!nextPages.length || nextPages.length !== pages.length) return;
@@ -438,22 +495,22 @@ class PptBuilderAgent extends BaseAgent {
         page.textBlocks = page.textBlocks.map((block) => {
           if (block.kind === 'body' || block.kind === 'subtitle') {
             const text = String(block.text || '').trim();
-            const maxChars = role === 'section' ? 148 : role === 'manifesto' ? 120 : 108;
+            // 只在极端情况（>300字）才截断，防止渲染溢出
+            const maxChars = 300;
             return {
               ...block,
-              text: text.length > maxChars ? this.summarizeText(text, role === 'section' ? 132 : role === 'manifesto' ? 96 : 84) : text,
-              clamp: block.kind === 'body' ? (role === 'section' ? 7 : role === 'timeline' ? 4 : 5) : block.clamp,
+              text: text.length > maxChars ? this.summarizeText(text, 240) : text,
+              clamp: block.kind === 'body' ? (role === 'section' ? 9 : role === 'timeline' ? 6 : 7) : block.clamp,
             };
           }
           if (block.kind === 'fact-list') {
             const compactItems = (block.items || []).map((item) => {
               const text = String(item || '').trim();
-              if (text.length <= (role === 'highlights' ? 44 : role === 'comparison' ? 46 : role === 'section' ? 48 : 40)) return text;
-              return this.summarizeText(
-                text,
-                role === 'highlights' ? 34 : role === 'comparison' ? 40 : role === 'section' ? 42 : 32
-              );
-            }).slice(0, role === 'highlights' ? 5 : role === 'section' ? 3 : role === 'comparison' ? 4 : 4);
+              // 单条超过80字才截，确保概念表述完整
+              const limit = 80;
+              if (text.length <= limit) return text;
+              return this.summarizeText(text, 68);
+            }).slice(0, role === 'highlights' ? 8 : role === 'section' ? 6 : 6);
             return {
               ...block,
               items: compactItems,
@@ -510,11 +567,11 @@ class PptBuilderAgent extends BaseAgent {
         page.regions = this.computeDynamicRegions(page);
       }
 
-      if (page.composition === 'staggered-metrics') {
+      if (page.composition === 'staggered-metrics' || page.composition === 'budget-table' || page.composition === 'kpi-ledger') {
         page.regions = this.computeDynamicRegions(page);
       }
 
-      if (page.composition === 'compare-columns') {
+      if (page.composition === 'compare-columns' || page.composition === 'risk-matrix') {
         page.regions = this.computeDynamicRegions(page);
       }
 
@@ -522,11 +579,11 @@ class PptBuilderAgent extends BaseAgent {
         page.regions = this.computeDynamicRegions(page);
       }
 
-      if (page.composition === 'highlights-board') {
+      if (page.composition === 'highlights-board' || page.composition === 'team-grid') {
         page.regions = this.computeDynamicRegions(page);
       }
 
-      if (role === 'timeline' && (!Array.isArray(page.regions) || !page.regions.length || page.composition === 'split-editorial')) {
+      if ((page.composition === 'schedule-strip') || (role === 'timeline' && (!Array.isArray(page.regions) || !page.regions.length || page.composition === 'split-editorial'))) {
         page.regions = this.computeDynamicRegions(page);
       }
     }
@@ -544,17 +601,18 @@ class PptBuilderAgent extends BaseAgent {
     const kpis = Array.isArray(plan?.kpis) ? plan.kpis.filter(Boolean) : []
     const budgetBreakdown = Array.isArray(plan?.budget?.breakdown) ? plan.budget.breakdown.filter(Boolean) : []
     const risks = Array.isArray(plan?.riskMitigation) ? plan.riskMitigation.filter(Boolean) : []
+    const teamItems = this.extractTeamItems(plan)
 
     const keywordSeed = imageKeywords.join(' ')
     const compositionCycle = ['editorial-left', 'split-editorial', 'annotation-runway', 'hero-asymmetric']
-    const sectionPages = sections.slice(0, 6).map((section, index) => {
+    const sectionPages = sections.slice(0, 20).map((section, index) => {
       const composition = compositionCycle[index % compositionCycle.length]
       const summary = String(section.narrative || '').trim()
-      const compactSummary = summary.length > 84 ? `${summary.slice(0, 84).trim()}...` : summary
-      const rawFacts = (section.keyPoints || []).slice(0, composition === 'hero-asymmetric' ? 3 : 4)
+      const compactSummary = summary.length > 160 ? `${summary.slice(0, 160).trim()}...` : summary
+      const rawFacts = (section.keyPoints || []).slice(0, composition === 'hero-asymmetric' ? 5 : 6)
       const compactFacts = rawFacts.map((item) => {
         const text = String(item || '').trim()
-        return text.length > 34 ? `${text.slice(0, 34).trim()}...` : text
+        return text.length > 56 ? `${text.slice(0, 56).trim()}...` : text
       })
       const regionNames = composition === 'split-editorial'
         ? { lead: 'left', body: 'left', facts: 'right' }
@@ -741,7 +799,7 @@ class PptBuilderAgent extends BaseAgent {
       ...(phases.length ? [{
         layout: 'timeline_flow',
         style: 'dark_tech',
-        composition: 'split-editorial',
+        composition: 'schedule-strip',
         regions: [
           { name: 'header', x: 7, y: 9, w: 36, h: 16, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
           { name: 'timeline', x: 7, y: 28, w: 86, h: 54, stack: 'vertical', gap: 0, align: 'stretch', valign: 'stretch' }
@@ -767,7 +825,7 @@ class PptBuilderAgent extends BaseAgent {
           role: 'timeline',
           mood: '推进感明确、执行感强',
           density: 'medium',
-          composition: 'flow',
+          composition: 'schedule-strip',
           reason: '把筹备到传播的节奏打清楚'
         },
         imageStrategy: {
@@ -779,27 +837,24 @@ class PptBuilderAgent extends BaseAgent {
           textPlacement: 'center'
         }
       }] : []),
-      ...((budgetBreakdown.length || kpis.length) ? [{
+      ...(budgetBreakdown.length ? [{
         layout: 'data_cards',
         style: 'dark_tech',
-        composition: 'ledger-split',
-        title: '预算与目标',
+        composition: 'budget-table',
+        title: '预算分配',
         textBlocks: [
-          { region: 'header', kind: 'eyebrow', text: 'BUDGET & KPI' },
-          { region: 'header', kind: 'title', text: '预算与目标' },
-          { region: 'left', kind: 'stats', variant: 'ledger', items: budgetBreakdown.slice(0, 3).map(item => ({ value: item.amount || '', label: item.item || '', sub: item.percentage || '' })) },
-          { region: 'right', kind: 'stats', variant: 'annotation-strip', items: kpis.slice(0, 3).map(item => ({ value: item.target || '', label: item.metric || '', sub: 'Target' })) }
+          { region: 'header', kind: 'eyebrow', text: 'BUDGET' },
+          { region: 'header', kind: 'title', text: '预算分配' },
+          { region: 'left', kind: 'fact-list', variant: 'compact-notes', items: budgetBreakdown.slice(0, 4).map(item => `${item.item || '预算项'} ${item.percentage ? `· ${item.percentage}` : ''}`), clamp: 2 },
+          { region: 'right', kind: 'stats', variant: 'ledger', items: budgetBreakdown.slice(0, 4).map(item => ({ value: item.amount || '', label: item.item || '', sub: item.percentage || '' })) }
         ],
-        metrics: [
-          ...(budgetBreakdown.slice(0, 3).map(item => ({ value: item.amount || '', label: item.item || '', sub: item.percentage || '' }))),
-          ...(kpis.slice(0, 3).map(item => ({ value: item.target || '', label: item.metric || '', sub: 'Target' })))
-        ],
+        metrics: budgetBreakdown.slice(0, 4).map(item => ({ value: item.amount || '', label: item.item || '', sub: item.percentage || '' })),
         visualIntent: {
           role: 'metrics',
           mood: '理性、可信、结果导向',
           density: 'compact',
-          composition: 'stat-grid',
-          reason: '把投入与成果预期并列呈现'
+          composition: 'budget-table',
+          reason: '把预算结构做成易读的账本页'
         },
         imageStrategy: {
           useBackground: true,
@@ -810,10 +865,38 @@ class PptBuilderAgent extends BaseAgent {
           textPlacement: 'left'
         }
       }] : []),
-        ...(risks.length ? [{
+      ...(kpis.length ? [{
+        layout: 'data_cards',
+        style: 'dark_tech',
+        composition: 'kpi-ledger',
+        title: '效果目标',
+        textBlocks: [
+          { region: 'header', kind: 'eyebrow', text: 'KPI' },
+          { region: 'header', kind: 'title', text: '效果目标' },
+          { region: 'left', kind: 'stats', variant: 'staggered-notes', items: kpis.slice(0, 2).map(item => ({ value: item.target || '', label: item.metric || '', sub: 'Target' })) },
+          { region: 'right', kind: 'stats', variant: 'ledger', items: kpis.slice(0, 4).map(item => ({ value: item.target || '', label: item.metric || '', sub: item.unit || 'Target' })) }
+        ],
+        metrics: kpis.slice(0, 4).map(item => ({ value: item.target || '', label: item.metric || '', sub: item.unit || 'Target' })),
+        visualIntent: {
+          role: 'metrics',
+          mood: '明确、强结果导向、战报感',
+          density: 'compact',
+          composition: 'kpi-ledger',
+          reason: '把关键成效目标做成主指标加说明账本'
+        },
+        imageStrategy: {
+          useBackground: true,
+          query: `${brand} premium analytics dashboard abstract lighting ${keywordSeed}`.trim(),
+          treatment: 'subtle-grid',
+          overlay: 0.88,
+          focalPoint: 'center',
+          textPlacement: 'left'
+        }
+      }] : []),
+      ...(risks.length ? [{
         layout: 'split_content',
         style: 'dark_tech',
-        composition: 'compare-columns',
+        composition: 'risk-matrix',
         title: '风险与应对',
         leftTitle: '关键风险',
         leftItems: risks.slice(0, 4),
@@ -839,7 +922,7 @@ class PptBuilderAgent extends BaseAgent {
           role: 'comparison',
           mood: '冷静、专业、可执行',
           density: 'medium',
-          composition: 'split',
+          composition: 'risk-matrix',
           reason: '让方案看起来像真正可落地的项目管理'
         },
         imageStrategy: {
@@ -849,6 +932,33 @@ class PptBuilderAgent extends BaseAgent {
           overlay: 0.82,
           focalPoint: 'center',
           textPlacement: 'split'
+        }
+      }] : []),
+      ...(teamItems.length ? [{
+        layout: 'bento_grid',
+        style: 'dark_tech',
+        composition: 'team-grid',
+        title: '团队分工',
+        facts: teamItems,
+        textBlocks: [
+          { region: 'header', kind: 'eyebrow', text: 'TEAM' },
+          { region: 'header', kind: 'title', text: '团队分工' },
+          { region: 'facts', kind: 'fact-list', variant: 'floating-tags', items: teamItems, clamp: 3 }
+        ],
+        visualIntent: {
+          role: 'team',
+          mood: '专业、有组织、协同感明确',
+          density: 'medium',
+          composition: 'team-grid',
+          reason: '把核心岗位与职责做成一页可扫描的团队面板'
+        },
+        imageStrategy: {
+          useBackground: true,
+          query: `${brand} backstage operations premium teamwork atmosphere ${keywordSeed}`.trim(),
+          treatment: 'ambient-texture',
+          overlay: 0.8,
+          focalPoint: 'center',
+          textPlacement: 'left'
         }
       }] : []),
       {

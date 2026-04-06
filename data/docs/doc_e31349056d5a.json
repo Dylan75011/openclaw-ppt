@@ -1,0 +1,3117 @@
+{
+  "id": "doc_e31349056d5a",
+  "docType": "ppt",
+  "name": "华为问界 M9 PPT.pptx",
+  "pptData": {
+    "title": "『智慧雄心·预见未来』问界M9全球首发盛典",
+    "globalStyle": "dark_tech",
+    "theme": {
+      "primary": "#1A1A1A",
+      "secondary": "#0D1B2A",
+      "accent": "#00B4D8",
+      "brand": "华为问界 M9",
+      "globalStyle": "dark_tech"
+    },
+    "pages": [
+      {
+        "layout": "immersive_cover",
+        "style": "dark_tech",
+        "composition": "hero-asymmetric",
+        "regions": [
+          {
+            "name": "header",
+            "x": 7,
+            "y": 14,
+            "w": 50,
+            "h": 38,
+            "stack": "vertical",
+            "gap": 18,
+            "align": "start",
+            "valign": "start"
+          },
+          {
+            "name": "body",
+            "x": 7,
+            "y": 62,
+            "w": 34,
+            "h": 16,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "end"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "hero"
+        },
+        "textBlocks": [
+          {
+            "region": "header",
+            "kind": "eyebrow",
+            "text": "AITO M9 LAUNCH EVENT"
+          },
+          {
+            "region": "header",
+            "kind": "title",
+            "text": "智慧雄心·预见未来"
+          },
+          {
+            "region": "header",
+            "kind": "subtitle",
+            "text": "问界M9全球首发盛典"
+          },
+          {
+            "region": "body",
+            "kind": "body",
+            "text": "以华为技术信仰重塑豪华汽车认知，让智能驾驶成为新豪华的量化标准"
+          }
+        ],
+        "visualIntent": {
+          "role": "cover",
+          "mood": "深邃、雄心、预见感",
+          "density": "airy",
+          "composition": "left-weighted",
+          "reason": "封面需要建立品牌高度与技术信仰的结合，左侧文字留白让视觉重心自然向右"
+        },
+        "visualAssetPlan": {
+          "assetType": "searched_background",
+          "priority": "low",
+          "reason": "封面适合抽象品牌氛围图，不使用具体现场效果图",
+          "sceneType": "brand_space",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "abstract technology automotive darkness blue ambient lighting",
+          "treatment": "full-bleed-dark",
+          "overlay": 0.58,
+          "focalPoint": "right-center",
+          "textPlacement": "left"
+        },
+        "content": {
+          "title": "智慧雄心·预见未来",
+          "subtitle": "问界M9全球首发盛典",
+          "date": "2025年4月",
+          "location": "上海车展",
+          "brand": "华为问界 M9"
+        },
+        "type": "immersive_cover",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_page_00_智慧雄心-预见未来_0.jpg",
+        "imageMeta": {
+          "query": "brand space",
+          "treatment": "full-bleed-dark",
+          "source": "pexels",
+          "sceneType": "brand_space",
+          "assetType": "searched_background",
+          "insertMode": "background"
+        }
+      },
+      {
+        "layout": "toc",
+        "style": "dark_tech",
+        "composition": "split-editorial",
+        "regions": [
+          {
+            "name": "header",
+            "x": 8,
+            "y": 16,
+            "w": 18,
+            "h": 50,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "facts",
+            "x": 34,
+            "y": 16,
+            "w": 56,
+            "h": 54,
+            "stack": "vertical",
+            "gap": 10,
+            "align": "stretch",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "none"
+        },
+        "textBlocks": [
+          {
+            "region": "header",
+            "kind": "eyebrow",
+            "text": "CONTENTS"
+          },
+          {
+            "region": "header",
+            "kind": "title",
+            "text": "目录"
+          },
+          {
+            "region": "facts",
+            "kind": "fact-list",
+            "items": [
+              "战略定位：为什么必须成功",
+              "核心创意：三大记忆锚点",
+              "流程设计：90分钟情绪节奏",
+              "舞台创意：技术美学沉浸式表达",
+              "传播策略：全域覆盖",
+              "风险预案：特殊挑战与应对"
+            ]
+          }
+        ],
+        "visualIntent": {
+          "role": "toc",
+          "mood": "冷静、利落",
+          "density": "medium",
+          "composition": "sidebar",
+          "reason": "目录页不抢戏，只负责建立结构，左侧色块右侧列表是经典搭配"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "目录页以结构信息为主，不需要生图",
+          "sceneType": "data",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": false,
+          "query": "",
+          "treatment": "none",
+          "overlay": 0,
+          "focalPoint": "center",
+          "textPlacement": "right"
+        },
+        "content": {
+          "items": [
+            {
+              "title": "战略定位：为什么必须成功"
+            },
+            {
+              "title": "核心创意：三大记忆锚点"
+            },
+            {
+              "title": "流程设计：90分钟情绪节奏"
+            },
+            {
+              "title": "舞台创意：技术美学沉浸式表达"
+            },
+            {
+              "title": "传播策略：全域覆盖"
+            },
+            {
+              "title": "风险预案：特殊挑战与应对"
+            }
+          ]
+        },
+        "type": "toc",
+        "title": "目录",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": []
+      },
+      {
+        "layout": "editorial_quote",
+        "style": "dark_tech",
+        "composition": "asymmetric-editorial",
+        "regions": [
+          {
+            "name": "quote-area",
+            "x": 8,
+            "y": 20,
+            "w": 60,
+            "h": 45,
+            "stack": "vertical",
+            "gap": 20,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "facts-area",
+            "x": 72,
+            "y": 20,
+            "w": 20,
+            "h": 45,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "panel",
+          "emphasis": "hero"
+        },
+        "textBlocks": [
+          {
+            "region": "quote-area",
+            "kind": "eyebrow",
+            "text": "SECTION 01"
+          },
+          {
+            "region": "quote-area",
+            "kind": "title",
+            "text": "战略定位"
+          },
+          {
+            "region": "quote-area",
+            "kind": "quote",
+            "text": "为什么这是一场必须成功的发布会"
+          },
+          {
+            "region": "facts-area",
+            "kind": "body",
+            "text": "问界M9是华为智选车战略的旗舰之作，承担品牌冲高使命"
+          }
+        ],
+        "visualIntent": {
+          "role": "section_opener",
+          "mood": "高级、明确、有前进感",
+          "density": "airy",
+          "composition": "asymmetric",
+          "reason": "章节开场需要打破模板感，建立节奏，左侧大引言右侧小字是经典编辑风"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "章节开场页不需要现场图，用排版建立调性即可",
+          "sceneType": "editorial",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "abstract dark blue gradient geometric light beam",
+          "treatment": "editorial-fade",
+          "overlay": 0.5,
+          "focalPoint": "right-center",
+          "textPlacement": "left"
+        },
+        "content": {
+          "eyebrow": "SECTION 01",
+          "title": "战略定位",
+          "story": "为什么这是一场必须成功的发布会",
+          "points": [
+            "问界M9是华为智选车战略的旗舰之作，承担品牌冲高使命",
+            "上海车展是2025年智能汽车格局重构的关键战场",
+            "目标建立『智能豪华=问界M9』的心智关联"
+          ]
+        },
+        "type": "editorial_quote",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_page_02_战略定位_4.jpg",
+        "imageMeta": {
+          "query": "main stage",
+          "treatment": "dark-paneled",
+          "source": "pexels",
+          "sceneType": "main_stage",
+          "assetType": "generated_scene",
+          "insertMode": "panel"
+        }
+      },
+      {
+        "layout": "split_content",
+        "style": "dark_tech",
+        "composition": "diagonal-split",
+        "regions": [
+          {
+            "name": "left-panel",
+            "x": 5,
+            "y": 15,
+            "w": 45,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "right-panel",
+            "x": 55,
+            "y": 15,
+            "w": 40,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "none"
+        },
+        "textBlocks": [
+          {
+            "region": "left-panel",
+            "kind": "eyebrow",
+            "text": "STRATEGIC POSITIONING"
+          },
+          {
+            "region": "right-panel",
+            "kind": "subtitle",
+            "text": "品牌冲高的关键战役",
+            "body": "我们不是在发布一款产品，而是在定义智能豪华的新标准。"
+          }
+        ],
+        "visualIntent": {
+          "role": "statement",
+          "mood": "冷静、锋利",
+          "density": "medium",
+          "composition": "diagonal",
+          "reason": "用对角线分割创造视觉张力，左侧标题右侧展开论述，逻辑清晰"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "策略陈述页以文字为主，不需现场效果图",
+          "sceneType": "statement",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "dark architectural space light shadow contrast",
+          "treatment": "dark-paneled",
+          "overlay": 0.84,
+          "focalPoint": "center",
+          "textPlacement": "split"
+        },
+        "content": {
+          "title": "战略定位",
+          "leftTitle": "核心命题",
+          "leftItems": [
+            "品牌冲高使命",
+            "智能豪华新标准",
+            "心智占位"
+          ],
+          "rightTitle": "战略意义",
+          "rightItems": [
+            "问界M9是华为智选车战略的旗舰之作",
+            "上海车展是2025年关键战场",
+            "建立智能豪华=问界M9的心智关联"
+          ]
+        },
+        "type": "split_content",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_page_03_战略定位_4.jpg",
+        "imageMeta": {
+          "query": "atmosphere",
+          "treatment": "split-atmosphere",
+          "source": "pexels",
+          "sceneType": "atmosphere",
+          "assetType": "none",
+          "insertMode": "background"
+        }
+      },
+      {
+        "layout": "editorial_quote",
+        "style": "dark_tech",
+        "composition": "asymmetric-editorial",
+        "regions": [
+          {
+            "name": "quote-area",
+            "x": 8,
+            "y": 20,
+            "w": 60,
+            "h": 45,
+            "stack": "vertical",
+            "gap": 20,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "facts-area",
+            "x": 72,
+            "y": 20,
+            "w": 20,
+            "h": 45,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "hero"
+        },
+        "textBlocks": [
+          {
+            "region": "quote-area",
+            "kind": "eyebrow",
+            "text": "SECTION 02"
+          },
+          {
+            "region": "quote-area",
+            "kind": "title",
+            "text": "核心创意"
+          },
+          {
+            "region": "quote-area",
+            "kind": "quote",
+            "text": "三大记忆锚点构建传播穿透力"
+          },
+          {
+            "region": "facts-area",
+            "kind": "body",
+            "text": "用实测数据说话，用焦虑消解建立情感连接，用场景化体验替代配置罗列"
+          }
+        ],
+        "visualIntent": {
+          "role": "section_opener",
+          "mood": "高级、明确、有前进感",
+          "density": "airy",
+          "composition": "asymmetric",
+          "reason": "章节开场需要打破模板感，建立节奏"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "章节开场页不需要现场图",
+          "sceneType": "editorial",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "abstract neural network connections digital nodes",
+          "treatment": "editorial-fade",
+          "overlay": 0.5,
+          "focalPoint": "right-center",
+          "textPlacement": "left"
+        },
+        "content": {
+          "eyebrow": "SECTION 02",
+          "title": "核心创意",
+          "story": "三大记忆锚点构建传播穿透力",
+          "points": [
+            "记忆锚点1：中国智驾，无限可能——用实测数据说话",
+            "记忆锚点2：1400km续航自由——用焦虑消解建立情感连接",
+            "记忆锚点3：移动的头等舱——用场景化体验替代配置罗列"
+          ]
+        },
+        "type": "editorial_quote",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_page_04_核心创意_5.jpg",
+        "imageMeta": {
+          "query": "atmosphere",
+          "treatment": "editorial-fade",
+          "source": "pexels",
+          "sceneType": "atmosphere",
+          "assetType": "none",
+          "insertMode": "background"
+        }
+      },
+      {
+        "layout": "bento_grid",
+        "style": "dark_tech",
+        "composition": "mosaic-three",
+        "regions": [
+          {
+            "name": "card1",
+            "x": 5,
+            "y": 18,
+            "w": 28,
+            "h": 64,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "top"
+          },
+          {
+            "name": "card2",
+            "x": 36,
+            "y": 18,
+            "w": 28,
+            "h": 64,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "top"
+          },
+          {
+            "name": "card3",
+            "x": 67,
+            "y": 18,
+            "w": 28,
+            "h": 64,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "top"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "ambient"
+        },
+        "textBlocks": [
+          {
+            "region": "card1",
+            "kind": "eyebrow",
+            "text": "01"
+          },
+          {
+            "region": "card2",
+            "kind": "eyebrow",
+            "text": "02"
+          },
+          {
+            "region": "card3",
+            "kind": "eyebrow",
+            "text": "03"
+          },
+          {
+            "region": "card3",
+            "kind": "stats",
+            "text": "百万级舒适"
+          }
+        ],
+        "visualIntent": {
+          "role": "highlights",
+          "mood": "有力度但不拥挤",
+          "density": "medium",
+          "composition": "mosaic",
+          "reason": "三个记忆锚点需要并置呈现，但不做等分切割，用不规则网格创造层次"
+        },
+        "visualAssetPlan": {
+          "assetType": "conceptual_illustration",
+          "priority": "medium",
+          "reason": "亮点页可以配合概念图，但不是必须，建议后续制作现场效果图",
+          "sceneType": "product_feature",
+          "insertMode": "panel"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "abstract technology automotive silhouette premium",
+          "treatment": "ambient-texture",
+          "overlay": 0.72,
+          "focalPoint": "center",
+          "textPlacement": "left"
+        },
+        "content": {
+          "title": "三大记忆锚点",
+          "cards": [
+            {
+              "title": "中国智驾",
+              "tag": "记忆锚点1",
+              "description": "用实测数据说话，ADS 3.0端到端智驾系统首秀",
+              "metrics": [
+                {
+                  "value": "1.5万公里",
+                  "label": "欧洲实测"
+                }
+              ]
+            },
+            {
+              "title": "续航自由",
+              "tag": "记忆锚点2",
+              "description": "1400+km超长续航，解决电车最大焦虑",
+              "metrics": [
+                {
+                  "value": "1400+km",
+                  "label": "续航"
+                }
+              ]
+            },
+            {
+              "title": "头等舱体验",
+              "tag": "记忆锚点3",
+              "description": "零重力座椅套装，百万级舒适自定义",
+              "metrics": [
+                {
+                  "value": "百万级",
+                  "label": "舒适"
+                }
+              ]
+            }
+          ]
+        },
+        "type": "bento_grid",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_page_05_三大记忆锚点_0.jpg",
+        "imageMeta": {
+          "query": "atmosphere",
+          "treatment": "ambient-texture",
+          "source": "pexels",
+          "sceneType": "atmosphere",
+          "assetType": "none",
+          "insertMode": "background"
+        }
+      },
+      {
+        "layout": "split_content",
+        "style": "dark_tech",
+        "composition": "diagonal-split",
+        "regions": [
+          {
+            "name": "left-panel",
+            "x": 5,
+            "y": 15,
+            "w": 45,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "right-panel",
+            "x": 55,
+            "y": 15,
+            "w": 40,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "x": 55,
+          "y": 15,
+          "w": 40,
+          "h": 40
+        },
+        "textBlocks": [
+          {
+            "region": "left-panel",
+            "kind": "eyebrow",
+            "text": "HIGHLIGHT 01"
+          },
+          {
+            "region": "right-panel",
+            "kind": "body",
+            "text": "全国环岛都能开",
+            "body": "超50%智驾里程"
+          }
+        ],
+        "visualIntent": {
+          "role": "feature_detail",
+          "mood": "技术感、冲击力",
+          "density": "medium",
+          "composition": "diagonal",
+          "reason": "技术亮点需要大图配合文字说明，右上角放产品示意或技术原理图"
+        },
+        "visualAssetPlan": {
+          "assetType": "product_render",
+          "priority": "high",
+          "reason": "技术亮点页需要产品渲染图或技术示意图配合说明",
+          "sceneType": "technology",
+          "insertMode": "panel"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "autonomous driving sensor lidar technology schematic",
+          "treatment": "dark-paneled",
+          "overlay": 0.68,
+          "focalPoint": "center",
+          "textPlacement": "split"
+        },
+        "content": {
+          "title": "华为ADS 3.0端到端智驾系统",
+          "subtitle": "全国环岛都能开+车位到车位",
+          "quote": "实测1.5万公里欧洲行超50%智驾里程",
+          "facts": [
+            "全国环岛都能开",
+            "车位到车位",
+            "实测数据说话"
+          ]
+        },
+        "type": "split_content",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_page_06_华为ads-3-0端到端智驾系统_2.jpg",
+        "imageMeta": {
+          "query": "atmosphere",
+          "treatment": "split-atmosphere",
+          "source": "pexels",
+          "sceneType": "atmosphere",
+          "assetType": "none",
+          "insertMode": "background"
+        }
+      },
+      {
+        "layout": "split_content",
+        "style": "dark_tech",
+        "composition": "diagonal-split",
+        "regions": [
+          {
+            "name": "left-panel",
+            "x": 5,
+            "y": 15,
+            "w": 45,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "right-panel",
+            "x": 55,
+            "y": 15,
+            "w": 40,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "x": 55,
+          "y": 15,
+          "w": 40,
+          "h": 40
+        },
+        "textBlocks": [
+          {
+            "region": "left-panel",
+            "kind": "eyebrow",
+            "text": "HIGHLIGHT 02"
+          },
+          {
+            "region": "right-panel",
+            "kind": "body",
+            "text": "1400+km超长续航",
+            "body": "解决电车最大焦虑"
+          }
+        ],
+        "visualIntent": {
+          "role": "feature_detail",
+          "mood": "技术感、承诺感",
+          "density": "medium",
+          "composition": "diagonal",
+          "reason": "续航是核心卖点，需要大数字视觉锤配合说服力文案"
+        },
+        "visualAssetPlan": {
+          "assetType": "product_render",
+          "priority": "high",
+          "reason": "续航亮点页需要产品渲染图突出续航能力",
+          "sceneType": "product_feature",
+          "insertMode": "panel"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "electric vehicle battery charging technology abstract",
+          "treatment": "dark-paneled",
+          "overlay": 0.68,
+          "focalPoint": "center",
+          "textPlacement": "split"
+        },
+        "content": {
+          "title": "1400+km续航无忧",
+          "subtitle": "4秒级加速+同级最高油电转化效率",
+          "quote": "解决电车最大焦虑",
+          "facts": [
+            "1400+km超长续航",
+            "4秒级加速",
+            "油电转化效率第一"
+          ]
+        },
+        "type": "split_content",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_page_07_1400-km续航无忧_1.jpg",
+        "imageMeta": {
+          "query": "atmosphere",
+          "treatment": "split-atmosphere",
+          "source": "pexels",
+          "sceneType": "atmosphere",
+          "assetType": "none",
+          "insertMode": "background"
+        }
+      },
+      {
+        "layout": "split_content",
+        "style": "dark_tech",
+        "composition": "diagonal-split",
+        "regions": [
+          {
+            "name": "left-panel",
+            "x": 5,
+            "y": 15,
+            "w": 45,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "right-panel",
+            "x": 55,
+            "y": 15,
+            "w": 40,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "panel",
+          "x": 55,
+          "y": 15,
+          "w": 40,
+          "h": 40
+        },
+        "textBlocks": [
+          {
+            "region": "left-panel",
+            "kind": "eyebrow",
+            "text": "HIGHLIGHT 03"
+          },
+          {
+            "region": "right-panel",
+            "kind": "body",
+            "text": "三指四向五屏流转",
+            "body": "百万级舒适自定义"
+          }
+        ],
+        "visualIntent": {
+          "role": "feature_detail",
+          "mood": "互联感、智能化",
+          "density": "medium",
+          "composition": "diagonal",
+          "reason": "智能座舱需要突出人机交互体验感"
+        },
+        "visualAssetPlan": {
+          "assetType": "product_render",
+          "priority": "high",
+          "reason": "座舱亮点页需要内饰渲染图展示交互体验",
+          "sceneType": "interior",
+          "insertMode": "panel"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "smart cockpit dashboard digital display futuristic",
+          "treatment": "dark-paneled",
+          "overlay": 0.68,
+          "focalPoint": "center",
+          "textPlacement": "split"
+        },
+        "content": {
+          "title": "HarmonyOS 4智能座舱",
+          "subtitle": "三指四向五屏流转+小艺全场景语音",
+          "quote": "座舱成为移动的智能空间",
+          "facts": [
+            "五屏流转",
+            "全场景语音",
+            "智能空间"
+          ]
+        },
+        "type": "split_content",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_page_ai_08_harmonyos-4智能座舱.jpg",
+        "imageMeta": {
+          "query": "atmosphere",
+          "treatment": "dark-paneled",
+          "source": "minimax",
+          "sceneType": "atmosphere",
+          "assetType": "generated_scene",
+          "insertMode": "panel"
+        }
+      },
+      {
+        "layout": "split_content",
+        "style": "dark_tech",
+        "composition": "diagonal-split",
+        "regions": [
+          {
+            "name": "left-panel",
+            "x": 5,
+            "y": 15,
+            "w": 45,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "right-panel",
+            "x": 55,
+            "y": 15,
+            "w": 40,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "x": 55,
+          "y": 15,
+          "w": 40,
+          "h": 40
+        },
+        "textBlocks": [
+          {
+            "region": "left-panel",
+            "kind": "eyebrow",
+            "text": "HIGHLIGHT 04"
+          },
+          {
+            "region": "right-panel",
+            "kind": "body",
+            "text": "激光雷达预瞄路面",
+            "body": "百万级舒适自定义"
+          }
+        ],
+        "visualIntent": {
+          "role": "feature_detail",
+          "mood": "技术感、掌控感",
+          "density": "medium",
+          "composition": "diagonal",
+          "reason": "底盘技术需要突出数据化的感知能力"
+        },
+        "visualAssetPlan": {
+          "assetType": "product_render",
+          "priority": "high",
+          "reason": "底盘技术页需要底盘结构或悬架示意图配合说明",
+          "sceneType": "technology",
+          "insertMode": "panel"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "car suspension system engineering schematic",
+          "treatment": "dark-paneled",
+          "overlay": 0.68,
+          "focalPoint": "center",
+          "textPlacement": "split"
+        },
+        "content": {
+          "title": "途灵平台+魔毯悬架",
+          "subtitle": "激光雷达预瞄路面每秒20次+悬架每秒100次调节",
+          "quote": "百万级舒适自定义",
+          "facts": [
+            "激光雷达预瞄",
+            "悬架智能调节",
+            "舒适自定义"
+          ]
+        },
+        "type": "split_content",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_page_09_途灵平台-魔毯悬架_3.jpg",
+        "imageMeta": {
+          "query": "atmosphere",
+          "treatment": "split-atmosphere",
+          "source": "pexels",
+          "sceneType": "atmosphere",
+          "assetType": "none",
+          "insertMode": "background"
+        }
+      },
+      {
+        "layout": "split_content",
+        "style": "dark_tech",
+        "composition": "diagonal-split",
+        "regions": [
+          {
+            "name": "left-panel",
+            "x": 5,
+            "y": 15,
+            "w": 45,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "right-panel",
+            "x": 55,
+            "y": 15,
+            "w": 40,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "panel",
+          "x": 55,
+          "y": 15,
+          "w": 40,
+          "h": 40
+        },
+        "textBlocks": [
+          {
+            "region": "left-panel",
+            "kind": "eyebrow",
+            "text": "HIGHLIGHT 05"
+          },
+          {
+            "region": "right-panel",
+            "kind": "body",
+            "text": "大五座头等舱体验",
+            "body": "百万级舒适自定义"
+          }
+        ],
+        "visualIntent": {
+          "role": "feature_detail",
+          "mood": "舒适感、场景化",
+          "density": "medium",
+          "composition": "diagonal",
+          "reason": "座椅亮点需要突出场景化体验感"
+        },
+        "visualAssetPlan": {
+          "assetType": "product_render",
+          "priority": "high",
+          "reason": "座椅亮点页需要内饰渲染图展示零重力座椅效果",
+          "sceneType": "interior",
+          "insertMode": "panel"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "luxury car seat interior premium comfort",
+          "treatment": "dark-paneled",
+          "overlay": 0.68,
+          "focalPoint": "center",
+          "textPlacement": "split"
+        },
+        "content": {
+          "title": "零重力座椅套装",
+          "subtitle": "大五座头等舱体验，后排一键切换观影厅/沙滩椅模式",
+          "quote": "把头等舱搬进车里",
+          "facts": [
+            "头等舱体验",
+            "观影模式",
+            "沙滩椅模式"
+          ]
+        },
+        "type": "split_content",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_page_ai_10_零重力座椅套装.jpg",
+        "imageMeta": {
+          "query": "exhibition zone",
+          "treatment": "dark-paneled",
+          "source": "minimax",
+          "sceneType": "exhibition_zone",
+          "assetType": "generated_scene",
+          "insertMode": "panel"
+        }
+      },
+      {
+        "layout": "editorial_quote",
+        "style": "dark_tech",
+        "composition": "asymmetric-editorial",
+        "regions": [
+          {
+            "name": "quote-area",
+            "x": 8,
+            "y": 20,
+            "w": 60,
+            "h": 45,
+            "stack": "vertical",
+            "gap": 20,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "facts-area",
+            "x": 72,
+            "y": 20,
+            "w": 20,
+            "h": 45,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "hero"
+        },
+        "textBlocks": [
+          {
+            "region": "quote-area",
+            "kind": "eyebrow",
+            "text": "SECTION 03"
+          },
+          {
+            "region": "quote-area",
+            "kind": "title",
+            "text": "流程设计"
+          },
+          {
+            "region": "quote-area",
+            "kind": "quote",
+            "text": "90分钟发布会的情绪节奏"
+          },
+          {
+            "region": "facts-area",
+            "kind": "body",
+            "text": "四幕递进：从预见、驾驭、奢享到启程，每一秒都在建立品牌认知"
+          }
+        ],
+        "visualIntent": {
+          "role": "section_opener",
+          "mood": "高级、明确、有前进感",
+          "density": "airy",
+          "composition": "asymmetric",
+          "reason": "章节开场需要打破模板感，建立节奏"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "章节开场页不需要现场图",
+          "sceneType": "editorial",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "abstract time timeline curve light beam",
+          "treatment": "editorial-fade",
+          "overlay": 0.5,
+          "focalPoint": "right-center",
+          "textPlacement": "left"
+        },
+        "content": {
+          "eyebrow": "SECTION 03",
+          "title": "流程设计",
+          "story": "90分钟发布会的情绪节奏",
+          "points": [
+            "第一幕(20min)：预见——产品亮相与设计美学",
+            "第二幕(30min)：驾驭——智能驾驶+续航+操控技术解析",
+            "第三幕(25min)：奢享——智能座舱+零重力座椅场景体验",
+            "第四幕(15min)：启程——价格发布+预订启动+权益公布"
+          ]
+        },
+        "type": "editorial_quote",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_page_11_流程设计_2.jpg",
+        "imageMeta": {
+          "query": "timeline",
+          "treatment": "subtle-grid",
+          "source": "pexels",
+          "sceneType": "timeline",
+          "assetType": "none",
+          "insertMode": "background"
+        }
+      },
+      {
+        "layout": "timeline_flow",
+        "style": "dark_tech",
+        "composition": "horizontal-flow",
+        "regions": [
+          {
+            "name": "phase1",
+            "x": 5,
+            "y": 25,
+            "w": 22,
+            "h": 50,
+            "stack": "vertical",
+            "gap": 10,
+            "align": "center",
+            "valign": "top"
+          },
+          {
+            "name": "phase2",
+            "x": 28,
+            "y": 25,
+            "w": 22,
+            "h": 50,
+            "stack": "vertical",
+            "gap": 10,
+            "align": "center",
+            "valign": "top"
+          },
+          {
+            "name": "phase3",
+            "x": 51,
+            "y": 25,
+            "w": 22,
+            "h": 50,
+            "stack": "vertical",
+            "gap": 10,
+            "align": "center",
+            "valign": "top"
+          },
+          {
+            "name": "phase4",
+            "x": 74,
+            "y": 25,
+            "w": 22,
+            "h": 50,
+            "stack": "vertical",
+            "gap": 10,
+            "align": "center",
+            "valign": "top"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "none"
+        },
+        "textBlocks": [
+          {
+            "region": "phase4",
+            "kind": "body",
+            "text": "价格发布+预订启动+权益公布"
+          }
+        ],
+        "visualIntent": {
+          "role": "timeline",
+          "mood": "推进感明确",
+          "density": "medium",
+          "composition": "flow",
+          "reason": "四幕时间线需要横向展开，每个阶段等距排列，用时间标注区隔"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "流程时间线以信息为主，不需要现场效果图",
+          "sceneType": "schedule",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "abstract timeline progression light path",
+          "treatment": "dim-atmosphere",
+          "overlay": 0.82,
+          "focalPoint": "center",
+          "textPlacement": "center"
+        },
+        "content": {
+          "title": "90分钟情绪节奏",
+          "phases": [
+            {
+              "date": "20min",
+              "name": "预见",
+              "tasks": [
+                "产品亮相",
+                "设计美学"
+              ]
+            },
+            {
+              "date": "30min",
+              "name": "驾驭",
+              "tasks": [
+                "智能驾驶",
+                "续航技术",
+                "操控解析"
+              ]
+            },
+            {
+              "date": "25min",
+              "name": "奢享",
+              "tasks": [
+                "智能座舱",
+                "零重力座椅",
+                "场景体验"
+              ]
+            },
+            {
+              "date": "15min",
+              "name": "启程",
+              "tasks": [
+                "价格发布",
+                "预订启动",
+                "权益公布"
+              ]
+            }
+          ]
+        },
+        "type": "timeline_flow",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_page_12_90分钟情绪节奏_0.jpg",
+        "imageMeta": {
+          "query": "timeline",
+          "treatment": "subtle-grid",
+          "source": "pexels",
+          "sceneType": "timeline",
+          "assetType": "none",
+          "insertMode": "background"
+        }
+      },
+      {
+        "layout": "data_cards",
+        "style": "dark_tech",
+        "composition": "four-quadrant",
+        "regions": [
+          {
+            "name": "card1",
+            "x": 10,
+            "y": 25,
+            "w": 18,
+            "h": 35,
+            "stack": "vertical",
+            "gap": 8,
+            "align": "center",
+            "valign": "middle"
+          },
+          {
+            "name": "card2",
+            "x": 36,
+            "y": 25,
+            "w": 18,
+            "h": 35,
+            "stack": "vertical",
+            "gap": 8,
+            "align": "center",
+            "valign": "middle"
+          },
+          {
+            "name": "card3",
+            "x": 62,
+            "y": 25,
+            "w": 18,
+            "h": 35,
+            "stack": "vertical",
+            "gap": 8,
+            "align": "center",
+            "valign": "middle"
+          },
+          {
+            "name": "card4",
+            "x": 72,
+            "y": 65,
+            "w": 18,
+            "h": 20,
+            "stack": "horizontal",
+            "gap": 6,
+            "align": "center",
+            "valign": "middle"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "none"
+        },
+        "textBlocks": [
+          {
+            "region": "card4",
+            "kind": "body",
+            "text": "全流程90分钟"
+          }
+        ],
+        "visualIntent": {
+          "role": "metrics",
+          "mood": "精确、节奏感",
+          "density": "compact",
+          "composition": "stat-grid",
+          "reason": "时间分配需要用大数字呈现，简洁有力"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "数据页不需要现场图",
+          "sceneType": "data",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "abstract time duration visualization",
+          "treatment": "subtle-grid",
+          "overlay": 0.88,
+          "focalPoint": "center",
+          "textPlacement": "center"
+        },
+        "content": {
+          "title": "流程时间分配",
+          "metrics": [
+            {
+              "value": "20min",
+              "label": "预见篇",
+              "sub": "产品亮相"
+            },
+            {
+              "value": "30min",
+              "label": "驾驭篇",
+              "sub": "技术解析"
+            },
+            {
+              "value": "25min",
+              "label": "奢享篇",
+              "sub": "场景体验"
+            },
+            {
+              "value": "15min",
+              "label": "启程篇",
+              "sub": "价格发布"
+            }
+          ]
+        },
+        "type": "data_cards",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_page_13_流程时间分配_1.jpg",
+        "imageMeta": {
+          "query": "data",
+          "treatment": "subtle-grid",
+          "source": "pexels",
+          "sceneType": "data",
+          "assetType": "none",
+          "insertMode": "background"
+        }
+      },
+      {
+        "layout": "editorial_quote",
+        "style": "dark_tech",
+        "composition": "asymmetric-editorial",
+        "regions": [
+          {
+            "name": "quote-area",
+            "x": 8,
+            "y": 20,
+            "w": 60,
+            "h": 45,
+            "stack": "vertical",
+            "gap": 20,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "facts-area",
+            "x": 72,
+            "y": 20,
+            "w": 20,
+            "h": 45,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "panel",
+          "emphasis": "hero"
+        },
+        "textBlocks": [
+          {
+            "region": "quote-area",
+            "kind": "eyebrow",
+            "text": "SECTION 04"
+          },
+          {
+            "region": "quote-area",
+            "kind": "title",
+            "text": "舞台创意"
+          },
+          {
+            "region": "quote-area",
+            "kind": "quote",
+            "text": "技术美学的沉浸式表达"
+          },
+          {
+            "region": "facts-area",
+            "kind": "body",
+            "text": "270°环幕+地屏+天屏，构建全包裹式光影空间，让产品自己说话"
+          }
+        ],
+        "visualIntent": {
+          "role": "section_opener",
+          "mood": "高级、明确、有前进感",
+          "density": "airy",
+          "composition": "asymmetric",
+          "reason": "章节开场需要打破模板感，建立节奏"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "章节开场页不需要现场图",
+          "sceneType": "editorial",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "360 degree LED screen stage design abstract",
+          "treatment": "editorial-fade",
+          "overlay": 0.5,
+          "focalPoint": "right-center",
+          "textPlacement": "left"
+        },
+        "content": {
+          "eyebrow": "SECTION 04",
+          "title": "舞台创意",
+          "story": "技术美学的沉浸式表达",
+          "points": [
+            "270°环幕+地屏+天屏，构建全包裹式光影空间",
+            "发布形式：不是PPT演讲，而是产品自己说话",
+            "互动装置：设置三组体验区，让技术可触摸可体验"
+          ]
+        },
+        "type": "editorial_quote",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_page_14_舞台创意_0.jpg",
+        "imageMeta": {
+          "query": "main stage",
+          "treatment": "dark-paneled",
+          "source": "pexels",
+          "sceneType": "main_stage",
+          "assetType": "generated_scene",
+          "insertMode": "panel"
+        }
+      },
+      {
+        "layout": "bento_grid",
+        "style": "dark_tech",
+        "composition": "mosaic-three",
+        "regions": [
+          {
+            "name": "card1",
+            "x": 5,
+            "y": 18,
+            "w": 28,
+            "h": 64,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "top"
+          },
+          {
+            "name": "card2",
+            "x": 36,
+            "y": 18,
+            "w": 28,
+            "h": 64,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "top"
+          },
+          {
+            "name": "card3",
+            "x": 67,
+            "y": 18,
+            "w": 28,
+            "h": 64,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "top"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "panel",
+          "emphasis": "ambient"
+        },
+        "textBlocks": [
+          {
+            "region": "card1",
+            "kind": "eyebrow",
+            "text": "STAGE"
+          },
+          {
+            "region": "card2",
+            "kind": "eyebrow",
+            "text": "WELCOME"
+          },
+          {
+            "region": "card3",
+            "kind": "eyebrow",
+            "text": "EXPERIENCE"
+          },
+          {
+            "region": "card3",
+            "kind": "stats",
+            "text": "三组体验岛"
+          }
+        ],
+        "visualIntent": {
+          "role": "highlights",
+          "mood": "有力度但不拥挤",
+          "density": "medium",
+          "composition": "mosaic",
+          "reason": "三个空间设计点需要并置呈现，不做等分切割，用不规则网格"
+        },
+        "visualAssetPlan": {
+          "assetType": "rendered_visualization",
+          "priority": "high",
+          "reason": "现场设计页非常需要提前制作现场效果图，特别是主舞台和体验区",
+          "sceneType": "stage_design",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "immersive LED screen stage automotive launch event",
+          "treatment": "ambient-texture",
+          "overlay": 0.72,
+          "focalPoint": "center",
+          "textPlacement": "left"
+        },
+        "content": {
+          "title": "舞台与空间设计",
+          "cards": [
+            {
+              "title": "主舞台",
+              "tag": "STAGE",
+              "description": "270°环幕+中央舞台岛式设计，地屏天屏随内容变化",
+              "metrics": [
+                {
+                  "value": "90min",
+                  "label": "发布流程"
+                }
+              ]
+            },
+            {
+              "title": "签到区/迎宾通道",
+              "tag": "WELCOME",
+              "description": "光带引导动线，光影艺术装置，呼吸灯沉浸感",
+              "metrics": [
+                {
+                  "value": "仪式感",
+                  "label": "动线"
+                }
+              ]
+            },
+            {
+              "title": "技术体验区",
+              "tag": "EXPERIENCE",
+              "description": "三个独立体验岛，让技术可触摸可体验",
+              "metrics": [
+                {
+                  "value": "3组",
+                  "label": "体验岛"
+                }
+              ]
+            }
+          ]
+        },
+        "type": "bento_grid",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_page_15_舞台与空间设计_5.jpg",
+        "imageMeta": {
+          "query": "main stage",
+          "treatment": "dark-paneled",
+          "source": "pexels",
+          "sceneType": "main_stage",
+          "assetType": "generated_scene",
+          "insertMode": "panel"
+        }
+      },
+      {
+        "layout": "split_content",
+        "style": "dark_tech",
+        "composition": "diagonal-split",
+        "regions": [
+          {
+            "name": "left-panel",
+            "x": 5,
+            "y": 15,
+            "w": 45,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "right-panel",
+            "x": 55,
+            "y": 15,
+            "w": 40,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "none"
+        },
+        "textBlocks": [
+          {
+            "region": "left-panel",
+            "kind": "eyebrow",
+            "text": "MAIN STAGE"
+          },
+          {
+            "region": "right-panel",
+            "kind": "body",
+            "text": "270°环幕包裹",
+            "body": "可编程灯光系统"
+          }
+        ],
+        "visualIntent": {
+          "role": "detail",
+          "mood": "技术感、沉浸感",
+          "density": "medium",
+          "composition": "diagonal",
+          "reason": "主舞台需要详细说明环幕效果的设计意图"
+        },
+        "visualAssetPlan": {
+          "assetType": "rendered_visualization",
+          "priority": "critical",
+          "reason": "主舞台是发布会最核心的视觉焦点，必须提前制作高质量现场效果图",
+          "sceneType": "stage_render",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "270 degree LED screen auto launch stage dark",
+          "treatment": "dark-paneled",
+          "overlay": 0.68,
+          "focalPoint": "center",
+          "textPlacement": "split"
+        },
+        "content": {
+          "title": "主舞台设计",
+          "subtitle": "270°环幕+地屏+天屏",
+          "quote": "承载90分钟发布流程+建立华为技术美学认知",
+          "facts": [
+            "环幕视觉内容",
+            "产品登场景观",
+            "灯光情绪变化"
+          ]
+        },
+        "type": "split_content",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg"
+      },
+      {
+        "layout": "split_content",
+        "style": "dark_tech",
+        "composition": "diagonal-split",
+        "regions": [
+          {
+            "name": "left-panel",
+            "x": 5,
+            "y": 15,
+            "w": 45,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "right-panel",
+            "x": 55,
+            "y": 15,
+            "w": 40,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "none"
+        },
+        "textBlocks": [
+          {
+            "region": "left-panel",
+            "kind": "eyebrow",
+            "text": "EXPERIENCE ZONE"
+          },
+          {
+            "region": "right-panel",
+            "kind": "body",
+            "text": "ADS模拟驾驶舱",
+            "body": "差异化设计与交互引导"
+          }
+        ],
+        "visualIntent": {
+          "role": "detail",
+          "mood": "体验感、人性化",
+          "density": "medium",
+          "composition": "diagonal",
+          "reason": "体验区需要突出可触摸可体验的概念"
+        },
+        "visualAssetPlan": {
+          "assetType": "rendered_visualization",
+          "priority": "high",
+          "reason": "体验区是观众参与的重要触点，需要提前制作现场效果图",
+          "sceneType": "experience_zone",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "car interior experience zone interactive display",
+          "treatment": "dark-paneled",
+          "overlay": 0.68,
+          "focalPoint": "center",
+          "textPlacement": "split"
+        },
+        "content": {
+          "title": "技术体验区设计",
+          "subtitle": "三个独立体验岛",
+          "quote": "让技术可触摸可体验",
+          "facts": [
+            "ADS模拟驾驶舱",
+            "HarmonyOS座舱交互",
+            "零重力座椅场景"
+          ]
+        },
+        "type": "split_content",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg"
+      },
+      {
+        "layout": "split_content",
+        "style": "dark_tech",
+        "composition": "diagonal-split",
+        "regions": [
+          {
+            "name": "left-panel",
+            "x": 5,
+            "y": 15,
+            "w": 45,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "right-panel",
+            "x": 55,
+            "y": 15,
+            "w": 40,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "none"
+        },
+        "textBlocks": [
+          {
+            "region": "left-panel",
+            "kind": "eyebrow",
+            "text": "DISPLAY"
+          },
+          {
+            "region": "right-panel",
+            "kind": "body",
+            "text": "独立光台重点打光",
+            "body": "交互屏幕查看配置"
+          }
+        ],
+        "visualIntent": {
+          "role": "detail",
+          "mood": "产品焦点感",
+          "density": "medium",
+          "composition": "diagonal",
+          "reason": "展车区域需要突出产品主角感"
+        },
+        "visualAssetPlan": {
+          "assetType": "rendered_visualization",
+          "priority": "high",
+          "reason": "展车区域是产品展示的核心，需要提前制作现场效果图",
+          "sceneType": "display_area",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "car display spotlight dark premium showcase",
+          "treatment": "dark-paneled",
+          "overlay": 0.68,
+          "focalPoint": "center",
+          "textPlacement": "split"
+        },
+        "content": {
+          "title": "展车区域设计",
+          "subtitle": "让产品成为主角",
+          "quote": "独立光台重点打光+地面光带引导",
+          "facts": [
+            "光台重点打光",
+            "产品主角感",
+            "交互配置屏幕"
+          ]
+        },
+        "type": "split_content",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg"
+      },
+      {
+        "layout": "editorial_quote",
+        "style": "dark_tech",
+        "composition": "asymmetric-editorial",
+        "regions": [
+          {
+            "name": "quote-area",
+            "x": 8,
+            "y": 20,
+            "w": 60,
+            "h": 45,
+            "stack": "vertical",
+            "gap": 20,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "facts-area",
+            "x": 72,
+            "y": 20,
+            "w": 20,
+            "h": 45,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "hero"
+        },
+        "textBlocks": [
+          {
+            "region": "quote-area",
+            "kind": "eyebrow",
+            "text": "SECTION 05"
+          },
+          {
+            "region": "quote-area",
+            "kind": "title",
+            "text": "传播策略"
+          },
+          {
+            "region": "quote-area",
+            "kind": "quote",
+            "text": "从场内到场外的全域覆盖"
+          },
+          {
+            "region": "facts-area",
+            "kind": "body",
+            "text": "预热期-爆发期-长尾期，三阶段全域覆盖，让声量持续发酵"
+          }
+        ],
+        "visualIntent": {
+          "role": "section_opener",
+          "mood": "高级、明确、有前进感",
+          "density": "airy",
+          "composition": "asymmetric",
+          "reason": "章节开场需要打破模板感，建立节奏"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "章节开场页不需要现场图",
+          "sceneType": "editorial",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "abstract global network communication waves",
+          "treatment": "editorial-fade",
+          "overlay": 0.5,
+          "focalPoint": "right-center",
+          "textPlacement": "left"
+        },
+        "content": {
+          "eyebrow": "SECTION 05",
+          "title": "传播策略",
+          "story": "从场内到场外的全域覆盖",
+          "points": [
+            "预热期(4月10-22日)：悬念释放+实测视频+媒体共创",
+            "爆发期(4月23日当天)：现场直播+社交裂变+全网热搜",
+            "长尾期(4月24-30日)：深度内容+用户证言+试驾体验"
+          ]
+        },
+        "type": "editorial_quote",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg"
+      },
+      {
+        "layout": "timeline_flow",
+        "style": "dark_tech",
+        "composition": "horizontal-flow",
+        "regions": [
+          {
+            "name": "phase1",
+            "x": 5,
+            "y": 20,
+            "w": 30,
+            "h": 60,
+            "stack": "vertical",
+            "gap": 10,
+            "align": "center",
+            "valign": "top"
+          },
+          {
+            "name": "phase2",
+            "x": 35,
+            "y": 20,
+            "w": 30,
+            "h": 60,
+            "stack": "vertical",
+            "gap": 10,
+            "align": "center",
+            "valign": "top"
+          },
+          {
+            "name": "phase3",
+            "x": 65,
+            "y": 20,
+            "w": 30,
+            "h": 60,
+            "stack": "vertical",
+            "gap": 10,
+            "align": "center",
+            "valign": "top"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "none"
+        },
+        "textBlocks": [
+          {
+            "region": "phase1",
+            "kind": "eyebrow",
+            "text": "4月10-22日"
+          },
+          {
+            "region": "phase2",
+            "kind": "eyebrow",
+            "text": "4月23日",
+            "body": "媒体共创内容"
+          },
+          {
+            "region": "phase3",
+            "kind": "eyebrow",
+            "text": "4月24-30日",
+            "body": "全网热搜"
+          },
+          {
+            "region": "phase3",
+            "kind": "body",
+            "text": "深度内容+用户证言+试驾体验",
+            "body": "试驾体验"
+          }
+        ],
+        "visualIntent": {
+          "role": "timeline",
+          "mood": "推进感明确",
+          "density": "medium",
+          "composition": "flow",
+          "reason": "三阶段传播需要横向展开，时间顺序清晰"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "传播时间线以信息为主，不需要现场效果图",
+          "sceneType": "schedule",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "abstract media coverage social network spread",
+          "treatment": "dim-atmosphere",
+          "overlay": 0.82,
+          "focalPoint": "center",
+          "textPlacement": "center"
+        },
+        "content": {
+          "title": "传播三阶段",
+          "phases": [
+            {
+              "date": "4月10-22日",
+              "name": "预热期",
+              "tasks": [
+                "悬念释放",
+                "实测视频",
+                "媒体共创"
+              ]
+            },
+            {
+              "date": "4月23日",
+              "name": "爆发期",
+              "tasks": [
+                "现场直播",
+                "社交裂变",
+                "全网热搜"
+              ]
+            },
+            {
+              "date": "4月24-30日",
+              "name": "长尾期",
+              "tasks": [
+                "深度内容",
+                "用户证言",
+                "试驾体验"
+              ]
+            }
+          ]
+        },
+        "type": "timeline_flow",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg"
+      },
+      {
+        "layout": "data_cards",
+        "style": "dark_tech",
+        "composition": "four-quadrant",
+        "regions": [
+          {
+            "name": "card1",
+            "x": 10,
+            "y": 25,
+            "w": 18,
+            "h": 35,
+            "stack": "vertical",
+            "gap": 8,
+            "align": "center",
+            "valign": "middle"
+          },
+          {
+            "name": "card2",
+            "x": 36,
+            "y": 25,
+            "w": 18,
+            "h": 35,
+            "stack": "vertical",
+            "gap": 8,
+            "align": "center",
+            "valign": "middle"
+          },
+          {
+            "name": "card3",
+            "x": 62,
+            "y": 25,
+            "w": 18,
+            "h": 35,
+            "stack": "vertical",
+            "gap": 8,
+            "align": "center",
+            "valign": "middle"
+          },
+          {
+            "name": "card4",
+            "x": 72,
+            "y": 65,
+            "w": 18,
+            "h": 20,
+            "stack": "horizontal",
+            "gap": 6,
+            "align": "center",
+            "valign": "middle"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "none"
+        },
+        "textBlocks": [
+          {
+            "region": "card4",
+            "kind": "body",
+            "text": "全周期21天"
+          }
+        ],
+        "visualIntent": {
+          "role": "metrics",
+          "mood": "精确、节奏感",
+          "density": "compact",
+          "composition": "stat-grid",
+          "reason": "时间分配需要用大数字呈现，简洁有力"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "数据页不需要现场图",
+          "sceneType": "data",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "abstract duration timeline visualization",
+          "treatment": "subtle-grid",
+          "overlay": 0.88,
+          "focalPoint": "center",
+          "textPlacement": "center"
+        },
+        "content": {
+          "title": "传播周期规划",
+          "metrics": [
+            {
+              "value": "13天",
+              "label": "预热期",
+              "sub": "悬念+实测"
+            },
+            {
+              "value": "1天",
+              "label": "爆发期",
+              "sub": "直播+裂变"
+            },
+            {
+              "value": "7天",
+              "label": "长尾期",
+              "sub": "内容+试驾"
+            }
+          ]
+        },
+        "type": "data_cards",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg"
+      },
+      {
+        "layout": "editorial_quote",
+        "style": "dark_tech",
+        "composition": "asymmetric-editorial",
+        "regions": [
+          {
+            "name": "quote-area",
+            "x": 8,
+            "y": 20,
+            "w": 60,
+            "h": 45,
+            "stack": "vertical",
+            "gap": 20,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "facts-area",
+            "x": 72,
+            "y": 20,
+            "w": 20,
+            "h": 45,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "hero"
+        },
+        "textBlocks": [
+          {
+            "region": "quote-area",
+            "kind": "eyebrow",
+            "text": "SECTION 06"
+          },
+          {
+            "region": "quote-area",
+            "kind": "title",
+            "text": "风险预案"
+          },
+          {
+            "region": "quote-area",
+            "kind": "quote",
+            "text": "车展发布的特殊挑战与应对"
+          },
+          {
+            "region": "facts-area",
+            "kind": "body",
+            "text": "同馆竞品抢流量、媒体注意力分散、现场安保压力——三大风险与应对策略"
+          }
+        ],
+        "visualIntent": {
+          "role": "section_opener",
+          "mood": "高级、明确、有前进感",
+          "density": "airy",
+          "composition": "asymmetric",
+          "reason": "章节开场需要打破模板感，建立节奏"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "章节开场页不需要现场图",
+          "sceneType": "editorial",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "abstract warning sign risk management abstract",
+          "treatment": "editorial-fade",
+          "overlay": 0.5,
+          "focalPoint": "right-center",
+          "textPlacement": "left"
+        },
+        "content": {
+          "eyebrow": "SECTION 06",
+          "title": "风险预案",
+          "story": "车展发布的特殊挑战与应对",
+          "points": [
+            "风险1：同馆竞品抢流量——时间卡位+内容差异化",
+            "风险2：媒体注意力分散——金句制造+独家话题",
+            "风险3：现场安保压力——动线设计+应急预案"
+          ]
+        },
+        "type": "editorial_quote",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg"
+      },
+      {
+        "layout": "bento_grid",
+        "style": "dark_tech",
+        "composition": "mosaic-three",
+        "regions": [
+          {
+            "name": "card1",
+            "x": 5,
+            "y": 18,
+            "w": 28,
+            "h": 64,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "top"
+          },
+          {
+            "name": "card2",
+            "x": 36,
+            "y": 18,
+            "w": 28,
+            "h": 64,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "top"
+          },
+          {
+            "name": "card3",
+            "x": 67,
+            "y": 18,
+            "w": 28,
+            "h": 64,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "top"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "ambient"
+        },
+        "textBlocks": [
+          {
+            "region": "card1",
+            "kind": "eyebrow",
+            "text": "RISK 01"
+          },
+          {
+            "region": "card2",
+            "kind": "eyebrow",
+            "text": "RISK 02"
+          },
+          {
+            "region": "card3",
+            "kind": "eyebrow",
+            "text": "RISK 03"
+          },
+          {
+            "region": "card3",
+            "kind": "stats",
+            "text": "动线设计"
+          }
+        ],
+        "visualIntent": {
+          "role": "highlights",
+          "mood": "有力度但不拥挤",
+          "density": "medium",
+          "composition": "mosaic",
+          "reason": "三大风险需要并置呈现，但不做等分切割"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "风险预案页以策略信息为主，不需要现场图",
+          "sceneType": "risk_management",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "abstract warning shield protection security",
+          "treatment": "ambient-texture",
+          "overlay": 0.72,
+          "focalPoint": "center",
+          "textPlacement": "left"
+        },
+        "content": {
+          "title": "三大风险与应对",
+          "cards": [
+            {
+              "title": "同馆竞品抢流量",
+              "tag": "风险1",
+              "description": "时间卡位+内容差异化",
+              "metrics": [
+                {
+                  "value": "时间卡位",
+                  "label": "策略"
+                }
+              ]
+            },
+            {
+              "title": "媒体注意力分散",
+              "tag": "风险2",
+              "description": "金句制造+独家话题",
+              "metrics": [
+                {
+                  "value": "金句制造",
+                  "label": "策略"
+                }
+              ]
+            },
+            {
+              "title": "现场安保压力",
+              "tag": "风险3",
+              "description": "动线设计+应急预案",
+              "metrics": [
+                {
+                  "value": "动线设计",
+                  "label": "策略"
+                }
+              ]
+            }
+          ]
+        },
+        "type": "bento_grid",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg"
+      },
+      {
+        "layout": "data_cards",
+        "style": "dark_tech",
+        "composition": "four-quadrant",
+        "regions": [
+          {
+            "name": "card1",
+            "x": 10,
+            "y": 25,
+            "w": 18,
+            "h": 35,
+            "stack": "vertical",
+            "gap": 8,
+            "align": "center",
+            "valign": "middle"
+          },
+          {
+            "name": "card2",
+            "x": 36,
+            "y": 25,
+            "w": 18,
+            "h": 35,
+            "stack": "vertical",
+            "gap": 8,
+            "align": "center",
+            "valign": "middle"
+          },
+          {
+            "name": "card3",
+            "x": 62,
+            "y": 25,
+            "w": 18,
+            "h": 35,
+            "stack": "vertical",
+            "gap": 8,
+            "align": "center",
+            "valign": "middle"
+          },
+          {
+            "name": "card4",
+            "x": 72,
+            "y": 65,
+            "w": 18,
+            "h": 20,
+            "stack": "horizontal",
+            "gap": 6,
+            "align": "center",
+            "valign": "middle"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "none"
+        },
+        "textBlocks": [
+          {
+            "region": "card4",
+            "kind": "body",
+            "text": "预期效果"
+          }
+        ],
+        "visualIntent": {
+          "role": "metrics",
+          "mood": "精确、有说服力",
+          "density": "compact",
+          "composition": "stat-grid",
+          "reason": "KPI数据页要像战报，简洁有力的数字呈现"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "数据页不需要现场图",
+          "sceneType": "data",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "abstract data analytics visualization metrics",
+          "treatment": "subtle-grid",
+          "overlay": 0.88,
+          "focalPoint": "center",
+          "textPlacement": "center"
+        },
+        "content": {
+          "title": "预期传播效果",
+          "metrics": [
+            {
+              "value": "5000万+",
+              "label": "传播覆盖",
+              "sub": "人群"
+            },
+            {
+              "value": "200+",
+              "label": "媒体报道",
+              "sub": "家"
+            },
+            {
+              "value": "1亿+",
+              "label": "话题阅读",
+              "sub": ""
+            },
+            {
+              "value": "90%",
+              "label": "满意度",
+              "sub": ""
+            }
+          ]
+        },
+        "type": "data_cards",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg"
+      },
+      {
+        "layout": "split_content",
+        "style": "dark_tech",
+        "composition": "diagonal-split",
+        "regions": [
+          {
+            "name": "left-panel",
+            "x": 5,
+            "y": 15,
+            "w": 45,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "right-panel",
+            "x": 55,
+            "y": 15,
+            "w": 40,
+            "h": 70,
+            "stack": "vertical",
+            "gap": 16,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "none"
+        },
+        "textBlocks": [
+          {
+            "region": "left-panel",
+            "kind": "eyebrow",
+            "text": "VISUAL EXECUTION"
+          },
+          {
+            "region": "right-panel",
+            "kind": "body",
+            "text": "克制深蓝主色调",
+            "body": "避免金碧辉煌"
+          }
+        ],
+        "visualIntent": {
+          "role": "detail",
+          "mood": "设计调性明确",
+          "density": "medium",
+          "composition": "diagonal",
+          "reason": "视觉执行提示需要详细说明设计调性要求"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "视觉调性页以文字说明为主",
+          "sceneType": "design_ guideline",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "dark blue ambient lighting control abstract",
+          "treatment": "dark-paneled",
+          "overlay": 0.68,
+          "focalPoint": "center",
+          "textPlacement": "split"
+        },
+        "content": {
+          "title": "视觉调性执行",
+          "subtitle": "有生命感的智能蓝",
+          "quote": "让现场每个角落都在『呼吸』",
+          "facts": [
+            "克制深蓝主色调",
+            "智能蓝光效",
+            "灯光随节奏变化"
+          ]
+        },
+        "type": "split_content",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg"
+      },
+      {
+        "layout": "editorial_quote",
+        "style": "dark_tech",
+        "composition": "asymmetric-editorial",
+        "regions": [
+          {
+            "name": "quote-area",
+            "x": 8,
+            "y": 20,
+            "w": 60,
+            "h": 45,
+            "stack": "vertical",
+            "gap": 20,
+            "align": "start",
+            "valign": "center"
+          },
+          {
+            "name": "facts-area",
+            "x": 72,
+            "y": 20,
+            "w": 20,
+            "h": 45,
+            "stack": "vertical",
+            "gap": 12,
+            "align": "start",
+            "valign": "center"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "hero"
+        },
+        "textBlocks": [
+          {
+            "region": "quote-area",
+            "kind": "eyebrow",
+            "text": "CORE STRATEGY"
+          },
+          {
+            "region": "quote-area",
+            "kind": "title",
+            "text": "核心策略回顾"
+          },
+          {
+            "region": "quote-area",
+            "kind": "quote",
+            "text": "以华为技术信仰重塑豪华汽车认知"
+          },
+          {
+            "region": "facts-area",
+            "kind": "body",
+            "text": "让智能驾驶、续航安全感、座舱交互成为新豪华的量化标准，而非传统豪华车的品牌溢价叙事"
+          }
+        ],
+        "visualIntent": {
+          "role": "manifesto",
+          "mood": "克制但有压迫感",
+          "density": "airy",
+          "composition": "editorial",
+          "reason": "关键策略页要像宣言，而不是说明书"
+        },
+        "visualAssetPlan": {
+          "assetType": "none",
+          "priority": "low",
+          "reason": "策略宣言页不需要现场图",
+          "sceneType": "manifesto",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "abstract technology信仰 light beam premium",
+          "treatment": "editorial-fade",
+          "overlay": 0.64,
+          "focalPoint": "right-center",
+          "textPlacement": "left"
+        },
+        "content": {
+          "title": "核心策略",
+          "subtitle": "以华为技术信仰重塑豪华汽车认知",
+          "quote": "让智能驾驶、续航安全感、座舱交互成为新豪华的量化标准",
+          "facts": [
+            "智能驾驶新标准",
+            "续航安全感",
+            "座舱交互体验"
+          ]
+        },
+        "type": "editorial_quote",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg"
+      },
+      {
+        "layout": "end_card",
+        "style": "dark_tech",
+        "composition": "centered-minimal",
+        "regions": [
+          {
+            "name": "center-content",
+            "x": 25,
+            "y": 30,
+            "w": 50,
+            "h": 40,
+            "stack": "vertical",
+            "gap": 20,
+            "align": "center",
+            "valign": "middle"
+          }
+        ],
+        "imagePlacement": {
+          "mode": "background",
+          "emphasis": "hero"
+        },
+        "textBlocks": [
+          {
+            "region": "center-content",
+            "kind": "eyebrow",
+            "text": "AITO M9"
+          },
+          {
+            "region": "center-content",
+            "kind": "title",
+            "text": "感谢观看"
+          },
+          {
+            "region": "center-content",
+            "kind": "body",
+            "text": "智慧雄心·预见未来"
+          }
+        ],
+        "visualIntent": {
+          "role": "closing",
+          "mood": "收束、留白、余韵",
+          "density": "airy",
+          "composition": "centered-minimal",
+          "reason": "结尾页要有情绪收口，不能只是写 thank you，简洁有力的品牌收束"
+        },
+        "visualAssetPlan": {
+          "assetType": "searched_background",
+          "priority": "low",
+          "reason": "结尾页可以放抽象品牌氛围图或留白",
+          "sceneType": "brand_space",
+          "insertMode": "background"
+        },
+        "imageStrategy": {
+          "useBackground": true,
+          "query": "abstract dark horizon premium final shot",
+          "treatment": "quiet-finale",
+          "overlay": 0.62,
+          "focalPoint": "center",
+          "textPlacement": "center"
+        },
+        "content": {
+          "title": "感谢观看",
+          "subtitle": "智慧雄心·预见未来",
+          "brand": "华为问界 M9"
+        },
+        "type": "end_card",
+        "title": "",
+        "subtitle": "",
+        "quote": "",
+        "body": "",
+        "story": "",
+        "facts": [],
+        "leftItems": [],
+        "rightItems": [],
+        "metrics": [],
+        "phases": [],
+        "bgImagePath": "/Users/yangdi/Documents/GitHub/openclaw-ppt/output/runs/img_1775466662303/images/img_1775466662303_end_0.jpg"
+      }
+    ]
+  },
+  "previewSlides": [
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_00_智慧雄心-预见未来_0.jpg');background-size:cover;background-position:74% center;opacity:0.9;filter:saturate(1.08) contrast(1.06) brightness(0.88);\"></div>\n  <div style=\"position:absolute;left:0;top:0;bottom:0;width:54%;background:linear-gradient(90deg, rgba(9,14,22,0.62) 0%, rgba(9,14,22,0.38) 62%, rgba(9,14,22,0.06) 100%);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(9,14,22,0.06) 0%, rgba(9,14,22,0.28) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 7fr) minmax(0, 34fr) minmax(0, 16fr) minmax(0, 43fr);grid-template-rows:minmax(76px, auto) minmax(205px, auto) minmax(54px, auto) minmax(86px, auto) minmax(119px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 4;grid-row:2 / 3;align-self:start;min-height:38%;height:auto;padding:0px;overflow:visible;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:18px;justify-content:flex-start;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">AITO M9 LAUNCH EVENT</div><div class=\"sc-block\" style=\"font-size:48px;font-weight:var(--weight-black);line-height:1.04;letter-spacing:-0.035em;color:var(--text);text-wrap:balance;\">智慧雄心·预见未来</div><div class=\"sc-block\" style=\"font-size:16px;line-height:1.6;color:var(--text-muted);max-width:100%;text-wrap:pretty;\">问界M9全球首发盛典</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:4 / 5;align-self:start;min-height:16%;height:auto;padding:0px;overflow:visible;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:flex-end;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:13px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">以华为技术信仰重塑豪华汽车认知，让智能驾驶成为新豪华的量化标准</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 8fr) minmax(0, 18fr) minmax(0, 8fr) minmax(0, 56fr) minmax(0, 10fr);grid-template-rows:minmax(86px, auto) minmax(270px, auto) minmax(22px, auto) minmax(162px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:50%;height:auto;padding:0px;overflow:visible;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">CONTENTS</div><div class=\"sc-block\" style=\"font-size:36px;font-weight:var(--weight-black);line-height:1.04;letter-spacing:-0.035em;color:var(--text);text-wrap:balance;\">目录</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 4;align-self:start;min-height:54%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:10px;justify-content:center;align-items:stretch;\">\n        <div class=\"sc-block\" style=\"padding:0 0;border-top:none;\">\n          <div style=\"font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#C0A062;margin-bottom:7px;\">Point 01</div>\n          <div style=\"font-size:14px;line-height:1.6;color:var(--text);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;\">战略定位：为什么必须成功</div>\n        </div>\n        <div class=\"sc-block\" style=\"padding:12px 0 0 0;border-top:1px solid rgba(255,255,255,0.08);\">\n          <div style=\"font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#C0A062;margin-bottom:7px;\">Point 02</div>\n          <div style=\"font-size:14px;line-height:1.6;color:var(--text);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;\">核心创意：三大记忆锚点</div>\n        </div>\n        <div class=\"sc-block\" style=\"padding:12px 0 0 0;border-top:1px solid rgba(255,255,255,0.08);\">\n          <div style=\"font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#C0A062;margin-bottom:7px;\">Point 03</div>\n          <div style=\"font-size:14px;line-height:1.6;color:var(--text);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;\">流程设计：90分钟情绪节奏</div>\n        </div>\n        <div class=\"sc-block\" style=\"padding:12px 0 0 0;border-top:1px solid rgba(255,255,255,0.08);\">\n          <div style=\"font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#C0A062;margin-bottom:7px;\">Point 04</div>\n          <div style=\"font-size:14px;line-height:1.6;color:var(--text);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;\">舞台创意：技术美学沉浸式表达</div>\n        </div>\n        <div class=\"sc-block\" style=\"padding:12px 0 0 0;border-top:1px solid rgba(255,255,255,0.08);\">\n          <div style=\"font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#C0A062;margin-bottom:7px;\">Point 05</div>\n          <div style=\"font-size:14px;line-height:1.6;color:var(--text);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;\">传播策略：全域覆盖</div>\n        </div>\n        <div class=\"sc-block\" style=\"padding:12px 0 0 0;border-top:1px solid rgba(255,255,255,0.08);\">\n          <div style=\"font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:#C0A062;margin-bottom:7px;\">Point 06</div>\n          <div style=\"font-size:14px;line-height:1.6;color:var(--text);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;\">风险预案：特殊挑战与应对</div>\n        </div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_02_战略定位_4.jpg');background-size:cover;background-position:74% center;opacity:0.74;filter:saturate(1.08) contrast(1.08) brightness(0.82);\"></div>\n  <div style=\"position:absolute;left:0;top:0;bottom:0;width:52%;background:linear-gradient(90deg, rgba(9,14,22,0.72) 0%, rgba(9,14,22,0.32) 72%, rgba(9,14,22,0.04) 100%);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(10,14,24,0.04) 0%, rgba(10,14,24,0.18) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 8fr) minmax(0, 60fr) minmax(0, 4fr) minmax(0, 20fr) minmax(0, 8fr);grid-template-rows:minmax(108px, auto) minmax(243px, auto) minmax(189px, auto);\"><div class=\"sc-layer\" style=\"grid-column:1 / 6;grid-row:1 / 4;align-self:stretch;border-radius:24px;overflow:hidden;box-shadow:0 24px 48px rgba(0,0,0,0.24);\">\n    <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_02_战略定位_4.jpg');background-size:cover;background-position:center;\"></div>\n    <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(9,14,22,0.04), rgba(9,14,22,0.18));\"></div>\n  </div><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:45%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:20px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">SECTION 01</div><div class=\"sc-block\" style=\"font-size:38px;font-weight:var(--weight-black);line-height:1.04;letter-spacing:-0.035em;color:var(--text);text-wrap:balance;\">战略定位</div><div class=\"sc-block\" style=\"padding-left:18px;border-left:2px solid #C0A062;font-size:22px;line-height:1.42;color:#fff;text-wrap:balance;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;\">为什么这是一场必须成功的发布会</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:45%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">问界M9是华为智选车战略的旗舰之作，承担品牌冲高使命</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_03_战略定位_4.jpg');background-size:cover;background-position:center center;opacity:0.58;filter:saturate(1) contrast(1.06) brightness(0.82);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(90deg, rgba(9,14,22,0.80) 0%, rgba(9,14,22,0.64) 56%, rgba(9,14,22,0.08) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 5fr) minmax(0, 45fr) minmax(0, 5fr) minmax(0, 40fr) minmax(0, 5fr);grid-template-rows:minmax(81px, auto) minmax(378px, auto) minmax(81px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">STRATEGIC POSITIONING</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:15px;line-height:1.6;color:var(--text-muted);max-width:100%;text-wrap:pretty;\">品牌冲高的关键战役</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_04_核心创意_5.jpg');background-size:cover;background-position:74% center;opacity:0.74;filter:saturate(1.08) contrast(1.08) brightness(0.82);\"></div>\n  <div style=\"position:absolute;left:0;top:0;bottom:0;width:52%;background:linear-gradient(90deg, rgba(9,14,22,0.72) 0%, rgba(9,14,22,0.32) 72%, rgba(9,14,22,0.04) 100%);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(10,14,24,0.04) 0%, rgba(10,14,24,0.18) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 8fr) minmax(0, 60fr) minmax(0, 4fr) minmax(0, 20fr) minmax(0, 8fr);grid-template-rows:minmax(108px, auto) minmax(243px, auto) minmax(189px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:45%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:20px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">SECTION 02</div><div class=\"sc-block\" style=\"font-size:38px;font-weight:var(--weight-black);line-height:1.04;letter-spacing:-0.035em;color:var(--text);text-wrap:balance;\">核心创意</div><div class=\"sc-block\" style=\"padding-left:18px;border-left:2px solid #C0A062;font-size:22px;line-height:1.42;color:#fff;text-wrap:balance;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;\">三大记忆锚点构建传播穿透力</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:45%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">用实测数据说话，用焦虑消解建立情感连接，用场景化体验替代配置罗列</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_05_三大记忆锚点_0.jpg');background-size:cover;background-position:center center;opacity:0.18;filter:saturate(1) contrast(1.05);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(135deg, rgba(9,14,22,0.52) 0%, rgba(9,14,22,0.44) 100%);\"></div>\n  <div style=\"position:absolute;inset:18px;border:1px solid rgba(255,255,255,0.06);pointer-events:none;\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 5fr) minmax(0, 28fr) minmax(0, 3fr) minmax(0, 28fr) minmax(0, 3fr) minmax(0, 28fr) minmax(0, 5fr);grid-template-rows:minmax(97px, auto) minmax(346px, auto) minmax(97px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:64%;height:auto;padding:0px;overflow:visible;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:undefined;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">01</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:64%;height:auto;padding:0px;overflow:visible;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:undefined;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">02</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:6 / 7;grid-row:2 / 3;align-self:start;min-height:64%;height:auto;padding:0px;overflow:visible;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:undefined;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">03</div><div class=\"sc-block\" style=\"display:grid;grid-template-columns:repeat(1,1fr);gap:22px;width:100%;\">\n          \n        </div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_06_华为ads-3-0端到端智驾系统_2.jpg');background-size:cover;background-position:center center;opacity:0.58;filter:saturate(1) contrast(1.06) brightness(0.82);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(90deg, rgba(9,14,22,0.64) 0%, rgba(9,14,22,0.48) 56%, rgba(9,14,22,0.08) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 5fr) minmax(0, 45fr) minmax(0, 5fr) minmax(0, 40fr) minmax(0, 5fr);grid-template-rows:minmax(81px, auto) minmax(378px, auto) minmax(81px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">HIGHLIGHT 01</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">全国环岛都能开</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_07_1400-km续航无忧_1.jpg');background-size:cover;background-position:center center;opacity:0.58;filter:saturate(1) contrast(1.06) brightness(0.82);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(90deg, rgba(9,14,22,0.64) 0%, rgba(9,14,22,0.48) 56%, rgba(9,14,22,0.08) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 5fr) minmax(0, 45fr) minmax(0, 5fr) minmax(0, 40fr) minmax(0, 5fr);grid-template-rows:minmax(81px, auto) minmax(378px, auto) minmax(81px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">HIGHLIGHT 02</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">1400+km超长续航</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_ai_08_harmonyos-4智能座舱.jpg');background-size:cover;background-position:center center;opacity:0.58;filter:saturate(1) contrast(1.06) brightness(0.82);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(90deg, rgba(9,14,22,0.64) 0%, rgba(9,14,22,0.48) 56%, rgba(9,14,22,0.08) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 5fr) minmax(0, 45fr) minmax(0, 5fr) minmax(0, 40fr) minmax(0, 5fr);grid-template-rows:minmax(81px, auto) minmax(216px, auto) minmax(162px, auto) minmax(81px, auto);\"><div class=\"sc-layer\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:stretch;border-radius:24px;overflow:hidden;box-shadow:0 24px 48px rgba(0,0,0,0.24);\">\n    <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_ai_08_harmonyos-4智能座舱.jpg');background-size:cover;background-position:center;\"></div>\n    <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(9,14,22,0.04), rgba(9,14,22,0.18));\"></div>\n  </div><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 4;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">HIGHLIGHT 03</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 4;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">三指四向五屏流转</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_09_途灵平台-魔毯悬架_3.jpg');background-size:cover;background-position:center center;opacity:0.58;filter:saturate(1) contrast(1.06) brightness(0.82);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(90deg, rgba(9,14,22,0.64) 0%, rgba(9,14,22,0.48) 56%, rgba(9,14,22,0.08) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 5fr) minmax(0, 45fr) minmax(0, 5fr) minmax(0, 40fr) minmax(0, 5fr);grid-template-rows:minmax(81px, auto) minmax(378px, auto) minmax(81px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">HIGHLIGHT 04</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">激光雷达预瞄路面</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_ai_10_零重力座椅套装.jpg');background-size:cover;background-position:center center;opacity:0.58;filter:saturate(1) contrast(1.06) brightness(0.82);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(90deg, rgba(9,14,22,0.64) 0%, rgba(9,14,22,0.48) 56%, rgba(9,14,22,0.08) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 5fr) minmax(0, 45fr) minmax(0, 5fr) minmax(0, 40fr) minmax(0, 5fr);grid-template-rows:minmax(81px, auto) minmax(216px, auto) minmax(162px, auto) minmax(81px, auto);\"><div class=\"sc-layer\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:stretch;border-radius:24px;overflow:hidden;box-shadow:0 24px 48px rgba(0,0,0,0.24);\">\n    <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_ai_10_零重力座椅套装.jpg');background-size:cover;background-position:center;\"></div>\n    <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(9,14,22,0.04), rgba(9,14,22,0.18));\"></div>\n  </div><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 4;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">HIGHLIGHT 05</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 4;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">大五座头等舱体验</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_11_流程设计_2.jpg');background-size:cover;background-position:74% center;opacity:0.74;filter:saturate(1.08) contrast(1.08) brightness(0.82);\"></div>\n  <div style=\"position:absolute;left:0;top:0;bottom:0;width:52%;background:linear-gradient(90deg, rgba(9,14,22,0.72) 0%, rgba(9,14,22,0.32) 72%, rgba(9,14,22,0.04) 100%);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(10,14,24,0.04) 0%, rgba(10,14,24,0.18) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 8fr) minmax(0, 60fr) minmax(0, 4fr) minmax(0, 20fr) minmax(0, 8fr);grid-template-rows:minmax(108px, auto) minmax(243px, auto) minmax(189px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:45%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:20px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">SECTION 03</div><div class=\"sc-block\" style=\"font-size:38px;font-weight:var(--weight-black);line-height:1.04;letter-spacing:-0.035em;color:var(--text);text-wrap:balance;\">流程设计</div><div class=\"sc-block\" style=\"padding-left:18px;border-left:2px solid #C0A062;font-size:22px;line-height:1.42;color:#fff;text-wrap:balance;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;\">90分钟发布会的情绪节奏</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:45%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">四幕递进：从预见、驾驭、奢享到启程，每一秒都在建立品牌认知</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_12_90分钟情绪节奏_0.jpg');background-size:cover;background-position:center center;opacity:0.54;filter:saturate(1.06) contrast(1.06) brightness(0.82);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(9,14,22,0.42) 0%, rgba(9,14,22,0.60) 58%, rgba(9,14,22,0.76) 100%);\"></div>\n  <div style=\"position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg, rgba(9,14,22,0) 0%, rgba(9,14,22,0.22) 18%, rgba(9,14,22,0.56) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 5fr) minmax(0, 22fr) minmax(0, 1fr) minmax(0, 22fr) minmax(0, 1fr) minmax(0, 22fr) minmax(0, 1fr) minmax(0, 22fr) minmax(0, 4fr);grid-template-rows:minmax(135px, auto) minmax(270px, auto) minmax(135px, auto);\"><div class=\"sc-region\" style=\"grid-column:8 / 9;grid-row:2 / 3;align-self:start;min-height:50%;height:auto;padding:0px;overflow:visible;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:10px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:10px;justify-content:undefined;align-items:center;\"><div class=\"sc-block\" style=\"font-size:13px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">价格发布+预订启动+权益公布</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_13_流程时间分配_1.jpg');background-size:cover;background-position:center center;opacity:0.18;filter:grayscale(0.04) saturate(0.92) contrast(1.04);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(9,14,22,0.72) 0%, rgba(9,14,22,0.62) 100%);\"></div>\n  <div style=\"position:absolute;inset:18px;border:1px solid rgba(255,255,255,0.06);pointer-events:none;\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 10fr) minmax(0, 18fr) minmax(0, 8fr) minmax(0, 18fr) minmax(0, 8fr) minmax(0, 10fr) minmax(0, 8fr) minmax(0, 10fr) minmax(0, 10fr);grid-template-rows:minmax(135px, auto) minmax(189px, auto) minmax(27px, auto) minmax(108px, auto) minmax(81px, auto);\"><div class=\"sc-region\" style=\"grid-column:7 / 9;grid-row:4 / 5;align-self:start;min-height:20%;height:auto;padding:0px;overflow:visible;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:row;gap:6px;justify-content:undefined;align-items:center;\"><div class=\"sc-block\" style=\"font-size:13px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">全流程90分钟</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_14_舞台创意_0.jpg');background-size:cover;background-position:74% center;opacity:0.74;filter:saturate(1.08) contrast(1.08) brightness(0.82);\"></div>\n  <div style=\"position:absolute;left:0;top:0;bottom:0;width:52%;background:linear-gradient(90deg, rgba(9,14,22,0.72) 0%, rgba(9,14,22,0.32) 72%, rgba(9,14,22,0.04) 100%);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(10,14,24,0.04) 0%, rgba(10,14,24,0.18) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 8fr) minmax(0, 60fr) minmax(0, 4fr) minmax(0, 20fr) minmax(0, 8fr);grid-template-rows:minmax(108px, auto) minmax(243px, auto) minmax(189px, auto);\"><div class=\"sc-layer\" style=\"grid-column:1 / 6;grid-row:1 / 4;align-self:stretch;border-radius:24px;overflow:hidden;box-shadow:0 24px 48px rgba(0,0,0,0.24);\">\n    <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_14_舞台创意_0.jpg');background-size:cover;background-position:center;\"></div>\n    <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(9,14,22,0.04), rgba(9,14,22,0.18));\"></div>\n  </div><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:45%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:20px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">SECTION 04</div><div class=\"sc-block\" style=\"font-size:38px;font-weight:var(--weight-black);line-height:1.04;letter-spacing:-0.035em;color:var(--text);text-wrap:balance;\">舞台创意</div><div class=\"sc-block\" style=\"padding-left:18px;border-left:2px solid #C0A062;font-size:22px;line-height:1.42;color:#fff;text-wrap:balance;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;\">技术美学的沉浸式表达</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:45%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">270°环幕+地屏+天屏，构建全包裹式光影空间，让产品自己说话</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_15_舞台与空间设计_5.jpg');background-size:cover;background-position:center center;opacity:0.18;filter:saturate(1) contrast(1.05);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(135deg, rgba(9,14,22,0.52) 0%, rgba(9,14,22,0.44) 100%);\"></div>\n  <div style=\"position:absolute;inset:18px;border:1px solid rgba(255,255,255,0.06);pointer-events:none;\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 5fr) minmax(0, 28fr) minmax(0, 3fr) minmax(0, 28fr) minmax(0, 3fr) minmax(0, 28fr) minmax(0, 5fr);grid-template-rows:minmax(97px, auto) minmax(346px, auto) minmax(97px, auto);\"><div class=\"sc-layer\" style=\"grid-column:1 / 8;grid-row:1 / 4;align-self:stretch;border-radius:24px;overflow:hidden;box-shadow:0 24px 48px rgba(0,0,0,0.24);\">\n    <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_page_15_舞台与空间设计_5.jpg');background-size:cover;background-position:center;\"></div>\n    <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(9,14,22,0.04), rgba(9,14,22,0.18));\"></div>\n  </div><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:64%;height:auto;padding:0px;overflow:visible;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:undefined;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">STAGE</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:64%;height:auto;padding:0px;overflow:visible;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:undefined;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">WELCOME</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:6 / 7;grid-row:2 / 3;align-self:start;min-height:64%;height:auto;padding:0px;overflow:visible;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:undefined;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">EXPERIENCE</div><div class=\"sc-block\" style=\"display:grid;grid-template-columns:repeat(1,1fr);gap:22px;width:100%;\">\n          \n        </div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg');background-size:cover;background-position:center center;opacity:0.58;filter:saturate(1) contrast(1.06) brightness(0.82);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(90deg, rgba(9,14,22,0.64) 0%, rgba(9,14,22,0.48) 56%, rgba(9,14,22,0.08) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 5fr) minmax(0, 45fr) minmax(0, 5fr) minmax(0, 40fr) minmax(0, 5fr);grid-template-rows:minmax(81px, auto) minmax(378px, auto) minmax(81px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">MAIN STAGE</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">270°环幕包裹</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg');background-size:cover;background-position:center center;opacity:0.58;filter:saturate(1) contrast(1.06) brightness(0.82);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(90deg, rgba(9,14,22,0.64) 0%, rgba(9,14,22,0.48) 56%, rgba(9,14,22,0.08) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 5fr) minmax(0, 45fr) minmax(0, 5fr) minmax(0, 40fr) minmax(0, 5fr);grid-template-rows:minmax(81px, auto) minmax(378px, auto) minmax(81px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">EXPERIENCE ZONE</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">ADS模拟驾驶舱</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg');background-size:cover;background-position:center center;opacity:0.58;filter:saturate(1) contrast(1.06) brightness(0.82);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(90deg, rgba(9,14,22,0.64) 0%, rgba(9,14,22,0.48) 56%, rgba(9,14,22,0.08) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 5fr) minmax(0, 45fr) minmax(0, 5fr) minmax(0, 40fr) minmax(0, 5fr);grid-template-rows:minmax(81px, auto) minmax(378px, auto) minmax(81px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">DISPLAY</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">独立光台重点打光</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg');background-size:cover;background-position:74% center;opacity:0.74;filter:saturate(1.08) contrast(1.08) brightness(0.82);\"></div>\n  <div style=\"position:absolute;left:0;top:0;bottom:0;width:52%;background:linear-gradient(90deg, rgba(9,14,22,0.72) 0%, rgba(9,14,22,0.32) 72%, rgba(9,14,22,0.04) 100%);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(10,14,24,0.04) 0%, rgba(10,14,24,0.18) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 8fr) minmax(0, 60fr) minmax(0, 4fr) minmax(0, 20fr) minmax(0, 8fr);grid-template-rows:minmax(108px, auto) minmax(243px, auto) minmax(189px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:45%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:20px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">SECTION 05</div><div class=\"sc-block\" style=\"font-size:38px;font-weight:var(--weight-black);line-height:1.04;letter-spacing:-0.035em;color:var(--text);text-wrap:balance;\">传播策略</div><div class=\"sc-block\" style=\"padding-left:18px;border-left:2px solid #C0A062;font-size:22px;line-height:1.42;color:#fff;text-wrap:balance;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;\">从场内到场外的全域覆盖</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:45%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">预热期-爆发期-长尾期，三阶段全域覆盖，让声量持续发酵</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg');background-size:cover;background-position:center center;opacity:0.54;filter:saturate(1.06) contrast(1.06) brightness(0.82);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(9,14,22,0.42) 0%, rgba(9,14,22,0.60) 58%, rgba(9,14,22,0.76) 100%);\"></div>\n  <div style=\"position:absolute;left:0;right:0;bottom:0;height:34%;background:linear-gradient(180deg, rgba(9,14,22,0) 0%, rgba(9,14,22,0.22) 18%, rgba(9,14,22,0.56) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 5fr) minmax(0, 30fr) minmax(0, 30fr) minmax(0, 30fr) minmax(0, 5fr);grid-template-rows:minmax(108px, auto) minmax(324px, auto) minmax(108px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:60%;height:auto;padding:0px;overflow:visible;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:10px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:10px;justify-content:undefined;align-items:center;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">4月10-22日</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:3 / 4;grid-row:2 / 3;align-self:start;min-height:60%;height:auto;padding:0px;overflow:visible;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:10px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:10px;justify-content:undefined;align-items:center;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">4月23日</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:60%;height:auto;padding:0px;overflow:visible;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:10px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:10px;justify-content:undefined;align-items:center;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">4月24-30日</div><div class=\"sc-block\" style=\"font-size:13px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">深度内容+用户证言+试驾体验</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg');background-size:cover;background-position:center center;opacity:0.18;filter:grayscale(0.04) saturate(0.92) contrast(1.04);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(9,14,22,0.72) 0%, rgba(9,14,22,0.62) 100%);\"></div>\n  <div style=\"position:absolute;inset:18px;border:1px solid rgba(255,255,255,0.06);pointer-events:none;\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 10fr) minmax(0, 18fr) minmax(0, 8fr) minmax(0, 18fr) minmax(0, 8fr) minmax(0, 10fr) minmax(0, 8fr) minmax(0, 10fr) minmax(0, 10fr);grid-template-rows:minmax(135px, auto) minmax(189px, auto) minmax(27px, auto) minmax(108px, auto) minmax(81px, auto);\"><div class=\"sc-region\" style=\"grid-column:7 / 9;grid-row:4 / 5;align-self:start;min-height:20%;height:auto;padding:0px;overflow:visible;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:row;gap:6px;justify-content:undefined;align-items:center;\"><div class=\"sc-block\" style=\"font-size:13px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">全周期21天</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg');background-size:cover;background-position:74% center;opacity:0.74;filter:saturate(1.08) contrast(1.08) brightness(0.82);\"></div>\n  <div style=\"position:absolute;left:0;top:0;bottom:0;width:52%;background:linear-gradient(90deg, rgba(9,14,22,0.72) 0%, rgba(9,14,22,0.32) 72%, rgba(9,14,22,0.04) 100%);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(10,14,24,0.04) 0%, rgba(10,14,24,0.18) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 8fr) minmax(0, 60fr) minmax(0, 4fr) minmax(0, 20fr) minmax(0, 8fr);grid-template-rows:minmax(108px, auto) minmax(243px, auto) minmax(189px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:45%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:20px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">SECTION 06</div><div class=\"sc-block\" style=\"font-size:38px;font-weight:var(--weight-black);line-height:1.04;letter-spacing:-0.035em;color:var(--text);text-wrap:balance;\">风险预案</div><div class=\"sc-block\" style=\"padding-left:18px;border-left:2px solid #C0A062;font-size:22px;line-height:1.42;color:#fff;text-wrap:balance;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;\">车展发布的特殊挑战与应对</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:45%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">同馆竞品抢流量、媒体注意力分散、现场安保压力——三大风险与应对策略</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg');background-size:cover;background-position:center center;opacity:0.18;filter:saturate(1) contrast(1.05);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(135deg, rgba(9,14,22,0.52) 0%, rgba(9,14,22,0.44) 100%);\"></div>\n  <div style=\"position:absolute;inset:18px;border:1px solid rgba(255,255,255,0.06);pointer-events:none;\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 5fr) minmax(0, 28fr) minmax(0, 3fr) minmax(0, 28fr) minmax(0, 3fr) minmax(0, 28fr) minmax(0, 5fr);grid-template-rows:minmax(97px, auto) minmax(346px, auto) minmax(97px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:64%;height:auto;padding:0px;overflow:visible;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:undefined;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">RISK 01</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:64%;height:auto;padding:0px;overflow:visible;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:undefined;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">RISK 02</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:6 / 7;grid-row:2 / 3;align-self:start;min-height:64%;height:auto;padding:0px;overflow:visible;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:undefined;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">RISK 03</div><div class=\"sc-block\" style=\"display:grid;grid-template-columns:repeat(1,1fr);gap:22px;width:100%;\">\n          \n        </div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg');background-size:cover;background-position:center center;opacity:0.18;filter:grayscale(0.04) saturate(0.92) contrast(1.04);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(9,14,22,0.72) 0%, rgba(9,14,22,0.62) 100%);\"></div>\n  <div style=\"position:absolute;inset:18px;border:1px solid rgba(255,255,255,0.06);pointer-events:none;\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 10fr) minmax(0, 18fr) minmax(0, 8fr) minmax(0, 18fr) minmax(0, 8fr) minmax(0, 10fr) minmax(0, 8fr) minmax(0, 10fr) minmax(0, 10fr);grid-template-rows:minmax(135px, auto) minmax(189px, auto) minmax(27px, auto) minmax(108px, auto) minmax(81px, auto);\"><div class=\"sc-region\" style=\"grid-column:7 / 9;grid-row:4 / 5;align-self:start;min-height:20%;height:auto;padding:0px;overflow:visible;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:row;gap:6px;justify-content:undefined;align-items:center;\"><div class=\"sc-block\" style=\"font-size:13px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">预期效果</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg');background-size:cover;background-position:center center;opacity:0.58;filter:saturate(1) contrast(1.06) brightness(0.82);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(90deg, rgba(9,14,22,0.64) 0%, rgba(9,14,22,0.48) 56%, rgba(9,14,22,0.08) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 5fr) minmax(0, 45fr) minmax(0, 5fr) minmax(0, 40fr) minmax(0, 5fr);grid-template-rows:minmax(81px, auto) minmax(378px, auto) minmax(81px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">VISUAL EXECUTION</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:70%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">克制深蓝主色调</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_content_0.jpg');background-size:cover;background-position:74% center;opacity:0.74;filter:saturate(1.08) contrast(1.08) brightness(0.82);\"></div>\n  <div style=\"position:absolute;left:0;top:0;bottom:0;width:52%;background:linear-gradient(90deg, rgba(9,14,22,0.74) 0%, rgba(9,14,22,0.46) 72%, rgba(9,14,22,0.04) 100%);\"></div>\n  <div style=\"position:absolute;inset:0;background:linear-gradient(180deg, rgba(10,14,24,0.04) 0%, rgba(10,14,24,0.18) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 8fr) minmax(0, 60fr) minmax(0, 4fr) minmax(0, 20fr) minmax(0, 8fr);grid-template-rows:minmax(108px, auto) minmax(243px, auto) minmax(189px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:45%;height:auto;padding:0px;overflow:visible;border-left:1px solid rgba(255,255,255,0.12);padding-left:18px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:20px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">CORE STRATEGY</div><div class=\"sc-block\" style=\"font-size:38px;font-weight:var(--weight-black);line-height:1.04;letter-spacing:-0.035em;color:var(--text);text-wrap:balance;\">核心策略回顾</div><div class=\"sc-block\" style=\"padding-left:18px;border-left:2px solid #C0A062;font-size:25px;line-height:1.42;color:#fff;text-wrap:balance;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;\">以华为技术信仰重塑豪华汽车认知</div></div>\n  </div><div class=\"sc-region\" style=\"grid-column:4 / 5;grid-row:2 / 3;align-self:start;min-height:45%;height:auto;padding:0px;overflow:visible;border-left:1px solid rgba(255,255,255,0.12);padding-left:18px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:12px;justify-content:center;align-items:flex-start;\"><div class=\"sc-block\" style=\"font-size:14px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">让智能驾驶、续航安全感、座舱交互成为新豪华的量化标准，而非传统豪华车的品牌溢价叙事</div></div>\n  </div></div>\n</div>",
+    "<div class=\"slide structured\" style=\"--primary:#1A1A1A;--secondary:#0D1B2A;--accent:#C0A062;--bg:#0A0F1A;--bg-alt:#111827;--surface:#1E293B;--text:#F8FAFC;--text-muted:#94A3B8;--border:rgba(255,255,255,0.08);--font-display:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--font-body:'Geist', 'SF Pro Display', 'PingFang SC', 'Noto Sans SC', system-ui, sans-serif;--weight-normal:400;--weight-medium:500;--weight-bold:700;--weight-black:800;--radius-sm:4px;--radius-md:8px;--radius-lg:16px;--radius-xl:24px;--shadow-sm:0 2px 8px rgba(0,0,0,0.3);--shadow-md:0 8px 24px rgba(0,0,0,0.4);--shadow-lg:0 20px 48px rgba(0,0,0,0.5);--shadow-glow:0 0 60px rgba(37,99,235,0.2);--shadow-accent-glow:0 0 40px rgba(192,160,98,0.3);background:var(--bg);\">\n  \n  <div style=\"position:absolute;inset:0;background-image:url('/output/runs/img_1775466662303/images/img_1775466662303_end_0.jpg');background-size:cover;background-position:center center;opacity:0.74;filter:saturate(1.04) contrast(1.05);\"></div>\n  <div style=\"position:absolute;inset:0;background:radial-gradient(circle at center, rgba(9,14,22,0.42) 0%, rgba(9,14,22,0.48) 56%, rgba(9,14,22,0.62) 100%);\"></div>\n  <div class=\"sc-canvas\" style=\"grid-template-columns:minmax(0, 25fr) minmax(0, 50fr) minmax(0, 25fr);grid-template-rows:minmax(162px, auto) minmax(216px, auto) minmax(162px, auto);\"><div class=\"sc-region\" style=\"grid-column:2 / 3;grid-row:2 / 3;align-self:start;min-height:40%;height:auto;padding:0px;overflow:visible;border-top:1px solid rgba(255,255,255,0.08);padding-top:12px;\">\n    <div class=\"sc-stack\" style=\"display:flex;flex-direction:column;gap:20px;justify-content:undefined;align-items:center;\"><div class=\"sc-block\" style=\"font-size:11px;font-weight:var(--weight-bold);letter-spacing:0.14em;text-transform:uppercase;color:#C0A062;\">AITO M9</div><div class=\"sc-block\" style=\"font-size:42px;font-weight:var(--weight-black);line-height:1.04;letter-spacing:-0.035em;color:var(--text);text-wrap:balance;\">感谢观看</div><div class=\"sc-block\" style=\"font-size:13px;line-height:1.75;color:var(--text-muted);max-width:100%;text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;\">智慧雄心·预见未来</div></div>\n  </div></div>\n</div>"
+  ],
+  "pptxFilename": "",
+  "filePath": "/api/files/download/runs/space_c3b5dce94dbb/exports/ppt_1775467138376.pptx",
+  "outputRelativePath": "",
+  "downloadUrl": "/api/files/download/runs/space_c3b5dce94dbb/exports/ppt_1775467138376.pptx",
+  "createdAt": "2026-04-06T09:19:14.540Z",
+  "updatedAt": "2026-04-06T09:19:14.540Z"
+}

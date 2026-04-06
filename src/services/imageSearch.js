@@ -6,6 +6,16 @@ const path   = require('path');
 const sharp  = require('sharp');
 const config = require('../config');
 
+// 支持系统 HTTPS 代理（HTTPS_PROXY / https_proxy 环境变量）
+function getProxyAgent() {
+  const proxyUrl = process.env.HTTPS_PROXY || process.env.https_proxy;
+  if (!proxyUrl) return undefined;
+  try {
+    const { HttpsProxyAgent } = require('https-proxy-agent');
+    return new HttpsProxyAgent(proxyUrl);
+  } catch { return undefined; }
+}
+
 // PPT 背景图目标尺寸（16:9，1920×1080 清晰度足够，文件体积可控）
 const PPT_WIDTH  = 1920;
 const PPT_HEIGHT = 1080;
@@ -16,8 +26,8 @@ const JPEG_QUALITY = 82;  // 82% JPEG：清晰且体积适中（约 200-500 KB�
  * 返回的 url 已附加 CDN 尺寸参数（1920×1080 裁切+压缩），下载即可直接用于 PPT
  */
 async function searchPexels(query, options = {}) {
-  const { perPage = 4 } = options;
-  const apiKey = config.pexelsApiKey;
+  const { perPage = 4, apiKey: keyOverride } = options;
+  const apiKey = keyOverride || config.pexelsApiKey;
   if (!apiKey) return [];
 
   const qs = new URLSearchParams({
@@ -65,9 +75,11 @@ async function downloadImage(remoteUrl, localPath) {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
   return new Promise((resolve, reject) => {
-    const proto = remoteUrl.startsWith('https') ? https : http;
-    const file  = fs.createWriteStream(localPath);
-    proto.get(remoteUrl, res => {
+    const isHttps = remoteUrl.startsWith('https');
+    const proto   = isHttps ? https : http;
+    const reqOpts = isHttps ? { agent: getProxyAgent() } : {};
+    const file    = fs.createWriteStream(localPath);
+    proto.get(remoteUrl, reqOpts, res => {
       if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
         file.close();
         fs.unlink(localPath, () => {});
@@ -124,11 +136,17 @@ async function generateMiniMaxImage(prompt, apiKey) {
     response_format: 'url'
   });
 
+  // 从 minimaxBaseUrl 解析 host，支持用户自定义代理地址
+  const baseUrl = (config.minimaxBaseUrl || 'https://api.minimaxi.com/v1').replace(/\/+$/, '');
+  const endpoint = new URL(`${baseUrl}/image_generation`);
+
   return new Promise(resolve => {
     const req = https.request({
-      hostname: 'api.minimaxi.com',
-      path:     '/v1/image_generation',
+      hostname: endpoint.hostname,
+      port:     endpoint.port || 443,
+      path:     endpoint.pathname,
       method:   'POST',
+      agent:    getProxyAgent(),
       headers: {
         Authorization:    `Bearer ${apiKey}`,
         'Content-Type':   'application/json',
@@ -144,11 +162,149 @@ async function generateMiniMaxImage(prompt, apiKey) {
         } catch { resolve(null); }
       });
     });
-    req.on('error', () => resolve(null));
+    req.on('error', (err) => { console.warn('[generateMiniMaxImage] 网络错误:', err.message); resolve(null); });
     req.setTimeout(60000, () => { req.destroy(); resolve(null); });
     req.write(body);
     req.end();
   });
 }
 
-module.exports = { searchPexels, downloadImage, processImageForPpt, generateMiniMaxImage };
+/**
+ * 搜索 Bing 图片（Azure Cognitive Services Bing Image Search v7）
+ * 返回格式与 searchPexels 一致
+ */
+async function searchBing(query, options = {}) {
+  const { perPage = 4, apiKey: keyOverride } = options;
+  const apiKey = keyOverride || config.bingApiKey;
+  if (!apiKey) return [];
+
+  const qs = new URLSearchParams({
+    q: query,
+    count: String(perPage),
+    aspect: 'Wide',
+    size: 'Large',
+    imageType: 'Photo',
+    safeSearch: 'Moderate'
+  });
+
+  return new Promise(resolve => {
+    const req = https.get(
+      `https://api.bing.microsoft.com/v7.0/images/search?${qs}`,
+      { headers: { 'Ocp-Apim-Subscription-Key': apiKey } },
+      res => {
+        let raw = '';
+        res.on('data', c => raw += c);
+        res.on('end', () => {
+          try {
+            const json = JSON.parse(raw);
+            resolve((json.value || []).map(item => ({
+              id:              item.imageId || item.contentUrl,
+              url:             item.contentUrl,
+              thumb:           item.thumbnailUrl,
+              photographer:    '',
+              photographerUrl: item.hostPageUrl || ''
+            })));
+          } catch { resolve([]); }
+        });
+      }
+    );
+    req.on('error', () => resolve([]));
+    req.setTimeout(8000, () => { req.destroy(); resolve([]); });
+  });
+}
+
+/**
+ * 通过 SerpAPI 搜索图片，支持 bing_images / google_images / baidu_images
+ */
+async function searchSerpApi(query, options = {}) {
+  const { perPage = 4, engine = 'bing_images', apiKey: keyOverride } = options;
+  const apiKey = keyOverride || config.serpApiKey;
+  if (!apiKey) return [];
+
+  const qs = new URLSearchParams({
+    engine,
+    q:       query,
+    count:   String(perPage),
+    api_key: apiKey
+  });
+
+  return new Promise(resolve => {
+    const req = https.get(`https://serpapi.com/search?${qs}`, res => {
+      let raw = '';
+      res.on('data', c => raw += c);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(raw);
+          resolve((json.images_results || []).slice(0, perPage).map(item => ({
+            id:              item.position ? `serp_${engine}_${item.position}` : item.original,
+            url:             item.original  || item.thumbnail,
+            thumb:           item.thumbnail || item.original,
+            photographer:    item.source    || item.domain || '',
+            photographerUrl: item.link      || ''
+          })));
+        } catch { resolve([]); }
+      });
+    });
+    req.on('error', () => resolve([]));
+    req.setTimeout(10000, () => { req.destroy(); resolve([]); });
+  });
+}
+
+/**
+ * 判断查询词更适合哪个图源
+ * - 含中文 → Bing（具体内容：品牌/产品/案例）
+ * - 含具体品牌/产品/活动词 → Bing
+ * - 抽象氛围词（英文）→ Pexels（专业摄影，版权清晰，更适合做 PPT 背景）
+ */
+/**
+ * 判断查询词适合哪类图源
+ * 返回 'bing'（具体内容）或 'pexels'（氛围背景）
+ */
+function detectImageSource(query = '') {
+  if (/[\u4e00-\u9fa5]/.test(query)) return 'bing';
+
+  const specificSignals = /\b(brand|product|launch|event|show|exhibition|conference|summit|expo|keynote|press|release|campaign|sponsor|demo|prototype|concept car|concept)\b/i;
+  if (specificSignals.test(query)) return 'bing';
+
+  const atmosphereSignals = /\b(cinematic|atmospheric|abstract|texture|minimal|editorial|ambient|volumetric|moody|silhouette|bokeh|gradient|backdrop|blur|dark|light beams?|shadow|pattern|surface|macro|galactic|nebula)\b/i;
+  if (atmosphereSignals.test(query)) return 'pexels';
+
+  return (config.bingApiKey || config.serpApiKey) ? 'bing' : 'pexels';
+}
+
+/**
+ * 统一图片搜索入口
+ * - source: 'auto'（默认）→ 根据 query 内容智能选源
+ * - source: 'pexels'    → 强制 Pexels（PPT 背景/氛围图）
+ * - source: 'bing'      → 真实内容：直接 Bing → SerpAPI → Pexels
+ *
+ * SerpAPI 引擎选择：中文查询用百度，英文用 Bing
+ */
+async function searchImages(query, options = {}) {
+  const { source = 'auto', serpApiKey, bingApiKey, pexelsApiKey, ...rest } = options;
+  const resolved = source === 'auto' ? detectImageSource(query) : source;
+
+  const effectiveSerpKey   = serpApiKey   || config.serpApiKey;
+  const effectiveBingKey   = bingApiKey   || config.bingApiKey;
+  const effectivePexelsKey = pexelsApiKey || config.pexelsApiKey;
+
+  if (resolved === 'bing') {
+    // 1. SerpAPI（中文 → 谷歌，英文 → Bing）
+    if (effectiveSerpKey) {
+      const isChinese = /[\u4e00-\u9fa5]/.test(query);
+      const engine = isChinese ? 'google_images' : 'bing_images';
+      const results = await searchSerpApi(query, { ...rest, engine, apiKey: effectiveSerpKey });
+      if (results.length) return results;
+    }
+    // 2. 直接 Bing API
+    if (effectiveBingKey) {
+      const results = await searchBing(query, { ...rest, apiKey: effectiveBingKey });
+      if (results.length) return results;
+    }
+  }
+
+  // 3. Pexels（兜底，或 source === 'pexels' 时直接走）
+  return searchPexels(query, { ...rest, apiKey: effectivePexelsKey });
+}
+
+module.exports = { searchImages, searchPexels, searchBing, searchSerpApi, downloadImage, processImageForPpt, generateMiniMaxImage };

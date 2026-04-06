@@ -8,7 +8,7 @@ const path = require('path');
 const os = require('os');
 const config = require('../config');
 const { renderToHtml, wrapForScreenshot } = require('./previewRenderer');
-const { getRunAssetDir, getRunId, toOutputRelative } = require('./outputPaths');
+const { getRunAssetDir, getRunId, toOutputRelative, toAbsoluteUrl } = require('./outputPaths');
 
 let _browser = null;
 
@@ -101,7 +101,7 @@ async function generatePPT(templateData, outputFilename = null, options = {}) {
     filepath,
     runId,
     relativePath: toOutputRelative(filepath),
-    path: `/api/files/download/${toOutputRelative(filepath)}`
+    path: toAbsoluteUrl(`/api/files/download/${toOutputRelative(filepath)}`)
   };
 }
 

@@ -50,7 +50,7 @@ async function startServer() {
     env: {
       ...process.env,
       PORT: String(PORT),
-      OPENCLAW_MOCK_AGENT_HOLD: '1'
+      LUNA_MOCK_AGENT_HOLD: '1'
     },
     stdio: ['ignore', 'pipe', 'pipe']
   });

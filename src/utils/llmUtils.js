@@ -70,9 +70,10 @@ async function callLLMJson(messages, options = {}) {
       lastError = err;
       if (attempt < RETRY_LIMIT) {
         console.warn(`[${name}] JSON 解析失败 (${attempt + 1}/${RETRY_LIMIT})，重新请求:`, err.message);
+        // 解析失败时以用户追问的形式追加约束，避免出现非法的连续 assistant 消息。
         msgs = [
           ...msgs,
-          { role: 'assistant', content: '（上次输出无法解析为 JSON，请重新输出，仅返回合法 JSON，不要包含任何其他文字）' }
+          { role: 'user', content: '上次输出无法解析为 JSON。请重新输出，并且只返回合法 JSON，不要包含任何额外文字或代码块。' }
         ];
       }
     }

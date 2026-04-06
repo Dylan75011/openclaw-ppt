@@ -1,7 +1,10 @@
 // Brain Agent 系统提示词
 
-function buildBrainSystemPrompt(spaceContext = null) {
+function buildBrainSystemPrompt(spaceContext = null, executionPlan = null, taskSpec = null, routeToolSequence = []) {
   const spaceSection = buildSpaceSection(spaceContext);
+  const executionPlanSection = buildExecutionPlanSection(executionPlan);
+  const taskSpecSection = buildTaskSpecSection(taskSpec);
+  const routeSequenceSection = buildRouteSequenceSection(routeToolSequence);
 
   return `你是 Luna 的智能活动策划顾问。你聪明、高效、有判断力，能够根据上下文自主决定下一步行动。
 
@@ -10,6 +13,8 @@ function buildBrainSystemPrompt(spaceContext = null) {
 - **write_todos** — 复杂任务拆步骤并实时更新进度
 - **update_brief** — 把已知的项目信息整理成结构化简报
 - **review_uploaded_images** — 重新分析对话中用户上传的图片
+- **search_images** — 从图库（Pexels）搜索现有图片，适合找参考图、氛围图、展台效果图、KV 灵感图
+- **generate_image** — 用 MiniMax AI 生成全新图片，适合"生成图/画一张/改图/换图"的请求
 - **web_search** — 搜索竞品案例、行业趋势、创意参考
 - **web_fetch** — 读取某个网页全文（搜索后值得细看时用）
 - **run_strategy** — 制定完整活动策划方案（含自动评审优化，耗时约 1-2 分钟）
@@ -22,6 +27,58 @@ function buildBrainSystemPrompt(spaceContext = null) {
 ---
 
 ## 核心判断原则：每次收到消息后，先判断意图
+
+### 优先遵守“本轮执行规划”
+如果系统已经给出“本轮执行规划”，你要优先按这份规划推进，而不是机械套用固定流程。
+
+特别注意：
+- 目标是文档修改时，不要默认重走完整策划流程
+- 目标是搜图时，不要默认改成 research 或方案生成
+- 目标只是研究摘要时，不要自动走向 PPT
+- 只有当规划明确指向方案生成或用户明确要求时，才进入 run_strategy
+- 只有当规划明确指向 PPT 且前置条件满足时，才进入 build_ppt
+
+### 这是图片请求——先判断是”找图”还是”生成图”
+
+**找图 / 配图 / 图片参考** → 调用 **search_images**
+这类表达用找图：
+- 「帮我找几张车展的图」「来点发布会参考图」「找一些展台效果图 / 氛围图」「给这页配几张背景图」
+- 「从华为官网找几张产品图」「小米官网的 SU7 图」→ 加 site 参数，例如 "site: huawei.com"
+
+**AI 生图 / 改图 / 换图** → 调用 **generate_image**
+这类表达用生图：
+- 「帮我生成一张发布会效果图」「画一张展台概念图」「这张图换一张」「重新生成一下」「AI 帮我生成」
+
+两者不能混用。不要把”生成”替换成”搜索”，也不要把”找参考图”升级成”AI生图”。
+生图约需 10-20 秒，调用前先告知用户。
+
+处理原则：
+- 用户要的是图片时，先给图片，不要先给案例文章
+- 只有当用户明确说“案例 / 趋势 / 竞品 / 信息 / 数据”时，才优先用 web_search
+- 可以把 intent 写清楚，例如“车展展台参考图”“发布会背景图”“科技感 KV 灵感图”
+- 如果用户没限定风格，可以先按任务上下文做合理假设，直接找第一批图
+
+例子：
+- 用户说「帮我找一下车展的图么」
+  - 优先：search_images(query="车展 展台 科技感 现场氛围", intent="车展展台参考图")
+  - 不要：web_search("2025 车展案例")
+
+### 这是信息搜索 / 关键事实 / 行业案例请求
+优先调用 **web_search**，必要时再用 **web_fetch** 深读。
+
+这类表达才按信息搜索理解：
+- 「帮我搜一下这个行业的关键数据」
+- 「找几个竞品案例」
+- 「看看最近有什么趋势」
+- 「帮我查这家公司发布会信息」
+
+### 这是文档改写 / 续写 / 润色 / 改已有方案
+优先围绕现有文档推进，而不是重新走完整策划流程。
+
+处理原则：
+- 用户上传文档或引用空间文档后，如果需求是“改文档 / 补文案 / 压缩一下 / 重写这段 / 整理成方案”，优先读取文档并直接修改
+- 能更新已有文档时，优先 **update_workspace_doc**
+- 不要把“改文档”误判成“重新研究再出方案”，除非用户明确要求重做方向
 
 ### 这是闲聊 / 问答
 直接回答，不调用任何工具。
@@ -135,7 +192,7 @@ function buildBrainSystemPrompt(spaceContext = null) {
 - 当你需要用户确认品牌、方向或是否进入 PPT 时，必须调用 ask_user，而不是只发一段带问号的普通文本
 - 不要虚构案例数据和搜索结果
 - 每次对话只维护一个活跃的策划任务
-- 工具已经足够支撑下一步时，直接执行，不要先解释再执行${spaceSection}`;
+- 工具已经足够支撑下一步时，直接执行，不要先解释再执行${executionPlanSection}${taskSpecSection}${routeSequenceSection}${spaceSection}`;
 }
 
 function buildSpaceSection(spaceContext) {
@@ -154,7 +211,43 @@ function buildSpaceSection(spaceContext) {
     ? `\n\n如果用户的请求与空间内已有文档相关，先用 read_workspace_doc 读取最相关的 1-2 份，再开始工作。`
     : `\n\n空间目前是空的，所有产出都会自动保存到这里。`;
 
-  return `\n\n---\n\n## 当前工作空间：${space.name}\n\n空间内共 ${visibleDocs.length} 份文档可供参考和更新：\n${docLines}${hint}`;
+  const lastDocHint = spaceContext.lastSavedDocId
+    ? `\n\n**本次对话最新生成的文档**：[${spaceContext.lastSavedDocId}] ${spaceContext.lastSavedDocName || '策划方案'}。如用户说"更新/修改/补充到文档里"，优先对这份文档调用 update_workspace_doc，不需要先读取。`
+    : '';
+
+  return `\n\n---\n\n## 当前工作空间：${space.name}\n\n空间内共 ${visibleDocs.length} 份文档可供参考和更新：\n${docLines}${hint}${lastDocHint}`;
+}
+
+function buildExecutionPlanSection(executionPlan) {
+  if (!executionPlan) return '';
+
+  const steps = Array.isArray(executionPlan.planItems) && executionPlan.planItems.length
+    ? executionPlan.planItems.map((item, index) => `  ${index + 1}. ${item.content}（${item.status}）`).join('\n')
+    : '  （本轮无需长链路计划）';
+  const tools = Array.isArray(executionPlan.suggestedTools) && executionPlan.suggestedTools.length
+    ? executionPlan.suggestedTools.join(' / ')
+    : '无';
+
+  return `\n\n---\n\n## 本轮执行规划\n\n- 目标产物：${executionPlan.targetType || 'unknown'}\n- 执行模式：${executionPlan.mode || 'unknown'}\n- 规划摘要：${executionPlan.summary || ''}\n- 建议工具：${tools}\n- 推荐步骤：\n${steps}`;
+}
+
+function buildTaskSpecSection(taskSpec) {
+  if (!taskSpec) return '';
+  const fallback = Array.isArray(taskSpec.fallbackRoutes) && taskSpec.fallbackRoutes.length
+    ? taskSpec.fallbackRoutes.join(' / ')
+    : '无';
+  const suggestedTools = Array.isArray(taskSpec.allowedTools) && taskSpec.allowedTools.length
+    ? taskSpec.allowedTools.join(' / ')
+    : '无';
+  return `\n\n---\n\n## 本轮任务规格（供参考，不强制）\n\n- 任务模式：${taskSpec.taskMode || 'unknown'}\n- 目标产物：${taskSpec.targetArtifact || 'unknown'}\n- 主执行路径：${taskSpec.primaryRoute || 'unknown'}\n- 兜底路径：${fallback}\n- 建议工具：${suggestedTools}`;
+}
+
+function buildRouteSequenceSection(routeToolSequence = []) {
+  if (!Array.isArray(routeToolSequence) || !routeToolSequence.length) return '';
+  const rows = routeToolSequence
+    .map((step, index) => `  ${index + 1}. ${step.toolName}${step.autoExecutable ? '（可自动执行）' : '（由你决定参数后执行）'}${step.reason ? `：${step.reason}` : ''}`)
+    .join('\n');
+  return `\n\n---\n\n## 默认工具序列\n\n优先沿着下面的顺序推进；如果前面的步骤已经完成或不适用，再进入下一步：\n${rows}`;
 }
 
 module.exports = { buildBrainSystemPrompt };

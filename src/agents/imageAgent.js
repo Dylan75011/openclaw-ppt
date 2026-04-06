@@ -1,7 +1,7 @@
 const BaseAgent = require('./baseAgent');
-const { searchPexels, generateMiniMaxImage, downloadImage, processImageForPpt } = require('../services/imageSearch');
+const { searchImages, generateMiniMaxImage, downloadImage, processImageForPpt } = require('../services/imageSearch');
 const { analyzeImageForLayout, colorDistance } = require('../services/imageAnalyzer');
-const { getRunAssetDir, toOutputUrl } = require('../services/outputPaths');
+const { getRunAssetDir, toPublicUrl } = require('../services/outputPaths');
 const config = require('../config');
 const path   = require('path');
 
@@ -130,6 +130,22 @@ function buildFallbackPageQuery(page = {}, styleAnalysis = {}) {
   };
 }
 
+function resolveTreatmentForAssetPlan(page = {}) {
+  const insertMode = page.insertMode || '';
+  const role = page.role || '';
+  const assetType = page.assetType || '';
+  const sceneType = page.sceneType || '';
+  const layout = page.layout || '';
+  if (insertMode === 'panel') return 'dark-paneled';
+  if (insertMode === 'full_page') return 'full-bleed-dark';
+  if (role === 'cover' || layout === 'immersive_cover') return 'full-bleed-dark';
+  if (role === 'manifesto') return 'editorial-fade';
+  if (role === 'timeline' || sceneType === 'timeline') return 'subtle-grid';
+  if (role === 'metrics' || sceneType === 'data') return 'subtle-grid';
+  if (assetType === 'generated_scene') return 'split-atmosphere';
+  return resolveTreatmentForLayout(layout);
+}
+
 function sanitizeQuery(query = '') {
   return String(query)
     .replace(/\b(architectural|architecture|industrial|corridor|warehouse|factory|metallic lines?)\b/gi, '')
@@ -221,9 +237,16 @@ class ImageAgent extends BaseAgent {
       }
     }
 
-    // ─── Step 2: 基于视觉风格，为每类页面生成搜索词 ───────────────
+    const visualPages = this.normalizeVisualPlans(visualPlan, pptOutline);
+    const hasVisualPlan = visualPages.some(page =>
+      page.generateImage || page.fallbackQuery || page.assetType || page.insertMode
+    );
+
+    // ─── Step 2: 搜图词由活动图设计师统一给出；无设计稿时再回退旧逻辑 ───────────────
     const { styleDescription = 'dark cinematic tech' } = styleAnalysis;
-    const queries = await this.generateSearchQueries(userInput, plan, styleAnalysis, pptOutline);
+    const queries = hasVisualPlan
+      ? this.buildLegacyQueriesFromVisualPlan(visualPages, styleAnalysis)
+      : await this.generateSearchQueries(userInput, plan, styleAnalysis, pptOutline);
     console.log('[ImageAgent] 搜索词:', queries);
 
     // ─── Step 3: 基于风格化搜索词搜索 Pexels + MiniMax 生图 ────────
@@ -248,21 +271,46 @@ class ImageAgent extends BaseAgent {
     ].filter(Boolean);
 
     // 并行搜索多个方向
-    const visualPages = this.normalizeVisualPlans(visualPlan, pptOutline);
-    const pagePlans = Array.isArray(queries.pages) ? queries.pages.slice(0, 16).map((pagePlan, index) => {
-      const visualPage = visualPages[index] || {};
-      return {
-        ...pagePlan,
-        generateImage: !!visualPage.generateImage,
-        generatePrompt: String(visualPage.prompt || '').trim(),
-        fallbackQuery: String(visualPage.fallbackQuery || '').trim(),
-        sceneType: String(visualPage.sceneType || '').trim(),
-        insertMode: String(visualPage.insertMode || '').trim(),
-        assetType: String(visualPage.assetType || '').trim(),
-        reason: String(visualPage.reason || '').trim(),
-        shotIntent: String(visualPage.shotIntent || '').trim(),
-      };
-    }) : [];
+    const pagePlans = hasVisualPlan
+      ? visualPages.map((pagePlan, index) => {
+          const roleDrivenQueries = buildRoleDrivenQueries(pagePlan, styleAnalysis);
+          const rawTerms = [
+            sanitizeQuery(pagePlan.fallbackQuery),
+            ...roleDrivenQueries
+          ];
+          return {
+            pageIndex: Number.isInteger(pagePlan.pageIndex) ? pagePlan.pageIndex : index,
+            pageTitle: pagePlan.pageTitle || '',
+            role: pagePlan.role || 'content',
+            query: pagePlan.fallbackQuery || roleDrivenQueries[0] || '',
+            treatment: pagePlan.treatment || resolveTreatmentForAssetPlan(pagePlan),
+            generateImage: !!pagePlan.generateImage,
+            generatePrompt: pagePlan.prompt || '',
+            fallbackQuery: pagePlan.fallbackQuery || '',
+            sceneType: pagePlan.sceneType || '',
+            insertMode: pagePlan.insertMode || 'background',
+            assetType: pagePlan.assetType || '',
+            reason: pagePlan.reason || '',
+            shotIntent: pagePlan.shotIntent || '',
+            searchTerms: pagePlan.assetType === 'none'
+              ? []
+              : dedupeStrings(rawTerms).slice(0, 4),
+          };
+        })
+      : (Array.isArray(queries.pages) ? queries.pages.slice(0, 16).map((pagePlan, index) => {
+          const visualPage = visualPages[index] || {};
+          return {
+            ...pagePlan,
+            generateImage: !!visualPage.generateImage,
+            generatePrompt: String(visualPage.prompt || '').trim(),
+            fallbackQuery: String(visualPage.fallbackQuery || '').trim(),
+            sceneType: String(visualPage.sceneType || '').trim(),
+            insertMode: String(visualPage.insertMode || '').trim(),
+            assetType: String(visualPage.assetType || '').trim(),
+            reason: String(visualPage.reason || '').trim(),
+            shotIntent: String(visualPage.shotIntent || '').trim(),
+          };
+        }) : []);
     const pageSearchPromises = pagePlans.map(async (pagePlan, index) => {
       const roleDrivenQueries = buildRoleDrivenQueries(pagePlan, styleAnalysis);
       const rawTerms = [
@@ -291,9 +339,9 @@ class ImageAgent extends BaseAgent {
     });
 
     const [coverResults, contentResults, endResults, aiImageUrl, pageResults] = await Promise.all([
-      Promise.all(coverSearchQueries.map(q => searchPexels(q, { perPage: 2 }))),
-      Promise.all(contentSearchQueries.map(q => searchPexels(q, { perPage: 2 }))),
-      Promise.all(endSearchQueries.map(q => searchPexels(q, { perPage: 2 }))),
+      Promise.all(coverSearchQueries.map(q => searchImages(q, { source: 'pexels', perPage: 2 }))),
+      Promise.all(contentSearchQueries.map(q => searchImages(q, { source: 'pexels', perPage: 2 }))),
+      Promise.all(endSearchQueries.map(q => searchImages(q, { source: 'pexels', perPage: 2 }))),
       // MiniMax 生成封面图（有 key 时）
       queries.coverGeneratePrompt && minimaxKey
         ? generateMiniMaxImage(queries.coverGeneratePrompt, minimaxKey).catch(() => null)
@@ -317,8 +365,8 @@ class ImageAgent extends BaseAgent {
         await processImageForPpt(localPath);
         aiCandidate = {
           id:        'ai_generated',
-          url:       toOutputUrl(localPath),
-          thumb:     toOutputUrl(localPath),
+          url:       toPublicUrl(localPath),
+          thumb:     toPublicUrl(localPath),
           localPath: localPath,
           photographer: 'MiniMax AI',
           photographerUrl: '',
@@ -332,12 +380,13 @@ class ImageAgent extends BaseAgent {
 
     const normalizedCover = aiCandidate ? [aiCandidate, ...coverPhotos] : coverPhotos;
     const preparedPageCandidates = await this.collectPageCandidates(pageResults, taskId, outputBase, minimaxKey);
-    const selectedPages = await this.selectPageImages(preparedPageCandidates, styleAnalysis);
+    const pageSelection = await this.selectPageImages(preparedPageCandidates, styleAnalysis);
     const result = {
       cover:   await this.prepareTopCandidates(normalizedCover, 'cover', taskId, outputBase),
       content: await this.prepareTopCandidates(contentPhotos, 'content', taskId, outputBase),
       end:     await this.prepareTopCandidates(endPhotos, 'end', taskId, outputBase),
-      pages:   selectedPages
+      pages:   pageSelection.selected,
+      pageCandidatePools: pageSelection.candidatePools
     };
 
     console.log(`[ImageAgent] 完成：cover=${result.cover.length} content=${result.content.length} end=${result.end.length} pages=${result.pages.length}`);
@@ -512,6 +561,8 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
       return {
         pageIndex: index,
         pageTitle: visual.pageTitle || page?.content?.title || page?.title || `Page ${index + 1}`,
+        role: page?.visualIntent?.role || page?.content?.role || '',
+        layout: page?.layout || page?.type || '',
         generateImage: !!visual.generateImage,
         prompt: String(visual.prompt || '').trim(),
         fallbackQuery: String(visual.fallbackQuery || '').trim(),
@@ -520,8 +571,54 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
         assetType: String(visual.assetType || '').trim(),
         reason: String(visual.reason || '').trim(),
         shotIntent: String(visual.shotIntent || '').trim(),
+        treatment: resolveTreatmentForAssetPlan({
+          role: page?.visualIntent?.role || page?.content?.role || '',
+          layout: page?.layout || page?.type || '',
+          insertMode: String(visual.insertMode || 'background').trim(),
+          assetType: String(visual.assetType || '').trim(),
+          sceneType: String(visual.sceneType || '').trim()
+        }),
       };
     });
+  }
+
+  buildLegacyQueriesFromVisualPlan(visualPages = [], styleAnalysis = {}) {
+    const firstPage = visualPages[0] || {};
+    const coverPage = visualPages.find(page => page.role === 'cover') || firstPage;
+    const contentPage = visualPages.find(page => page.generateImage || page.assetType === 'searched_background') || {};
+    const endingPage = [...visualPages].reverse().find(page => page.role === 'ending' || page.role === 'closing') || {};
+    const coverFallback = buildFallbackPageQuery({ layout: 'immersive_cover', role: 'cover', pageTitle: 'cover' }, styleAnalysis);
+    const contentFallback = buildFallbackPageQuery({ layout: 'editorial_quote', role: 'manifesto', pageTitle: 'content' }, styleAnalysis);
+    const endFallback = buildFallbackPageQuery({ layout: 'end_card', role: 'ending', pageTitle: 'ending' }, styleAnalysis);
+
+    const toPrimary = (page, fallback) => sanitizeQuery(page?.fallbackQuery || fallback.query);
+    const toVariations = (page, fallback) => dedupeStrings([
+      ...buildRoleDrivenQueries(page, styleAnalysis),
+      ...(fallback.variations || [])
+    ]).slice(0, 2);
+
+    return {
+      cover: {
+        primary: toPrimary(coverPage, coverFallback),
+        variations: toVariations(coverPage, coverFallback)
+      },
+      content: {
+        primary: toPrimary(contentPage, contentFallback),
+        variations: toVariations(contentPage, contentFallback)
+      },
+      end: {
+        primary: toPrimary(endingPage, endFallback),
+        variations: toVariations(endingPage, endFallback)
+      },
+      pages: visualPages.map(page => ({
+        pageIndex: page.pageIndex,
+        pageTitle: page.pageTitle,
+        role: page.role || page.layout || 'content',
+        query: sanitizeQuery(page.fallbackQuery || ''),
+        variations: buildRoleDrivenQueries(page, styleAnalysis).slice(0, 3),
+        treatment: page.treatment || resolveTreatmentForAssetPlan(page)
+      }))
+    };
   }
 
   async createAiCandidateForPage(pagePlan, taskId, outputBase, minimaxKey) {
@@ -538,8 +635,8 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
       const analysis = await analyzeImageForLayout(localPath).catch(() => null);
       return {
         id: `ai_generated_${pagePlan.pageIndex}`,
-        url: toOutputUrl(localPath),
-        thumb: toOutputUrl(localPath),
+        url: toPublicUrl(localPath),
+        thumb: toPublicUrl(localPath),
         localPath,
         photographer: 'MiniMax AI',
         photographerUrl: '',
@@ -562,7 +659,7 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
       const batchResults = await Promise.all(batch.map(async (pagePlan, batchIdx) => {
         const index = start + batchIdx;
         const resultSets = await Promise.all((pagePlan.searchTerms || []).map(async (q) => {
-          const photos = await searchPexels(q, { perPage: 8 });
+          const photos = await searchImages(q, { source: 'pexels', perPage: 8 });
           return photos.map(photo => ({ ...photo, originQuery: q }));
         }));
         const rawCandidates = [...new Map(resultSets.flat().map(p => [p.id, p])).values()].slice(0, 6);
@@ -624,6 +721,7 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
     const selected = [];
     let lastAverageColor = null;
     let lastQueryFamily = '';
+    const candidatePools = [];
 
     for (const pagePlan of pagePlans) {
       const ranked = (pagePlan.candidates || [])
@@ -639,6 +737,35 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
         .sort((a, b) => b.score - a.score);
 
       const picked = ranked[0]?.candidate || null;
+      candidatePools.push({
+        pageIndex: pagePlan.pageIndex,
+        pageTitle: pagePlan.pageTitle,
+        role: pagePlan.role,
+        query: pagePlan.query,
+        treatment: pagePlan.treatment,
+        sceneType: pagePlan.sceneType || '',
+        insertMode: pagePlan.insertMode || 'background',
+        assetType: pagePlan.assetType || '',
+        reason: pagePlan.reason || '',
+        shotIntent: pagePlan.shotIntent || '',
+        selectedImageId: picked?.id || '',
+        images: ranked.map((item) => ({
+          id: item.candidate.id,
+          localPath: item.candidate.localPath || '',
+          previewUrl: item.candidate.localPath ? toPublicUrl(item.candidate.localPath) : (item.candidate.thumb || item.candidate.url || ''),
+          thumb: item.candidate.thumb || item.candidate.url || '',
+          source: item.candidate.isAI ? 'minimax' : 'pexels',
+          selected: item.candidate.id === picked?.id,
+          score: Math.round(item.score),
+          originQuery: item.candidate.originQuery || '',
+          query: pagePlan.query || '',
+          prompt: pagePlan.generatePrompt || '',
+          sceneType: pagePlan.sceneType || '',
+          assetType: pagePlan.assetType || '',
+          insertMode: pagePlan.insertMode || 'background',
+          analysis: item.candidate.analysis || null,
+        }))
+      });
       selected.push({
         pageIndex: pagePlan.pageIndex,
         pageTitle: pagePlan.pageTitle,
@@ -670,7 +797,7 @@ ${pageSummary.length ? JSON.stringify(pageSummary, null, 2) : '暂未提供页�
       }
     }
 
-    return selected;
+    return { selected, candidatePools };
   }
 }
 

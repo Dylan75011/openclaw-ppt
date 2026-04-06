@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-05T15:21:56.463Z",
+  "updatedAt": "2026-04-06T15:41:25.310Z",
   "spaces": [
     {
       "id": "space_c3b5dce94dbb",
@@ -23,7 +23,7 @@
           "type": "document",
           "name": "122",
           "createdAt": "2026-03-28T15:44:28.056Z",
-          "updatedAt": "2026-04-05T14:22:17.300Z",
+          "updatedAt": "2026-04-06T07:51:36.401Z",
           "docType": "document"
         },
         {
@@ -31,7 +31,7 @@
           "type": "document",
           "name": "「跨越·共生」华为Mate70新品发布会策划方案",
           "createdAt": "2026-04-03T15:11:40.620Z",
-          "updatedAt": "2026-04-05T14:33:52.351Z",
+          "updatedAt": "2026-04-06T15:23:59.538Z",
           "docType": "document"
         },
         {
@@ -44,28 +44,198 @@
               "type": "document",
               "name": "策划方案",
               "createdAt": "2026-04-05T14:43:14.248Z",
-              "updatedAt": "2026-04-05T14:54:14.546Z",
+              "updatedAt": "2026-04-06T15:38:41.496Z",
               "docType": "document"
-            },
-            {
-              "id": "doc_082e5010cb03",
-              "type": "document",
-              "name": "岚图汽车 PPT.pptx",
-              "createdAt": "2026-04-05T14:54:41.570Z",
-              "updatedAt": "2026-04-05T14:54:41.570Z",
-              "docType": "ppt"
             }
           ],
           "createdAt": "2026-04-05T14:43:14.243Z",
           "updatedAt": "2026-04-05T14:43:14.243Z"
         },
         {
-          "id": "doc_14a05bdb4617",
-          "type": "document",
-          "name": "岚图汽车 PPT.pptx",
-          "createdAt": "2026-04-05T14:56:40.377Z",
-          "updatedAt": "2026-04-05T14:56:40.377Z",
-          "docType": "ppt"
+          "id": "folder_c392ae942a21",
+          "type": "folder",
+          "name": "『智慧雄心·预见未来』问界M9全球首发盛",
+          "children": [
+            {
+              "id": "doc_ae0b5d16acaa",
+              "type": "document",
+              "name": "策划方案",
+              "createdAt": "2026-04-06T09:04:41.608Z",
+              "updatedAt": "2026-04-06T15:41:25.308Z",
+              "docType": "document"
+            },
+            {
+              "id": "doc_e31349056d5a",
+              "type": "document",
+              "name": "华为问界 M9 PPT.pptx",
+              "createdAt": "2026-04-06T09:19:14.540Z",
+              "updatedAt": "2026-04-06T09:19:14.540Z",
+              "docType": "ppt"
+            },
+            {
+              "id": "folder_m9img0000001",
+              "type": "folder",
+              "name": "images",
+              "createdAt": "2026-04-06T09:19:14.540Z",
+              "updatedAt": "2026-04-06T09:19:14.540Z",
+              "children": [
+                {
+                  "id": "doc_ada8a546b1af",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 01.jpg",
+                  "createdAt": "2026-04-06T09:19:14.544Z",
+                  "updatedAt": "2026-04-06T09:19:14.544Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_13e65226a63d",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 02.jpg",
+                  "createdAt": "2026-04-06T09:19:14.544Z",
+                  "updatedAt": "2026-04-06T09:19:14.544Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_e020909fd282",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 03.jpg",
+                  "createdAt": "2026-04-06T09:19:14.544Z",
+                  "updatedAt": "2026-04-06T09:19:14.544Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_0d5263ad3884",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 04.jpg",
+                  "createdAt": "2026-04-06T09:19:14.544Z",
+                  "updatedAt": "2026-04-06T09:19:14.544Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_f468ad1229de",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 05.jpg",
+                  "createdAt": "2026-04-06T09:19:14.544Z",
+                  "updatedAt": "2026-04-06T09:19:14.544Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_59f99bd9f5ab",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 06.jpg",
+                  "createdAt": "2026-04-06T09:19:14.545Z",
+                  "updatedAt": "2026-04-06T09:19:14.545Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_72989ee4f875",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 07.jpg",
+                  "createdAt": "2026-04-06T09:19:14.545Z",
+                  "updatedAt": "2026-04-06T09:19:14.545Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_75b3e691ba72",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 08.jpg",
+                  "createdAt": "2026-04-06T09:19:14.545Z",
+                  "updatedAt": "2026-04-06T09:19:14.545Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_b8aa8d268d7c",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 09.jpg",
+                  "createdAt": "2026-04-06T09:19:14.545Z",
+                  "updatedAt": "2026-04-06T09:19:14.545Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_4230fc70638f",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 10.jpg",
+                  "createdAt": "2026-04-06T09:19:14.546Z",
+                  "updatedAt": "2026-04-06T09:19:14.546Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_3ad45cd69b0c",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 11.jpg",
+                  "createdAt": "2026-04-06T09:19:14.546Z",
+                  "updatedAt": "2026-04-06T09:19:14.546Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_a251116105f9",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 12.jpg",
+                  "createdAt": "2026-04-06T09:19:14.546Z",
+                  "updatedAt": "2026-04-06T09:19:14.546Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_ed6c7de54110",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 13.jpg",
+                  "createdAt": "2026-04-06T09:19:14.546Z",
+                  "updatedAt": "2026-04-06T09:19:14.546Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_4bcbb94c43fb",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 14.jpg",
+                  "createdAt": "2026-04-06T09:19:14.547Z",
+                  "updatedAt": "2026-04-06T09:19:14.547Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_6a2b7ffbd243",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 15.jpg",
+                  "createdAt": "2026-04-06T09:19:14.547Z",
+                  "updatedAt": "2026-04-06T09:19:14.547Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_9c4a0e35ab5b",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 16.jpg",
+                  "createdAt": "2026-04-06T09:19:14.548Z",
+                  "updatedAt": "2026-04-06T09:19:14.548Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_a1d1aafe2bde",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 17.jpg",
+                  "createdAt": "2026-04-06T09:19:14.548Z",
+                  "updatedAt": "2026-04-06T09:19:14.548Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_db0891dda12d",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 18.jpg",
+                  "createdAt": "2026-04-06T09:19:14.548Z",
+                  "updatedAt": "2026-04-06T09:19:14.548Z",
+                  "docType": "image"
+                },
+                {
+                  "id": "doc_100d9213dfb8",
+                  "type": "document",
+                  "name": "华为问界 M9 配图 19.jpg",
+                  "createdAt": "2026-04-06T09:19:14.548Z",
+                  "updatedAt": "2026-04-06T09:19:14.548Z",
+                  "docType": "image"
+                }
+              ]
+            }
+          ],
+          "createdAt": "2026-04-06T09:04:41.604Z",
+          "updatedAt": "2026-04-06T09:04:41.604Z"
         }
       ],
       "indexDocId": "doc_e25fc617fdbe"

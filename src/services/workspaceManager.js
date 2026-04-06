@@ -647,6 +647,29 @@ function saveContent(id, content, contentFormat = 'tiptap-json') {
   return data.updatedAt;
 }
 
+// 确保子文件夹存在（在任意节点下按名称查找或创建）
+function ensureChildFolder(parentId, folderName) {
+  const tree = readTree();
+  const found = findNode(tree.spaces, parentId);
+  if (!found) throw new Error('父节点不存在: ' + parentId);
+  const parent = found.node;
+  const existing = (parent.children || []).find(c => c.type === 'folder' && c.name === folderName);
+  if (existing) return existing;
+  const now = new Date().toISOString();
+  const folder = {
+    id: 'folder_' + uuidv4().replace(/-/g, '').slice(0, 12),
+    type: 'folder',
+    name: folderName,
+    children: [],
+    createdAt: now,
+    updatedAt: now
+  };
+  if (!parent.children) parent.children = [];
+  parent.children.push(folder);
+  writeTree(tree);
+  return folder;
+}
+
 // 确保任务文件夹存在（按名称查找或创建）
 function ensureTaskFolder(spaceId, folderName) {
   const tree = readTree();
@@ -783,6 +806,7 @@ module.exports = {
   saveContent,
   savePptToSpace,
   saveAssetToSpace,
+  ensureChildFolder,
   ensureTaskFolder,
   getSpaceContext,
   ensureSpaceIndex,

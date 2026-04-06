@@ -2,6 +2,7 @@
 const ResearchAgent    = require('../agents/researchAgent');
 const PptBuilderAgent  = require('../agents/pptBuilderAgent');
 const ImageAgent       = require('../agents/imageAgent');
+const EventVisualDesignerAgent = require('../agents/eventVisualDesignerAgent');
 const { orchestrate, strategize, critique, writeDoc } = require('../skills');
 const { generatePPT }  = require('./pptGenerator');
 const { renderToHtml } = require('./previewRenderer');
@@ -9,6 +10,7 @@ const taskManager      = require('./taskManager');
 const config           = require('../config');
 const workspaceManager = require('./workspaceManager');
 const platformMemory   = require('./platformMemory');
+const { buildImageCanvasPayload } = require('./imageCanvas');
 
 function push(taskId, stage, status, extra = {}) {
   taskManager.pushEvent(taskId, 'progress', { stage, status, ...extra });
@@ -254,8 +256,27 @@ async function runPptBuilder(taskId, docContent) {
       docContent,
       imageMap,
       onOutlineReady: async (outline, total) => {
-        push(taskId, 'building', 'running', { message: '正在为每页匹配视觉背景...' });
-        const imageCandidates = await runImageSearch(taskId, outline).catch(err => {
+        push(taskId, 'building', 'running', { message: '正在由活动图设计师规划现场效果图...' });
+        const visualDesignerAgent = new EventVisualDesignerAgent(apiKeys || {});
+        const visualPlan = await visualDesignerAgent.run({
+          plan: bestPlan,
+          pptOutline: outline,
+          userInput,
+          attachments: Array.isArray(task?.attachments) ? task.attachments : []
+        }).catch(err => {
+          console.warn('[runPptBuilder] 活动图设计失败:', err.message);
+          return null;
+        });
+
+        if (visualPlan?.pages?.length) {
+          outline.pages = (outline.pages || []).map((page, index) => ({
+            ...page,
+            visualAssetPlan: visualPlan.pages.find(item => item.pageIndex === index) || page.visualAssetPlan || null
+          }));
+        }
+
+        push(taskId, 'building', 'running', { message: '正在为每页执行搜图与效果图生成...' });
+        const imageCandidates = await runImageSearch(taskId, outline, visualPlan).catch(err => {
           console.warn('[runPptBuilder] 配图搜索失败，将不带背景图生成:', err.message);
           return {};
         });
@@ -263,6 +284,7 @@ async function runPptBuilder(taskId, docContent) {
         Object.assign(imageMap, selected);
         console.log('[runPptBuilder] 配图已注入:', Object.keys(imageMap));
 
+        pushArtifact(taskId, 'image_canvas', buildImageCanvasPayload(imageCandidates, visualPlan, outline));
         taskManager.pushEvent(taskId, 'artifact', {
           artifactType: 'ppt_outline',
           payload: { title: outline.title, total, pages: outline.pages || [] }
@@ -327,15 +349,32 @@ async function runPptBuilder(taskId, docContent) {
 /**
  * 配图搜索（在 outline 生成后由 runPptBuilder 内部调用）
  */
-async function runImageSearch(taskId, pptOutline = null) {
+async function runImageSearch(taskId, pptOutline = null, visualPlan = null) {
   const task = taskManager.getTask(taskId);
   if (!task) throw new Error('任务不存在');
 
   const { bestPlan, userInput, savedApiKeys: apiKeys } = task;
   const imageAgent = new ImageAgent(apiKeys || {});
+  const visualDesignerAgent = new EventVisualDesignerAgent(apiKeys || {});
 
   try {
-    const imageCandidates = await imageAgent.run({ plan: bestPlan, userInput, taskId, pptOutline });
+    const resolvedVisualPlan = visualPlan || await visualDesignerAgent.run({
+      plan: bestPlan,
+      pptOutline,
+      userInput,
+      attachments: Array.isArray(task?.attachments) ? task.attachments : []
+    }).catch(err => {
+      console.warn('[runImageSearch] 活动图设计失败，继续用旧逻辑兜底:', err.message);
+      return null;
+    });
+
+    const imageCandidates = await imageAgent.run({
+      plan: bestPlan,
+      userInput,
+      taskId,
+      pptOutline,
+      visualPlan: resolvedVisualPlan
+    });
     taskManager.updateTask(taskId, { imageCandidates });
     console.log('[runImageSearch] 配图搜索完成');
     return imageCandidates;

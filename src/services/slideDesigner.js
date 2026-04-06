@@ -96,9 +96,10 @@ const SLIDE_CSS = `
 
 /* structured composition */
 .structured{display:block}
-.sc-layer{position:absolute;z-index:2}
-.sc-region{position:absolute;z-index:2;display:flex}
-.sc-stack{display:flex;width:100%;height:100%}
+.sc-canvas{position:absolute;inset:0;z-index:2;display:grid;align-content:start}
+.sc-layer{position:relative;z-index:1;min-width:0;min-height:0}
+.sc-region{position:relative;z-index:2;display:flex;min-width:0;min-height:0}
+.sc-stack{display:flex;width:100%;min-height:100%;height:auto}
 .sc-block{display:flex;flex-direction:column;min-width:0}
 `;
 
@@ -220,6 +221,17 @@ function toPx(value, fallback = 0) {
   if (typeof value === 'number' && Number.isFinite(value)) return `${Math.max(0, value)}px`;
   if (typeof value === 'string' && value.trim()) return value.trim();
   return `${fallback}px`;
+}
+
+function toPercentNumber(value, fallback = 0) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return clamp(value, 0, 100);
+  }
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = parseFloat(value);
+    if (Number.isFinite(parsed)) return clamp(parsed, 0, 100);
+  }
+  return fallback;
 }
 
 function hasStructuredComposition(page) {
@@ -347,9 +359,53 @@ function renderBackgroundLayers(page, options = {}) {
   }
 }
 
+function resolveCompositionPresetKey(raw) {
+  const key = typeof raw === 'string'
+    ? raw.trim().toLowerCase()
+    : (raw?.mode || raw?.name || 'editorial-left');
+
+  const aliases = {
+    'left-weighted': 'hero-asymmetric',
+    'hero-layered': 'hero-asymmetric',
+    'hero-split': 'hero-asymmetric',
+    'hero-left': 'hero-asymmetric',
+    'sidebar': 'split-editorial',
+    'split': 'compare-columns',
+    'split-columns': 'compare-columns',
+    'two-column': 'compare-columns',
+    'editorial': 'annotation-runway',
+    'editorial-right': 'annotation-runway',
+    'mosaic': 'highlights-board',
+    'board': 'highlights-board',
+    'stat-grid': 'staggered-metrics',
+    'data-narrative': 'kpi-ledger',
+    'metrics-ledger': 'kpi-ledger',
+    'flow': 'schedule-strip',
+    'timeline-strip': 'annotation-runway',
+    'editorial-centered': 'manifesto-center',
+    'centered-minimal': 'manifesto-center',
+    'centered-close': 'manifesto-center',
+    'closing-center': 'manifesto-center',
+    'staff-grid': 'team-grid',
+    'org-grid': 'team-grid',
+  };
+
+  if (aliases[key]) return aliases[key];
+  if (/hero|cover|lead/.test(key)) return 'hero-asymmetric';
+  if (/budget|cost/.test(key)) return 'budget-table';
+  if (/ledger|kpi|metric|stat|data/.test(key)) return 'kpi-ledger';
+  if (/risk|compare|versus|matrix|split/.test(key)) return 'risk-matrix';
+  if (/timeline|schedule|flow|runway/.test(key)) return 'schedule-strip';
+  if (/team|staff|crew/.test(key)) return 'team-grid';
+  if (/grid|board|mosaic|highlight/.test(key)) return 'highlights-board';
+  if (/quote|manifesto|center/.test(key)) return 'manifesto-center';
+  if (/editorial|aside|sidebar/.test(key)) return 'split-editorial';
+  return key || 'editorial-left';
+}
+
 function getCompositionPreset(page = {}) {
   const raw = page.compositionSpec || page.composition || page.visualIntent?.composition || 'editorial-left';
-  const key = typeof raw === 'string' ? raw : (raw?.mode || raw?.name || 'editorial-left');
+  const key = resolveCompositionPresetKey(raw);
   const presets = {
     'editorial-left': {
       regions: [
@@ -419,6 +475,44 @@ function getCompositionPreset(page = {}) {
       ],
       imagePlacement: { mode: 'background', emphasis: 'texture' }
     },
+    'budget-table': {
+      regions: [
+        { name: 'header', x: 7, y: 10, w: 30, h: 16, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+        { name: 'left', x: 7, y: 32, w: 26, h: 40, stack: 'vertical', gap: 12, align: 'stretch', valign: 'start' },
+        { name: 'right', x: 38, y: 22, w: 50, h: 50, stack: 'vertical', gap: 12, align: 'stretch', valign: 'start', panel: 'soft' }
+      ],
+      imagePlacement: { mode: 'background', emphasis: 'texture' }
+    },
+    'risk-matrix': {
+      regions: [
+        { name: 'header', x: 7, y: 10, w: 32, h: 14, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+        { name: 'left', x: 7, y: 28, w: 38, h: 48, stack: 'vertical', gap: 12, align: 'stretch', valign: 'start', panel: 'soft' },
+        { name: 'right', x: 54, y: 28, w: 34, h: 48, stack: 'vertical', gap: 12, align: 'stretch', valign: 'start', panel: 'soft' }
+      ],
+      imagePlacement: { mode: 'background', emphasis: 'split' }
+    },
+    'team-grid': {
+      regions: [
+        { name: 'header', x: 7, y: 10, w: 30, h: 14, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+        { name: 'facts', x: 7, y: 28, w: 84, h: 44, stack: 'grid', columns: 2, gap: 18, align: 'stretch', valign: 'start' }
+      ],
+      imagePlacement: { mode: 'background', emphasis: 'texture' }
+    },
+    'schedule-strip': {
+      regions: [
+        { name: 'header', x: 7, y: 8, w: 32, h: 14, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+        { name: 'timeline', x: 7, y: 24, w: 86, h: 52, stack: 'vertical', gap: 0, align: 'stretch', valign: 'stretch' }
+      ],
+      imagePlacement: { mode: 'background', emphasis: 'split' }
+    },
+    'kpi-ledger': {
+      regions: [
+        { name: 'header', x: 7, y: 10, w: 28, h: 15, stack: 'vertical', gap: 8, align: 'start', valign: 'start' },
+        { name: 'left', x: 7, y: 32, w: 24, h: 38, stack: 'vertical', gap: 12, align: 'stretch', valign: 'start' },
+        { name: 'right', x: 38, y: 22, w: 50, h: 48, stack: 'vertical', gap: 18, align: 'stretch', valign: 'start' }
+      ],
+      imagePlacement: { mode: 'background', emphasis: 'texture' }
+    },
     'manifesto-center': {
       regions: [
         { name: 'header', x: 10, y: 14, w: 34, h: 20, stack: 'vertical', gap: 10, align: 'start', valign: 'start' },
@@ -444,6 +538,73 @@ function mergeStructuredSpec(page = {}) {
     },
     regions: Array.isArray(page.regions) && page.regions.length ? page.regions : (incoming.regions || preset.regions || []),
   };
+}
+
+function buildStructuredGridSpec(spec = {}) {
+  const regionList = Array.isArray(spec.regions) ? spec.regions : [];
+  const items = [
+    ...regionList,
+    ...(((spec.imagePlacement?.mode || 'background') === 'background' || !spec.imagePlacement) ? [] : [spec.imagePlacement]),
+  ].filter(Boolean);
+
+  const xStops = [0, 100];
+  const yStops = [0, 100];
+
+  items.forEach((item) => {
+    const x = toPercentNumber(item.x, 0);
+    const y = toPercentNumber(item.y, 0);
+    const w = toPercentNumber(item.w, 100);
+    const h = toPercentNumber(item.h, 100);
+    xStops.push(x, clamp(x + w, 0, 100));
+    yStops.push(y, clamp(y + h, 0, 100));
+  });
+
+  const normalizeStops = (values) => values
+    .map(value => Math.round(value * 100) / 100)
+    .sort((a, b) => a - b)
+    .filter((value, index, list) => index === 0 || Math.abs(value - list[index - 1]) > 0.25);
+
+  const cols = normalizeStops(xStops);
+  const rows = normalizeStops(yStops);
+  const colTracks = cols.slice(0, -1).map((start, index) => Math.max(1, cols[index + 1] - start));
+  const rowTracks = rows.slice(0, -1).map((start, index) => Math.max(1, rows[index + 1] - start));
+
+  return { cols, rows, colTracks, rowTracks };
+}
+
+function resolveStructuredGridPlacement(item = {}, gridSpec) {
+  const cols = gridSpec?.cols || [0, 100];
+  const rows = gridSpec?.rows || [0, 100];
+  const x = toPercentNumber(item.x, 0);
+  const y = toPercentNumber(item.y, 0);
+  const w = toPercentNumber(item.w, 100);
+  const h = toPercentNumber(item.h, 100);
+  const endX = clamp(x + w, 0, 100);
+  const endY = clamp(y + h, 0, 100);
+
+  const findLine = (stops, target, fallback) => {
+    const rounded = Math.round(target * 100) / 100;
+    const exact = stops.findIndex(value => Math.abs(value - rounded) <= 0.25);
+    return (exact >= 0 ? exact : fallback) + 1;
+  };
+
+  const colStart = findLine(cols, x, 0);
+  const colEnd = Math.max(colStart + 1, findLine(cols, endX, cols.length - 1));
+  const rowStart = findLine(rows, y, 0);
+  const rowEnd = Math.max(rowStart + 1, findLine(rows, endY, rows.length - 1));
+
+  return { colStart, colEnd, rowStart, rowEnd };
+}
+
+function renderStructuredGridCanvas(gridSpec, contentHtml = '') {
+  const colTemplate = (gridSpec.colTracks.length ? gridSpec.colTracks : [100])
+    .map(track => `minmax(0, ${track}fr)`)
+    .join(' ');
+  const rowTemplate = (gridSpec.rowTracks.length ? gridSpec.rowTracks : [100])
+    .map(track => `minmax(${Math.max(16, Math.round(5.4 * track))}px, auto)`)
+    .join(' ');
+
+  return `<div class="sc-canvas" style="grid-template-columns:${colTemplate};grid-template-rows:${rowTemplate};">${contentHtml}</div>`;
 }
 
 function normalizeBlocks(page = {}) {
@@ -482,6 +643,7 @@ function chooseListVariant(page, block) {
   if (role === 'cover') return count <= 3 ? 'quiet-lines' : 'side-notes';
   if (role === 'manifesto') return longest > 28 ? 'compact-notes' : 'side-notes';
   if (role === 'highlights') return 'floating-tags';
+  if (role === 'team') return 'team-cards';
   if (role === 'closing') return 'quiet-lines';
   if (role === 'section' && count <= 4) return longest > 26 ? 'compact-notes' : 'side-notes';
   if (role === 'toc' || role === 'comparison') return 'editorial-list';
@@ -559,6 +721,15 @@ function getTypeScale(page = {}, block = {}) {
       metric: 32,
       eyebrow: 11,
     },
+    team: {
+      title: 34,
+      subtitle: 14,
+      body: 13,
+      quote: 22,
+      fact: 12,
+      metric: 28,
+      eyebrow: 11,
+    },
     comparison: {
       title: 36,
       subtitle: 14,
@@ -618,6 +789,9 @@ function chooseRegionStyle(page, region, blocks) {
   if (role === 'highlights' && region.name === 'stats') {
     return { surface: 'rule', padding: 0 };
   }
+  if (role === 'team' && region.name === 'facts') {
+    return { surface: 'none', padding: 0 };
+  }
   if (role === 'metrics' && region.name === 'stats') {
     return { surface: 'rule', padding: 0 };
   }
@@ -630,7 +804,7 @@ function chooseRegionStyle(page, region, blocks) {
   if (role === 'section') {
     return { surface: 'ghost', padding: 0 };
   }
-  if (role === 'highlights' || role === 'metrics') {
+  if (role === 'highlights' || role === 'metrics' || role === 'team') {
     return { surface: 'none', padding: 0 };
   }
   if (role === 'timeline') {
@@ -683,6 +857,16 @@ function renderStructuredBlock(block, style, page = {}) {
             <div style="display:grid;grid-template-columns:30px 1fr;gap:12px;align-items:start;padding-top:${index < columns ? '0' : '8px'};border-top:${index < columns ? '1px solid rgba(255,255,255,0.12)' : '1px solid rgba(255,255,255,0.08)'};">
               <span style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:${accent};padding-top:2px;flex-shrink:0;">${String(index + 1).padStart(2, '0')}</span>
               <span style="font-size:${factSize + 1}px;line-height:${block.lineHeight || 1.55};color:var(--text);display:-webkit-box;-webkit-line-clamp:${block.clamp || 3};-webkit-box-orient:vertical;overflow:hidden;">${esc(item)}</span>
+            </div>`).join('')}
+        </div>`;
+      }
+      if (variant === 'team-cards') {
+        const columns = (block.items || []).length >= 5 ? 3 : 2;
+        return `<div class="sc-block" style="display:grid;grid-template-columns:repeat(${columns},minmax(0,1fr));gap:18px;width:100%;">
+          ${(block.items || []).map((item, index) => `
+            <div style="min-height:132px;padding:18px 16px 16px;background:linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));border:1px solid rgba(255,255,255,0.14);box-shadow:0 10px 24px rgba(0,0,0,0.14);display:flex;flex-direction:column;gap:12px;">
+              <div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:${accent};">${String(index + 1).padStart(2, '0')}</div>
+              <div style="font-size:${factSize + 1}px;line-height:${block.lineHeight || 1.62};color:var(--text);display:-webkit-box;-webkit-line-clamp:${block.clamp || 4};-webkit-box-orient:vertical;overflow:hidden;">${esc(item)}</div>
             </div>`).join('')}
         </div>`;
       }
@@ -799,12 +983,9 @@ function renderStructuredBlock(block, style, page = {}) {
   }
 }
 
-function renderStructuredRegion(page, region, blocks, style) {
+function renderStructuredRegion(page, region, blocks, style, gridSpec) {
   if (!blocks.length) return '';
-  const x = toPercent(region.x, '0%');
-  const y = toPercent(region.y, '0%');
-  const w = toPercent(region.w, '100%');
-  const h = toPercent(region.h, '100%');
+  const minH = toPercent(region.h, '100%');
   const regionStyle = chooseRegionStyle(page, region, blocks);
   const pad = toPx(regionStyle.padding, region.panel ? 22 : 0);
   const gap = toPx(region.gap, 12);
@@ -827,23 +1008,21 @@ function renderStructuredRegion(page, region, blocks, style) {
   const innerStyle = stack === 'grid'
     ? `display:grid;grid-template-columns:repeat(${region.columns || 3},1fr);gap:${gap};align-content:${justifyMap[region.valign || 'start']};`
     : `display:flex;flex-direction:${stack === 'horizontal' ? 'row' : 'column'};gap:${gap};justify-content:${justifyMap[region.valign || 'start']};align-items:${alignMap[region.align || 'start']};`;
+  const placement = resolveStructuredGridPlacement(region, gridSpec);
 
-  return `<div class="sc-region" style="left:${x};top:${y};width:${w};height:${h};padding:${pad};overflow:hidden;${panelStyle}${surfaceStyle}">
+  return `<div class="sc-region" style="grid-column:${placement.colStart} / ${placement.colEnd};grid-row:${placement.rowStart} / ${placement.rowEnd};align-self:start;min-height:${minH};height:auto;padding:${pad};overflow:visible;${panelStyle}${surfaceStyle}">
     <div class="sc-stack" style="${innerStyle}">${contentHtml}</div>
   </div>`;
 }
 
-function renderStructuredImageLayer(spec, page) {
+function renderStructuredImageLayer(spec, page, gridSpec) {
   if (!page?.bgImage || page?.imageStrategy?.useBackground === false) return '';
   if ((spec?.mode || 'background') === 'background') return '';
-  const x = toPercent(spec.x, '58%');
-  const y = toPercent(spec.y, '10%');
-  const w = toPercent(spec.w, '30%');
-  const h = toPercent(spec.h, '72%');
   const radius = toPx(spec.radius, 24);
   const fit = spec.fit || 'cover';
   const shadow = spec.shadow || '0 24px 48px rgba(0,0,0,0.24)';
-  return `<div class="sc-layer" style="left:${x};top:${y};width:${w};height:${h};border-radius:${radius};overflow:hidden;box-shadow:${shadow};">
+  const placement = resolveStructuredGridPlacement(spec, gridSpec);
+  return `<div class="sc-layer" style="grid-column:${placement.colStart} / ${placement.colEnd};grid-row:${placement.rowStart} / ${placement.rowEnd};align-self:stretch;border-radius:${radius};overflow:hidden;box-shadow:${shadow};">
     <div style="position:absolute;inset:0;background-image:url('${page.bgImage}');background-size:${fit};background-position:center;"></div>
     <div style="position:absolute;inset:0;background:linear-gradient(180deg, rgba(9,14,22,0.04), rgba(9,14,22,0.18));"></div>
   </div>`;
@@ -852,14 +1031,16 @@ function renderStructuredImageLayer(spec, page) {
 function renderStructuredSlide(page, style) {
   const spec = mergeStructuredSpec(page);
   const blocks = normalizeBlocks(page);
+  const gridSpec = buildStructuredGridSpec(spec);
+  const imageLayer = renderStructuredImageLayer(spec.imagePlacement, page, gridSpec);
   const regions = (spec.regions || []).map(region => {
     const regionBlocks = blocks.filter(block => (block.region || 'body') === region.name);
-    return renderStructuredRegion(page, region, regionBlocks, style);
+    return renderStructuredRegion(page, region, regionBlocks, style, gridSpec);
   }).join('');
+  const canvas = renderStructuredGridCanvas(gridSpec, `${imageLayer}${regions}`);
   return `<div class="slide structured" style="${buildCssVars(style)};background:var(--bg);">
   ${renderBackgroundLayers(page, { fallbackTreatment: page?.imageStrategy?.treatment || 'ambient-texture', defaultOverlay: 0.34, defaultPlacement: 'left' })}
-  ${renderStructuredImageLayer(spec.imagePlacement, page)}
-  ${regions}
+  ${canvas}
 </div>`;
 }
 
@@ -1046,10 +1227,13 @@ const LAYOUTS = {
 
   editorial_quote(page, style) {
     const { title, subtitle, quote, facts } = page;
-    const factsHtml = (facts || []).slice(0, 4).map((item, index) => `
-      <div style="padding:14px 0;border-top:${index === 0 ? 'none' : '1px solid var(--border)'};">
-        <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;">Point ${String(index + 1).padStart(2, '0')}</div>
-        <div style="font-size:13px;line-height:1.7;color:var(--text);">${esc(item)}</div>
+    const factList = facts || [];
+    const factFontSize = factList.length > 5 ? 12 : 13;
+    const factPadding = factList.length > 5 ? '10px 0' : '14px 0';
+    const factsHtml = factList.map((item, index) => `
+      <div style="padding:${factPadding};border-top:${index === 0 ? 'none' : '1px solid var(--border)'};">
+        <div style="font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);margin-bottom:6px;">Point ${String(index + 1).padStart(2, '0')}</div>
+        <div style="font-size:${factFontSize}px;line-height:1.65;color:var(--text);">${esc(item)}</div>
       </div>`).join('');
 
     return `<div class="slide editorial" style="${buildCssVars(style)};background:var(--bg);">
@@ -1072,10 +1256,13 @@ const LAYOUTS = {
 
   asymmetrical_story(page, style) {
     const { eyebrow, title, story, points } = page;
-    const pointsHtml = (points || []).slice(0, 4).map((item, index) => `
-      <div style="display:grid;grid-template-columns:34px 1fr;gap:14px;padding:12px 0;border-top:1px solid var(--border);">
+    const pointList = points || [];
+    const pointFontSize = pointList.length > 5 ? 13 : 14;
+    const pointPadding = pointList.length > 5 ? '9px 0' : '12px 0';
+    const pointsHtml = pointList.map((item, index) => `
+      <div style="display:grid;grid-template-columns:34px 1fr;gap:14px;padding:${pointPadding};border-top:1px solid var(--border);">
         <div style="font-size:13px;color:var(--accent);font-weight:var(--weight-bold);">${String(index + 1).padStart(2, '0')}</div>
-        <div style="font-size:14px;line-height:1.7;color:var(--text);">${esc(item)}</div>
+        <div style="font-size:${pointFontSize}px;line-height:1.65;color:var(--text);">${esc(item)}</div>
       </div>`).join('');
 
     return `<div class="slide story" style="${buildCssVars(style)};background:linear-gradient(135deg,var(--bg) 0%, var(--bg-alt) 100%);">
@@ -1085,10 +1272,6 @@ const LAYOUTS = {
       ${eyebrow ? `<div style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:var(--accent);margin-bottom:22px;">${esc(eyebrow)}</div>` : ''}
       <h2 style="font-size:46px;font-weight:var(--weight-black);line-height:1.02;letter-spacing:-0.035em;color:var(--text);max-width:430px;">${esc(title || '')}</h2>
       ${story ? `<p style="margin-top:20px;font-size:16px;line-height:1.75;color:var(--text-muted);max-width:420px;">${esc(story)}</p>` : ''}
-    </div>
-    <div style="display:flex;gap:18px;align-items:end;">
-      <div style="width:90px;height:90px;border-radius:50%;border:1px solid rgba(255,255,255,0.12);background:radial-gradient(circle at 35% 35%, rgba(255,255,255,0.12), rgba(255,255,255,0.02));"></div>
-      <div style="font-size:12px;line-height:1.7;color:rgba(255,255,255,0.5);max-width:220px;">Strategy-led composition with atmospheric image support.</div>
     </div>
   </div>
   <div style="position:relative;z-index:2;padding:104px 54px 54px 24px;display:flex;align-items:flex-end;">

@@ -158,49 +158,127 @@ function stripTags(str) {
   return str.replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&#x27;/g, "'").trim();
 }
 
-// ─── 统一入口：自动降级 ──────────────────────────────────────────────────
+// ─── 结果质量评分 ────────────────────────────────────────────────────────
+
+// 权威域名加分（这些域名内容通常可靠）
+const TRUSTED_DOMAINS = /36kr\.com|huxiu\.com|36kr|techcrunch|bloomberg|reuters|theverge|wired|arstechnica|36氪|虎嗅|界面新闻|36kr|latepost|晚点|caixin|财新|yicai|第一财经|pingwest|品玩|sspai|少数派|guokr|果壳|zhihu\.com\/p|mp\.weixin|baijiahao\.baidu|people\.com|xinhuanet|chinadaily/i;
+const SPAM_SIGNALS   = /download|free|crack|porn|casino|lottery|彩票|成人|外挂|破解|刷单|兼职赚钱|快速致富/i;
+
+function scoreResult(result, query) {
+  let score = 0;
+  const title   = (result.title   || '').toLowerCase();
+  const snippet = (result.snippet || '').toLowerCase();
+  const url     = (result.url     || '').toLowerCase();
+  const queryTerms = query.toLowerCase().split(/\s+/).filter(Boolean);
+
+  // 1. 标题相关性（最高 30 分）
+  const titleHits = queryTerms.filter(t => title.includes(t)).length;
+  score += Math.min(30, titleHits * 10);
+
+  // 2. Snippet 相关性（最高 20 分）
+  const snippetHits = queryTerms.filter(t => snippet.includes(t)).length;
+  score += Math.min(20, snippetHits * 7);
+
+  // 3. Snippet 内容质量：长度适中（最高 15 分）
+  const snippetLen = snippet.length;
+  if (snippetLen > 60)  score += 10;
+  if (snippetLen > 120) score += 5;
+
+  // 4. 权威域名（最高 15 分）
+  if (TRUSTED_DOMAINS.test(url) || TRUSTED_DOMAINS.test(result.siteName || '')) score += 15;
+
+  // 5. 时效性（最高 10 分）
+  if (result.date) {
+    const year = String(result.date).match(/202[3-9]|2030/)?.[0];
+    if (year) score += year >= '2025' ? 10 : year >= '2024' ? 6 : 3;
+  }
+
+  // 6. URL 质量：https、无过多参数（最高 5 分）
+  if (url.startsWith('https')) score += 3;
+  if ((url.match(/[?&]/g) || []).length <= 2) score += 2;
+
+  // 7. 垃圾信号（扣分）
+  if (SPAM_SIGNALS.test(title) || SPAM_SIGNALS.test(url)) score -= 30;
+
+  return Math.max(0, score);
+}
 
 /**
- * 搜索网页，自动降级：MiniMax Web Search → Tavily → DuckDuckGo → 空数组
+ * 多源结果合并、去重、评分，返回最优 N 条
+ */
+function mergeAndRank(allResults, query, maxResults = 8) {
+  // URL 去重（保留先出现的，同 URL 给予多源加分）
+  const seen   = new Map(); // url → item
+  const counts = new Map(); // url → provider count
+
+  for (const item of allResults) {
+    const key = (item.url || '').split('?')[0].replace(/\/$/, '').toLowerCase();
+    if (!key) continue;
+    counts.set(key, (counts.get(key) || 0) + 1);
+    if (!seen.has(key)) seen.set(key, item);
+  }
+
+  const deduped = [...seen.entries()].map(([key, item]) => ({
+    ...item,
+    _multiSourceBonus: (counts.get(key) || 1) > 1 ? 8 : 0
+  }));
+
+  // 评分排序
+  const scored = deduped.map(item => ({
+    ...item,
+    _score: scoreResult(item, query) + item._multiSourceBonus
+  })).sort((a, b) => b._score - a._score);
+
+  return scored.slice(0, maxResults).map(({ _score, _multiSourceBonus, source, siteName, ...rest }) => rest);
+}
+
+// ─── 统一入口：并行多源 + 质量评分 ─────────────────────────────────────
+
+/**
+ * 并行拉取多个搜索源，合并评分后返回最优结果
  * @param {string} query
  * @param {object} options  { minimaxApiKey, tavilyApiKey, maxResults }
  * @returns {Promise<{results: Array, source: string|null, warning: string|null}>}
  */
 async function search(query, options = {}) {
-  // 1. 尝试 MiniMax Coding Plan Search（Token Plan 用户可直接使用 sk-cp- key）
-  try {
-    const results = await searchWithMinimax(query, options);
-    if (results.length > 0) {
-      console.log(`[webSearch] MiniMax 搜索成功: "${query}" → ${results.length} 条`);
-      return { results, source: 'minimax', warning: null };
-    }
-  } catch (err) {
-    console.warn(`[webSearch] MiniMax 失败，降级 Tavily: ${err.message}`);
+  const maxResults = options.maxResults || 8;
+  const tasks = [];
+
+  // 并行发起所有可用搜索源
+  tasks.push(
+    searchWithMinimax(query, options)
+      .then(r => r.map(x => ({ ...x, source: 'minimax' })))
+      .catch(err => { console.warn(`[webSearch] MiniMax 失败: ${err.message}`); return []; })
+  );
+
+  if (options.tavilyApiKey || config.tavilyApiKey) {
+    tasks.push(
+      searchWithTavily(query, options)
+        .then(r => r.map(x => ({ ...x, source: 'tavily' })))
+        .catch(err => { console.warn(`[webSearch] Tavily 失败: ${err.message}`); return []; })
+    );
   }
 
-  // 2. 降级 Tavily
-  try {
-    const results = await searchWithTavily(query, options);
-    if (results.length > 0) {
-      console.log(`[webSearch] Tavily 搜索成功: "${query}" → ${results.length} 条`);
-      return { results, source: 'tavily', warning: null };
-    }
-  } catch (err) {
-    console.warn(`[webSearch] Tavily 失败，降级 DuckDuckGo: ${err.message}`);
+  const allResults = (await Promise.all(tasks)).flat();
+
+  if (allResults.length > 0) {
+    const ranked = mergeAndRank(allResults, query, maxResults);
+    const sources = [...new Set(allResults.filter(r => r.source).map(r => r.source))];
+    console.log(`[webSearch] 多源合并: ${allResults.length} 条 → 评分后取 ${ranked.length} 条 (${sources.join('+')})`);
+    return { results: ranked, source: sources.join('+'), warning: null };
   }
 
-  // 3. 降级 DuckDuckGo
+  // 所有主力源失败，降级 DuckDuckGo
   try {
     const results = await searchWithDDG(query, options);
     if (results.length > 0) {
-      console.log(`[webSearch] DuckDuckGo 搜索成功: "${query}" → ${results.length} 条`);
+      console.log(`[webSearch] DuckDuckGo 兜底: "${query}" → ${results.length} 条`);
       return { results, source: 'ddg', warning: null };
     }
   } catch (err) {
     console.warn(`[webSearch] DuckDuckGo 也失败: ${err.message}`);
   }
 
-  // 4. 兜底空数组
   return { results: [], source: null, warning: '搜索服务暂时不可用，将基于通用知识继续工作' };
 }
 

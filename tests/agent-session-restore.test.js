@@ -24,7 +24,7 @@ async function startServer() {
     env: {
       ...process.env,
       PORT: String(PORT),
-      OPENCLAW_MOCK_AGENT_HOLD: '1'
+      LUNA_MOCK_AGENT_HOLD: '1'
     },
     stdio: ['ignore', 'pipe', 'pipe']
   });
@@ -99,6 +99,22 @@ async function runTest() {
       },
       brief: {
         topic: '第一轮需求，建立上下文'
+      },
+      executionPlan: {
+        mode: 'research_only',
+        targetType: 'research_summary',
+        summary: '先搜集信息，再决定是否扩展任务',
+        planItems: [
+          { content: '整理问题', status: 'completed' },
+          { content: '补充 research', status: 'in_progress' }
+        ]
+      },
+      taskSpec: {
+        taskMode: 'research',
+        targetArtifact: 'research_summary',
+        primaryRoute: 'research_pipeline',
+        fallbackRoutes: ['doc_revision_pipeline'],
+        allowedTools: ['write_todos', 'web_search']
       },
       planItems: [
         { content: '整理需求与约束', status: 'completed' },
