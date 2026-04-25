@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Luna Browser Bridge",
+  "version": "0.7.0",
+  "description": "让 Luna PPT Agent 以当前用户身份在小红书等登录态站点内搜索和抓取内容。",
+  "permissions": [
+    "tabs",
+    "scripting",
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://*.xiaohongshu.com/*",
+    "https://*.xhscdn.com/*",
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Luna Browser Bridge",
+    "default_popup": "src/popup/popup.html"
+  }
+}

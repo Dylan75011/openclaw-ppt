@@ -1,6 +1,7 @@
 // Skill: 用 DeepSeek-R1 对策划方案打分评审，判断是否通过
 const { callLLMJson } = require('../utils/llmUtils');
 const { buildCriticPrompt } = require('../prompts/critic');
+const { normalizeCritiqueResult } = require('../utils/structuredOutput');
 
 const PASS_THRESHOLD = 7.0;
 
@@ -18,8 +19,12 @@ async function critique({ plan, round, userInput }, apiKeys) {
       model: 'deepseek-reasoner',
       runtimeKey: apiKeys.deepseekApiKey,
       maxTokens: 2048,
+      timeoutMs: 90000,
       temperature: 0.5,
-      name: 'critique'
+      name: 'critique',
+      validate: normalizeCritiqueResult,
+      repairHint: '必须返回对象，包含 score(number)、strengths(string[])、weaknesses(string[])、specificFeedback(string)。',
+      debugLabel: 'critique'
     }
   );
   result.passed = result.score >= PASS_THRESHOLD;

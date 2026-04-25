@@ -2,6 +2,7 @@ const BaseAgent = require('./baseAgent');
 const { searchImages, generateMiniMaxImage, downloadImage, processImageForPpt } = require('../services/imageSearch');
 const { analyzeImageForLayout, colorDistance } = require('../services/imageAnalyzer');
 const { getRunAssetDir, toPublicUrl } = require('../services/outputPaths');
+const { pruneRuns } = require('../services/outputRetention');
 const config = require('../config');
 const path   = require('path');
 
@@ -390,6 +391,9 @@ class ImageAgent extends BaseAgent {
     };
 
     console.log(`[ImageAgent] 完成：cover=${result.cover.length} content=${result.content.length} end=${result.end.length} pages=${result.pages.length}`);
+
+    try { pruneRuns(); } catch (error) { console.warn('[ImageAgent] pruneRuns 失败:', error.message); }
+
     return result;
   }
 

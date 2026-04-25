@@ -85,6 +85,20 @@ router.put('/conversations/:id', (req, res) => {
   }
 });
 
+// 增量追加/更新单条消息（流式输出中使用，避免每次都全量重写）
+router.post('/conversations/:id/messages', (req, res) => {
+  try {
+    const { message, state, title, status } = req.body || {};
+    if (!message || !message.id) {
+      return res.status(400).json({ success: false, message: '缺少 message 或 message.id' });
+    }
+    conversationStore.appendMessage(req.params.id, message, { state, title, status });
+    res.json({ success: true });
+  } catch (e) {
+    res.status(500).json({ success: false, message: e.message });
+  }
+});
+
 // 删除会话
 router.delete('/conversations/:id', (req, res) => {
   try {
@@ -128,6 +142,17 @@ router.put('/:id/rename', (req, res) => {
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ success: false, message: e.message });
+  }
+});
+
+// 设置文档 role（requirements / reference / draft / ''）
+router.put('/:id/role', (req, res) => {
+  try {
+    const { role } = req.body || {};
+    const node = wm.setDocumentRole(req.params.id, role);
+    res.json({ success: true, node });
+  } catch (e) {
+    res.status(400).json({ success: false, message: e.message });
   }
 });
 

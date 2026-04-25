@@ -73,9 +73,19 @@ function buildRouteToolSequence(taskSpec = null, context = {}) {
         reason: '默认应先把简报结构化，再决定是否补充 research。',
         key: 'update_brief:deferred'
       }),
+      buildToolStep('propose_concept', {}, {
+        autoExecutable: false,
+        reason: '资料就位后，先给出一版活动主体思路与创意方向，让用户确认方向再进完整方案。',
+        key: 'propose_concept:deferred'
+      }),
+      buildToolStep('approve_concept', {}, {
+        autoExecutable: false,
+        reason: '用户通过 ask_user 明确确认创意方向后，调用此工具记录闸口。',
+        key: 'approve_concept:deferred'
+      }),
       buildToolStep('run_strategy', {}, {
         autoExecutable: false,
-        reason: '在 brief 和必要 context 准备好后进入完整方案生成。',
+        reason: '创意方向经用户确认后，再进入完整方案生成。',
         key: 'run_strategy:deferred'
       })
     ],

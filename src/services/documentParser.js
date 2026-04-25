@@ -1,11 +1,17 @@
 // 文档解析服务：从 PDF / Word 提取纯文本
 const pdfParse = require('pdf-parse');
 const mammoth  = require('mammoth');
+const { withTimeout } = require('../utils/abortx');
 
 const DOC_MIMES = {
   pdf:  'application/pdf',
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 };
+
+// pdf-parse / mammoth 是 CPU 同步密集型，不能真正中断。
+// withTimeout 让上层放弃等待并给用户报错，底层任务会在请求结束后被 GC。
+const PDF_PARSE_TIMEOUT_MS = 20_000;
+const DOCX_PARSE_TIMEOUT_MS = 15_000;
 
 /**
  * 判断 file 是否为支持的文档类型
@@ -32,7 +38,7 @@ async function parseDocument(buffer, mimeType, filename) {
   if (mimeType === DOC_MIMES.pdf || lowerName.endsWith('.pdf')) {
     let data;
     try {
-      data = await pdfParse(buffer);
+      data = await withTimeout(pdfParse(buffer), PDF_PARSE_TIMEOUT_MS, `pdfParse(${filename})`);
     } catch (err) {
       throw new Error(`PDF 解析失败（${filename}）：${err.message}`);
     }
@@ -51,7 +57,11 @@ async function parseDocument(buffer, mimeType, filename) {
   if (mimeType === DOC_MIMES.docx || lowerName.endsWith('.docx')) {
     let result;
     try {
-      result = await mammoth.extractRawText({ buffer });
+      result = await withTimeout(
+        mammoth.extractRawText({ buffer }),
+        DOCX_PARSE_TIMEOUT_MS,
+        `mammoth(${filename})`
+      );
     } catch (err) {
       throw new Error(`Word 文档解析失败（${filename}）：${err.message}`);
     }

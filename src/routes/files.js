@@ -40,27 +40,26 @@ router.get('/download/*', (req, res) => {
   }
 });
 
-// 列出生成的文件
+// 列出生成的 PPT 文件（只扫描 runs/*/exports，避免全树遍历）
 router.get('/list', (req, res) => {
   try {
     const outputDir = getOutputRoot();
+    const runsDir = path.join(outputDir, 'runs');
 
-    if (!fs.existsSync(outputDir)) {
-      return res.json({
-        success: true,
-        data: []
-      });
+    if (!fs.existsSync(runsDir)) {
+      return res.json({ success: true, data: [] });
     }
 
     const files = [];
-    const walk = (dir) => {
-      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        const filepath = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          walk(filepath);
-          continue;
-        }
-        if (!entry.name.endsWith('.pptx')) continue;
+    const runEntries = fs.readdirSync(runsDir, { withFileTypes: true });
+    for (const runEntry of runEntries) {
+      if (!runEntry.isDirectory()) continue;
+      const exportsDir = path.join(runsDir, runEntry.name, 'exports');
+      if (!fs.existsSync(exportsDir)) continue;
+
+      for (const entry of fs.readdirSync(exportsDir, { withFileTypes: true })) {
+        if (!entry.isFile() || !entry.name.endsWith('.pptx')) continue;
+        const filepath = path.join(exportsDir, entry.name);
         const stats = fs.statSync(filepath);
         files.push({
           filename: entry.name,
@@ -70,15 +69,11 @@ router.get('/list', (req, res) => {
           downloadUrl: `/api/files/download/${toOutputRelative(filepath)}`
         });
       }
-    };
+    }
 
-    walk(outputDir);
     files.sort((a, b) => new Date(b.created) - new Date(a.created));
 
-    res.json({
-      success: true,
-      data: files
-    });
+    res.json({ success: true, data: files });
   } catch (error) {
     res.status(500).json({
       success: false,

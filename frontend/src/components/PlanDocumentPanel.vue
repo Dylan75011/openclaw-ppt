@@ -11,10 +11,18 @@
           {{ loading ? '文档内容正在按章节逐步整理，右侧会持续更新。' : '先在对话里确认这版方案是否满意，右侧只用来查看和核对内容。' }}
         </div>
       </div>
+      <div class="doc-header-actions">
+        <button
+          v-if="!loading"
+          class="review-btn"
+          title="让 AI 专家对方案质量打分评审"
+          @click="$emit('review')"
+        >评审</button>
+      </div>
     </div>
 
     <div class="doc-body">
-      <NotionEditor v-model="localContent" />
+      <NotionEditor v-model="localContent" :auto-scroll="loading" />
     </div>
   </div>
 </template>
@@ -29,6 +37,8 @@ const props = defineProps({
   spaces:   { type: Array,   default: () => [] },
   loading:  { type: Boolean, default: false }
 })
+
+const emit = defineEmits(['review'])
 
 const localContent = ref(props.content)
 
@@ -96,6 +106,31 @@ watch(() => props.content, v => {
 .doc-subtitle {
   font-size: 12px;
   color: #6b7280;
+}
+
+.doc-header-actions {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.review-btn {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgb(var(--arcoblue-6));
+  background: rgb(var(--arcoblue-1));
+  border: 1px solid rgb(var(--arcoblue-3));
+  border-radius: 6px;
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.review-btn:hover {
+  background: rgb(var(--arcoblue-2));
+  border-color: rgb(var(--arcoblue-5));
 }
 
 .doc-body {

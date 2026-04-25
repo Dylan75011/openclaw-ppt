@@ -9,6 +9,7 @@ const os = require('os');
 const config = require('../config');
 const { renderToHtml, wrapForScreenshot } = require('./previewRenderer');
 const { getRunAssetDir, getRunId, toOutputRelative, toAbsoluteUrl } = require('./outputPaths');
+const { pruneRuns } = require('./outputRetention');
 
 let _browser = null;
 
@@ -95,6 +96,9 @@ async function generatePPT(templateData, outputFilename = null, options = {}) {
   try { fs.rmdirSync(tempDir); } catch {}
 
   console.log(`[pptGenerator] 生成完成: ${filename}（${screenshotPaths.length} 页）`);
+
+  // 本次 run 产出完成后触发一次 runs 目录剪枝（不影响当前 run 的返回值）
+  try { pruneRuns(); } catch (error) { console.warn('[pptGenerator] pruneRuns 失败:', error.message); }
 
   return {
     filename,

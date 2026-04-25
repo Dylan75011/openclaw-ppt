@@ -119,12 +119,13 @@ function inferStrategyMode({ session, documents = [], workspaceDocs = [] }) {
     summary: hasContextDocs
       ? '本轮适合先读取已有材料，再决定 research 深度和方案结构。'
       : '本轮是从零开始的新策划任务，可按需求复杂度决定 research 和方案深度。',
-    suggestedTools: ['update_brief', 'write_todos', 'web_search', 'run_strategy'],
+    suggestedTools: ['update_brief', 'write_todos', 'web_search', 'propose_concept', 'approve_concept', 'run_strategy'],
     planItems: buildPlanItems([
       buildReadSourceStep({ documents, workspaceDocs }),
       '整理任务简报与关键假设',
       '按需要补充案例/趋势 research',
-      '生成并评审方案文档',
+      '先梳理活动主体思路与创意方向，经用户确认',
+      '用户确认方向后，再生成完整方案文档',
       '根据用户反馈决定是否继续转 PPT'
     ])
   };
@@ -284,37 +285,37 @@ function createTaskSpec(executionPlan = null) {
       taskMode: 'strategy',
       primaryRoute: 'strategy_pipeline',
       fallbackRoutes: ['research_pipeline', 'ppt_build_pipeline'],
-      allowedTools: [...universalTools, 'update_brief', 'web_search', 'web_fetch', 'run_strategy', 'save_to_workspace']
+      allowedTools: [...universalTools, 'update_brief', 'web_search', 'web_fetch', 'propose_concept', 'approve_concept', 'run_strategy', 'review_strategy', 'save_to_workspace']
     },
     strategy_from_existing_material: {
       taskMode: 'strategy',
       primaryRoute: 'strategy_pipeline',
       fallbackRoutes: ['doc_revision_pipeline', 'ppt_build_pipeline'],
-      allowedTools: [...universalTools, 'update_brief', 'web_search', 'web_fetch', 'run_strategy', 'save_to_workspace', 'update_workspace_doc']
+      allowedTools: [...universalTools, 'update_brief', 'web_search', 'web_fetch', 'propose_concept', 'approve_concept', 'run_strategy', 'review_strategy', 'save_to_workspace', 'update_workspace_doc']
     },
     refine_existing_strategy: {
       taskMode: 'strategy',
       primaryRoute: 'strategy_pipeline',
       fallbackRoutes: ['doc_revision_pipeline', 'ppt_build_pipeline'],
-      allowedTools: [...universalTools, 'update_brief', 'web_search', 'web_fetch', 'run_strategy', 'save_to_workspace', 'update_workspace_doc']
+      allowedTools: [...universalTools, 'update_brief', 'web_search', 'web_fetch', 'propose_concept', 'approve_concept', 'run_strategy', 'review_strategy', 'save_to_workspace', 'update_workspace_doc']
     },
     ppt_from_existing_material: {
       taskMode: 'ppt',
       primaryRoute: 'ppt_from_material_pipeline',
       fallbackRoutes: ['strategy_pipeline', 'doc_revision_pipeline'],
-      allowedTools: [...universalTools, 'update_brief', 'run_strategy', 'build_ppt', 'update_workspace_doc', 'save_to_workspace', 'search_images']
+      allowedTools: [...universalTools, 'update_brief', 'run_strategy', 'review_strategy', 'build_ppt', 'update_workspace_doc', 'save_to_workspace', 'search_images']
     },
     generate_ppt_from_confirmed_plan: {
       taskMode: 'ppt',
       primaryRoute: 'ppt_build_pipeline',
       fallbackRoutes: ['strategy_pipeline'],
-      allowedTools: [...universalTools, 'build_ppt', 'search_images']
+      allowedTools: [...universalTools, 'review_strategy', 'build_ppt', 'search_images']
     },
     optimize_existing_ppt: {
       taskMode: 'ppt_optimize',
       primaryRoute: 'ppt_revision_pipeline',
       fallbackRoutes: ['ppt_from_material_pipeline', 'strategy_pipeline'],
-      allowedTools: [...universalTools, 'run_strategy', 'build_ppt', 'search_images']
+      allowedTools: [...universalTools, 'run_strategy', 'review_strategy', 'build_ppt', 'search_images']
     },
     ppt_request_needs_basis: {
       taskMode: 'ppt',

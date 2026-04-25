@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-04-06T15:54:11.222Z",
+  "updatedAt": "2026-04-25T16:01:57.682Z",
   "spaces": [
     {
       "id": "space_c3b5dce94dbb",
@@ -19,240 +19,118 @@
           "systemType": "space_index"
         },
         {
-          "id": "doc_f200d9e4c059",
+          "id": "folder_e40f5048c483",
+          "type": "folder",
+          "name": "全新旗舰车型发布会，对标BBA，定价45",
+          "children": [
+            {
+              "id": "doc_94649b88d008",
+              "type": "document",
+              "name": "策划方案",
+              "createdAt": "2026-04-21T15:52:04.693Z",
+              "updatedAt": "2026-04-24T17:46:24.993Z",
+              "docType": "document"
+            }
+          ],
+          "createdAt": "2026-04-21T15:52:04.693Z",
+          "updatedAt": "2026-04-21T15:52:04.693Z"
+        },
+        {
+          "id": "folder_7d7e6b554e2f",
+          "type": "folder",
+          "name": "华为智界新车发布会，500-800人规模",
+          "children": [
+            {
+              "id": "doc_c501aa8062de",
+              "type": "document",
+              "name": "策划方案",
+              "createdAt": "2026-04-22T16:24:31.797Z",
+              "updatedAt": "2026-04-22T17:26:13.445Z",
+              "docType": "document"
+            }
+          ],
+          "createdAt": "2026-04-22T16:24:31.795Z",
+          "updatedAt": "2026-04-22T16:24:31.795Z"
+        },
+        {
+          "id": "doc_ed27d27201e3",
           "type": "document",
-          "name": "122",
-          "createdAt": "2026-03-28T15:44:28.056Z",
-          "updatedAt": "2026-04-06T07:51:36.401Z",
+          "name": "小红书\"老黄牛\"笔记研究摘要",
+          "createdAt": "2026-04-23T17:01:08.301Z",
+          "updatedAt": "2026-04-24T17:45:08.511Z",
           "docType": "document"
         },
         {
-          "id": "doc_28f97b3d3c2a",
+          "id": "doc_d7a184964aeb",
           "type": "document",
-          "name": "「跨越·共生」华为Mate70新品发布会策划方案",
-          "createdAt": "2026-04-03T15:11:40.620Z",
-          "updatedAt": "2026-04-06T15:23:59.538Z",
+          "name": "小红书\"老黄牛\"笔记研究摘要",
+          "createdAt": "2026-04-24T17:23:18.822Z",
+          "updatedAt": "2026-04-24T17:36:18.143Z",
           "docType": "document"
         },
         {
-          "id": "folder_d2c2c040702c",
-          "type": "folder",
-          "name": "五感共鸣·岚图山海——岚图汽车2026-",
-          "children": [
-            {
-              "id": "doc_5a6f9d2ffa6f",
-              "type": "document",
-              "name": "策划方案",
-              "createdAt": "2026-04-05T14:43:14.248Z",
-              "updatedAt": "2026-04-06T15:38:41.496Z",
-              "docType": "document"
-            }
-          ],
-          "createdAt": "2026-04-05T14:43:14.243Z",
-          "updatedAt": "2026-04-05T14:43:14.243Z"
+          "id": "doc_df3a9c1b7270",
+          "type": "document",
+          "name": "小红书\"老黄牛\"笔记研究摘要",
+          "createdAt": "2026-04-24T17:41:08.077Z",
+          "updatedAt": "2026-04-24T17:51:34.764Z",
+          "docType": "document"
         },
         {
-          "id": "folder_c392ae942a21",
-          "type": "folder",
-          "name": "『智慧雄心·预见未来』问界M9全球首发盛",
-          "children": [
-            {
-              "id": "doc_ae0b5d16acaa",
-              "type": "document",
-              "name": "策划方案",
-              "createdAt": "2026-04-06T09:04:41.608Z",
-              "updatedAt": "2026-04-06T15:41:25.308Z",
-              "docType": "document"
-            },
-            {
-              "id": "doc_e31349056d5a",
-              "type": "document",
-              "name": "华为问界 M9 PPT.pptx",
-              "createdAt": "2026-04-06T09:19:14.540Z",
-              "updatedAt": "2026-04-06T09:19:14.540Z",
-              "docType": "ppt"
-            },
-            {
-              "id": "folder_m9img0000001",
-              "type": "folder",
-              "name": "images",
-              "createdAt": "2026-04-06T09:19:14.540Z",
-              "updatedAt": "2026-04-06T09:19:14.540Z",
-              "children": [
-                {
-                  "id": "doc_ada8a546b1af",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 01.jpg",
-                  "createdAt": "2026-04-06T09:19:14.544Z",
-                  "updatedAt": "2026-04-06T09:19:14.544Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_13e65226a63d",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 02.jpg",
-                  "createdAt": "2026-04-06T09:19:14.544Z",
-                  "updatedAt": "2026-04-06T09:19:14.544Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_e020909fd282",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 03.jpg",
-                  "createdAt": "2026-04-06T09:19:14.544Z",
-                  "updatedAt": "2026-04-06T09:19:14.544Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_0d5263ad3884",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 04.jpg",
-                  "createdAt": "2026-04-06T09:19:14.544Z",
-                  "updatedAt": "2026-04-06T09:19:14.544Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_f468ad1229de",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 05.jpg",
-                  "createdAt": "2026-04-06T09:19:14.544Z",
-                  "updatedAt": "2026-04-06T09:19:14.544Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_59f99bd9f5ab",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 06.jpg",
-                  "createdAt": "2026-04-06T09:19:14.545Z",
-                  "updatedAt": "2026-04-06T09:19:14.545Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_72989ee4f875",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 07.jpg",
-                  "createdAt": "2026-04-06T09:19:14.545Z",
-                  "updatedAt": "2026-04-06T09:19:14.545Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_75b3e691ba72",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 08.jpg",
-                  "createdAt": "2026-04-06T09:19:14.545Z",
-                  "updatedAt": "2026-04-06T09:19:14.545Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_b8aa8d268d7c",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 09.jpg",
-                  "createdAt": "2026-04-06T09:19:14.545Z",
-                  "updatedAt": "2026-04-06T09:19:14.545Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_4230fc70638f",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 10.jpg",
-                  "createdAt": "2026-04-06T09:19:14.546Z",
-                  "updatedAt": "2026-04-06T09:19:14.546Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_3ad45cd69b0c",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 11.jpg",
-                  "createdAt": "2026-04-06T09:19:14.546Z",
-                  "updatedAt": "2026-04-06T09:19:14.546Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_a251116105f9",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 12.jpg",
-                  "createdAt": "2026-04-06T09:19:14.546Z",
-                  "updatedAt": "2026-04-06T09:19:14.546Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_ed6c7de54110",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 13.jpg",
-                  "createdAt": "2026-04-06T09:19:14.546Z",
-                  "updatedAt": "2026-04-06T09:19:14.546Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_4bcbb94c43fb",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 14.jpg",
-                  "createdAt": "2026-04-06T09:19:14.547Z",
-                  "updatedAt": "2026-04-06T09:19:14.547Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_6a2b7ffbd243",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 15.jpg",
-                  "createdAt": "2026-04-06T09:19:14.547Z",
-                  "updatedAt": "2026-04-06T09:19:14.547Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_9c4a0e35ab5b",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 16.jpg",
-                  "createdAt": "2026-04-06T09:19:14.548Z",
-                  "updatedAt": "2026-04-06T09:19:14.548Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_a1d1aafe2bde",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 17.jpg",
-                  "createdAt": "2026-04-06T09:19:14.548Z",
-                  "updatedAt": "2026-04-06T09:19:14.548Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_db0891dda12d",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 18.jpg",
-                  "createdAt": "2026-04-06T09:19:14.548Z",
-                  "updatedAt": "2026-04-06T09:19:14.548Z",
-                  "docType": "image"
-                },
-                {
-                  "id": "doc_100d9213dfb8",
-                  "type": "document",
-                  "name": "华为问界 M9 配图 19.jpg",
-                  "createdAt": "2026-04-06T09:19:14.548Z",
-                  "updatedAt": "2026-04-06T09:19:14.548Z",
-                  "docType": "image"
-                }
-              ]
-            }
-          ],
-          "createdAt": "2026-04-06T09:04:41.604Z",
-          "updatedAt": "2026-04-06T09:04:41.604Z"
+          "id": "doc_c2a6f5f92f11",
+          "type": "document",
+          "name": "华为/鸿蒙智行车展活动主题研究报告",
+          "createdAt": "2026-04-24T17:56:21.516Z",
+          "updatedAt": "2026-04-25T07:54:12.850Z",
+          "docType": "document"
         },
         {
-          "id": "folder_3f2d49cc11dc",
-          "type": "folder",
-          "name": "「智感空间」——理想汽车2025上海车展",
-          "children": [
-            {
-              "id": "doc_2270fb697e27",
-              "type": "document",
-              "name": "策划方案",
-              "createdAt": "2026-04-06T15:50:18.452Z",
-              "updatedAt": "2026-04-06T15:54:11.221Z",
-              "docType": "document"
-            }
-          ],
-          "createdAt": "2026-04-06T15:50:18.449Z",
-          "updatedAt": "2026-04-06T15:50:18.449Z"
+          "id": "doc_a5624690ac5e",
+          "type": "document",
+          "name": "问界/鸿蒙智行车展活动研究报告",
+          "createdAt": "2026-04-25T09:09:13.224Z",
+          "updatedAt": "2026-04-25T09:31:04.026Z",
+          "docType": "document"
+        },
+        {
+          "id": "doc_3d618d3d4ee9",
+          "type": "document",
+          "name": "华为问界 2026北京车展活动研究摘要",
+          "createdAt": "2026-04-25T09:56:26.699Z",
+          "updatedAt": "2026-04-25T09:56:26.863Z",
+          "docType": "document"
+        },
+        {
+          "id": "doc_ba26bdad2130",
+          "type": "document",
+          "name": "小红书问界北京车展活动研究摘要",
+          "createdAt": "2026-04-25T10:17:12.238Z",
+          "updatedAt": "2026-04-25T10:17:12.420Z",
+          "docType": "document"
+        },
+        {
+          "id": "doc_772711e466c9",
+          "type": "document",
+          "name": "问界/鸿蒙智行车展活动研究报告",
+          "createdAt": "2026-04-25T11:56:20.188Z",
+          "updatedAt": "2026-04-25T11:56:20.301Z",
+          "docType": "document"
+        },
+        {
+          "id": "doc_2ad8fb559648",
+          "type": "document",
+          "name": "问界/鸿蒙智行车展活动研究报告",
+          "createdAt": "2026-04-25T15:55:33.882Z",
+          "updatedAt": "2026-04-25T15:55:34.004Z",
+          "docType": "document"
+        },
+        {
+          "id": "doc_4b2c70ad62a5",
+          "type": "document",
+          "name": "问界/鸿蒙智行车展活动研究报告",
+          "createdAt": "2026-04-25T16:01:57.646Z",
+          "updatedAt": "2026-04-25T16:01:57.681Z",
+          "docType": "document"
         }
       ],
       "indexDocId": "doc_e25fc617fdbe"
@@ -278,7 +156,7 @@
           "type": "document",
           "name": "岚图汽车区域车展运营项目方案_v2",
           "createdAt": "2026-04-05T07:44:25.918Z",
-          "updatedAt": "2026-04-06T15:53:44.692Z",
+          "updatedAt": "2026-04-15T16:19:41.345Z",
           "docType": "document"
         },
         {
@@ -288,6 +166,40 @@
           "createdAt": "2026-04-06T15:53:53.964Z",
           "updatedAt": "2026-04-06T15:53:53.965Z",
           "docType": "document"
+        },
+        {
+          "id": "folder_3521bc2b88a5",
+          "type": "folder",
+          "name": "登峰时刻  岚图珠峰上市盛典",
+          "children": [
+            {
+              "id": "doc_d70886069135",
+              "type": "document",
+              "name": "策划方案",
+              "createdAt": "2026-04-18T16:22:12.023Z",
+              "updatedAt": "2026-04-18T16:22:12.024Z",
+              "docType": "document"
+            }
+          ],
+          "createdAt": "2026-04-18T16:22:12.019Z",
+          "updatedAt": "2026-04-18T16:22:12.019Z"
+        },
+        {
+          "id": "folder_0b19f1ee4c8c",
+          "type": "folder",
+          "name": "岚图泰山X8庭院级大五座SUV新品城市级",
+          "children": [
+            {
+              "id": "doc_f8fc0670d07d",
+              "type": "document",
+              "name": "策划方案",
+              "createdAt": "2026-04-21T15:26:53.187Z",
+              "updatedAt": "2026-04-22T17:25:34.301Z",
+              "docType": "document"
+            }
+          ],
+          "createdAt": "2026-04-21T15:26:53.185Z",
+          "updatedAt": "2026-04-21T15:26:53.185Z"
         }
       ],
       "indexDocId": "doc_d626d1bcbf5a"

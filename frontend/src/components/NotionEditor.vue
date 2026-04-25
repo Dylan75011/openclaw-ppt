@@ -107,7 +107,8 @@ import { TextStyle } from '@tiptap/extension-text-style'
 import TextAlign from '@tiptap/extension-text-align'
 
 const props = defineProps({
-  modelValue: { type: [String, Object], default: '' }
+  modelValue:  { type: [String, Object], default: '' },
+  autoScroll:  { type: Boolean, default: false }  // 流式生成时自动跟随到底部
 })
 const emit = defineEmits(['update:modelValue', 'change'])
 const isUnmounting = ref(false)
@@ -260,10 +261,10 @@ const blockActions = [
 function focusEditorFromWrap(event) {
   if (!editor.value) return
   const target = event.target
-  if (
-    target instanceof HTMLElement &&
-    (target.closest('.bubble-menu') || target.closest('.slash-menu') || target.closest('.block-toolbar'))
-  ) return
+  if (!(target instanceof HTMLElement)) return
+  if (target.closest('.bubble-menu') || target.closest('.slash-menu') || target.closest('.block-toolbar')) return
+  // Let ProseMirror handle clicks inside the editor so the cursor lands where the user clicked.
+  if (target.closest('.notion-editor')) return
   nextTick(() => editor.value?.chain().focus('end').run())
 }
 
@@ -594,18 +595,34 @@ onBeforeUnmount(() => {
   } catch {}
 })
 
+function getScrollEl() {
+  // 真正的滚动容器是 .notion-editor（wrapper 内层）
+  return editor.value?.view?.dom?.closest('.notion-editor') || null
+}
+
+function scrollToBottom() {
+  const el = getScrollEl()
+  if (el) el.scrollTop = el.scrollHeight
+}
+
 watch(() => props.modelValue, (val) => {
   if (isUnmounting.value) return
   if (editor.value && !editor.value.isDestroyed) {
     const normalized = normalizeContent(val)
     const current = editor.value.getJSON()
-    if (JSON.stringify(normalized) !== JSON.stringify(current)) {
+    const same = JSON.stringify(normalized) === JSON.stringify(current)
+    if (!same) {
       editor.value.commands.setContent(normalized, false)
+      if (props.autoScroll) {
+        nextTick(scrollToBottom)
+      }
     }
   }
 })
 
-defineExpose({ editor })
+defineExpose({ editor, scrollToBottom })
+
+
 </script>
 
 <style>

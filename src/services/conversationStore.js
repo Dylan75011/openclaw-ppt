@@ -106,6 +106,22 @@ const stmts = {
   `),
   deleteByWorkspace: db.prepare(`
     DELETE FROM conversations WHERE workspace_id = ?
+  `),
+  upsertMessage: db.prepare(`
+    INSERT INTO conversation_messages (id, conversation_id, sort_order, payload_json, created_at)
+    VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET
+      sort_order = excluded.sort_order,
+      payload_json = excluded.payload_json
+  `),
+  getMaxSortOrder: db.prepare(`
+    SELECT COALESCE(MAX(sort_order), -1) AS maxOrder
+    FROM conversation_messages WHERE conversation_id = ?
+  `),
+  touchConversation: db.prepare(`
+    UPDATE conversations
+    SET updated_at = ?, last_message_at = ?, state_json = COALESCE(?, state_json), title = COALESCE(?, title), status = COALESCE(?, status)
+    WHERE id = ?
   `)
 };
 
@@ -183,6 +199,53 @@ function saveConversationSnapshot(id, payload = {}) {
   return getConversationDetail(id);
 }
 
+/**
+ * Incrementally upsert a single message (no DELETE). Safe under interleaved
+ * writes — used during SSE streaming so partial assistant text is persisted
+ * frequently without risking stale full-snapshot overwrites.
+ */
+function appendMessage(conversationId, message, { state, title, status } = {}) {
+  const conversation = stmts.getConversation.get(conversationId);
+  if (!conversation) throw new Error(`会话不存在: ${conversationId}`);
+  if (!message || !message.id) throw new Error('appendMessage: message.id 必填');
+
+  const now = new Date().toISOString();
+  db.exec('BEGIN');
+  try {
+    // If the message is new, assign it sort_order = max+1; if it already exists,
+    // keep its existing sort_order by reading it back first.
+    const existing = db.prepare(
+      'SELECT sort_order AS sortOrder FROM conversation_messages WHERE id = ? AND conversation_id = ?'
+    ).get(message.id, conversationId);
+    let sortOrder;
+    if (existing) {
+      sortOrder = existing.sortOrder;
+    } else {
+      const row = stmts.getMaxSortOrder.get(conversationId);
+      sortOrder = (row?.maxOrder ?? -1) + 1;
+    }
+    stmts.upsertMessage.run(
+      message.id,
+      conversationId,
+      sortOrder,
+      JSON.stringify(message),
+      message.createdAt || now
+    );
+    stmts.touchConversation.run(
+      now,
+      message.createdAt || now,
+      state !== undefined ? JSON.stringify(state) : null,
+      title || null,
+      status || null,
+      conversationId
+    );
+    db.exec('COMMIT');
+  } catch (error) {
+    db.exec('ROLLBACK');
+    throw error;
+  }
+}
+
 function deleteConversation(id) {
   stmts.deleteConversation.run(id);
 }
@@ -205,6 +268,7 @@ module.exports = {
   getConversation,
   getConversationDetail,
   saveConversationSnapshot,
+  appendMessage,
   deleteConversation,
   deleteWorkspaceConversations
 };

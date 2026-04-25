@@ -16,6 +16,7 @@ function getDocumentParser() {
   return _parseUploadedDocuments;
 }
 const wm = require('../services/workspaceManager');
+const { pruneAgentUploads } = require('../services/outputRetention');
 
 // 从工作空间读取被引用文档的内容
 function resolveWorkspaceDocs(refIds = []) {
@@ -157,6 +158,8 @@ function toPublicAttachments(attachments = []) {
 async function persistUploadedImages(files = []) {
   if (!Array.isArray(files) || files.length === 0) return [];
   const outputDir = ensureAgentImageDir();
+  // 先剪枝历史上传，避免 agent-inputs 目录随 session 无限增长
+  try { pruneAgentUploads(); } catch (error) { console.warn('[agent] pruneAgentUploads 失败:', error.message); }
   const attachments = [];
 
   for (const file of files) {
@@ -188,7 +191,7 @@ async function persistUploadedImages(files = []) {
  */
 router.post('/start', upload.array('images', 5), async (req, res) => {
   try {
-    const { message, spaceId, sessionId: existingSessionId, isNewConversation } = req.body;
+    const { message, spaceId, sessionId: existingSessionId, isNewConversation, forceTool, conversationId } = req.body;
     const apiKeys = safeJsonParse(req.body.apiKeys, {});
     const restoreSession = safeJsonParse(req.body.restoreSession, null);
     const attachments = await persistUploadedImages(req.files || []);
@@ -206,7 +209,12 @@ router.post('/start', upload.array('images', 5), async (req, res) => {
     if (existingSessionId && !isNewConversation) {
       const existing = agentSession.getSession(existingSessionId);
       if (existing && existing.status !== 'running' && existing.status !== 'waiting_for_user') {
+        // 防止前端切对话后误把对话 A 的 sessionId 用在对话 B：必须严格匹配
+        if (conversationId && existing.conversationId && existing.conversationId !== conversationId) {
+          return res.status(409).json({ success: false, message: 'sessionId 与 conversationId 不匹配，拒绝复用' });
+        }
         session = existing;
+        if (conversationId) agentSession.bindConversation(session, conversationId);
         session.stopRequested = false;
         session.doneEmitted = false;
         session.eventBacklog = [];
@@ -218,7 +226,8 @@ router.post('/start', upload.array('images', 5), async (req, res) => {
       session = agentSession.createSession({
         sessionId: existingSessionId && !isNewConversation ? existingSessionId : '',
         apiKeys: apiKeys || {},
-        spaceId: spaceId || ''
+        spaceId: spaceId || '',
+        conversationId: conversationId || ''
       });
       if (existingSessionId && !isNewConversation && restoreSession) {
         restoreSessionFromSnapshot(session, restoreSession);
@@ -243,7 +252,7 @@ router.post('/start', upload.array('images', 5), async (req, res) => {
       session.stopRequested = false;
       session.doneEmitted = false;
     } else {
-      brainAgent.run(session, message?.trim() || '', onEvent, { attachments, documents, workspaceDocs }).catch(err => {
+      brainAgent.run(session, message?.trim() || '', onEvent, { attachments, documents, workspaceDocs, forceTool }).catch(err => {
         console.error('[agent/start] error:', err);
         agentSession.pushEvent(session.sessionId, 'error', { message: err.message });
         session.status = 'failed';
@@ -300,7 +309,7 @@ router.get('/stream/:sessionId', (req, res) => {
 router.post('/:sessionId/reply', upload.array('images', 5), async (req, res) => {
   try {
     const { sessionId } = req.params;
-    const { reply } = req.body;
+    const { reply, conversationId } = req.body;
     const apiKeys = safeJsonParse(req.body.apiKeys, {});
     const attachments = await persistUploadedImages(req.files || []);
     const documents = await getDocumentParser()(req.files || []);
@@ -310,6 +319,10 @@ router.post('/:sessionId/reply', upload.array('images', 5), async (req, res) => 
     const session = agentSession.getSession(sessionId);
     if (!session) {
       return res.status(404).json({ success: false, message: '会话不存在' });
+    }
+    // 防止用户切到别的对话后，澄清回答被错误地路由到当前 session 所属的原对话
+    if (conversationId && session.conversationId && session.conversationId !== conversationId) {
+      return res.status(409).json({ success: false, message: 'sessionId 与 conversationId 不匹配' });
     }
     if (session.status !== 'waiting_for_user') {
       return res.status(400).json({ success: false, message: `会话状态不正确：${session.status}` });
@@ -361,23 +374,29 @@ router.use((err, req, res, next) => {
  */
 router.post('/:sessionId/build-ppt', (req, res) => {
   const { sessionId } = req.params;
-  const { docContent, apiKeys, planData, userInput, spaceId } = req.body || {};
+  const { docContent, apiKeys, planData, userInput, spaceId, conversationId } = req.body || {};
   let session = agentSession.getSession(sessionId);
   let effectiveSessionId = sessionId;
 
+  if (session && conversationId && session.conversationId && session.conversationId !== conversationId) {
+    return res.status(409).json({ success: false, message: 'sessionId 与 conversationId 不匹配' });
+  }
   if (!session) {
     if (!planData || !userInput) {
       return res.status(404).json({ success: false, message: '会话不存在' });
     }
     session = agentSession.createSession({
       apiKeys: apiKeys || {},
-      spaceId: spaceId || ''
+      spaceId: spaceId || '',
+      conversationId: conversationId || ''
     });
     effectiveSessionId = session.sessionId;
     session.bestPlan = planData;
     session.userInput = userInput;
     session.docHtml = typeof docContent === 'string' ? docContent : '';
     session.brief = userInput || null;
+  } else if (conversationId) {
+    agentSession.bindConversation(session, conversationId);
   }
   if (!session.bestPlan || !session.userInput) {
     return res.status(400).json({ success: false, message: '当前会话还没有可用于生成 PPT 的方案文档' });
@@ -422,14 +441,29 @@ router.post('/:sessionId/build-ppt', (req, res) => {
  */
 router.post('/:sessionId/stop', (req, res) => {
   const { sessionId } = req.params;
+  const { conversationId } = req.body || {};
   const session = agentSession.getSession(sessionId);
 
   if (session) {
+    if (conversationId && session.conversationId && session.conversationId !== conversationId) {
+      return res.status(409).json({ success: false, message: 'sessionId 与 conversationId 不匹配' });
+    }
     session.stopRequested = true;
+    // 立刻打断当前 LLM 流式请求和当前工具的 race —— 不必等下一次 500ms 轮询。
+    // brainAgent 在调用前会把 AbortController 挂到 session._currentLlmAbort / _currentToolAbort 上。
+    try { session._currentLlmAbort?.abort('user_stop'); } catch {}
+    try { session._currentToolAbort?.abort('user_stop'); } catch {}
     session.status = 'idle';
     session.doneEmitted = true;
-    session.eventBacklog = [];
+    session.waitingForUser = false;
+    session.pendingToolCallId = null;
+    // 先推"终止"事件给还连着的客户端，然后清空 backlog 并关闭 SSE：
+    // 顺序颠倒会让事件落进被清空的 backlog 或发到已关闭的连接。
     agentSession.pushEvent(sessionId, 'error', { message: '用户已停止任务' });
+    session.eventBacklog = [];
+    for (const client of session.sseClients.splice(0)) {
+      try { client.end(); } catch {}
+    }
   }
 
   res.json({ success: true });

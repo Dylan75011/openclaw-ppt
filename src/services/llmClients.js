@@ -3,6 +3,32 @@
 const OpenAI = require('openai');
 const config = require('../config');
 
+function shouldRetryWithoutJsonObject(err, request = {}) {
+  if (!request.response_format || request.response_format.type !== 'json_object') return false;
+  const message = String(err?.message || '').toLowerCase();
+  return (
+    message.includes('response_format') ||
+    message.includes('json_object') ||
+    message.includes('unsupported') ||
+    message.includes('unknown parameter') ||
+    message.includes('invalid parameter')
+  );
+}
+
+async function createChatCompletion(client, request, { signal } = {}) {
+  const opts = signal ? { signal } : undefined;
+  try {
+    return await client.chat.completions.create(request, opts);
+  } catch (error) {
+    if (shouldRetryWithoutJsonObject(error, request)) {
+      const fallbackRequest = { ...request };
+      delete fallbackRequest.response_format;
+      return client.chat.completions.create(fallbackRequest, opts);
+    }
+    throw error;
+  }
+}
+
 /**
  * 创建 MiniMax 客户端（每次按需创建，支持运行时 Key 覆盖）
  */
@@ -29,13 +55,13 @@ function createDeepseekClient(runtimeKey) {
 async function callMinimax(messages, options = {}) {
   const client = createMinimaxClient(options.runtimeKey);
   const model = options.minimaxModel || config.minimaxModel;
-  const response = await client.chat.completions.create({
+  const response = await createChatCompletion(client, {
     model,
     messages,
     temperature: options.temperature ?? 0.7,
     max_tokens: options.maxTokens ?? 4096,
     ...(options.extra || {})
-  });
+  }, { signal: options.signal });
   return response.choices[0].message.content;
 }
 
@@ -46,13 +72,13 @@ async function callMinimax(messages, options = {}) {
  */
 async function callDeepseekReasoner(messages, options = {}) {
   const client = createDeepseekClient(options.runtimeKey);
-  const response = await client.chat.completions.create({
+  const response = await createChatCompletion(client, {
     model: config.deepseekReasonerModel,
     messages,
     temperature: options.temperature ?? 0.6,
     max_tokens: options.maxTokens ?? 8192,
     ...(options.extra || {})
-  });
+  }, { signal: options.signal });
   return response.choices[0].message.content;
 }
 
@@ -86,6 +112,7 @@ async function callMinimaxWithTools(messages, tools, options = {}) {
 async function callMinimaxWithToolsStream(messages, tools, options = {}, onChunk = () => {}) {
   const client = createMinimaxClient(options.runtimeKey);
   const model = options.minimaxModel || config.minimaxModel;
+  const requestOpts = options.signal ? { signal: options.signal } : undefined;
 
   const stream = await client.chat.completions.create({
     model,
@@ -96,13 +123,14 @@ async function callMinimaxWithToolsStream(messages, tools, options = {}, onChunk
     max_tokens: options.maxTokens ?? 4096,
     stream: true,
     ...(options.extra || {})
-  });
+  }, requestOpts);
 
   let fullContent = '';
   const toolCallsMap = {};
   let finishReason = null;
 
   for await (const chunk of stream) {
+    if (options.signal?.aborted) break;
     const choice = chunk.choices[0];
     if (!choice) continue;
     if (choice.finish_reason) finishReason = choice.finish_reason;
@@ -139,4 +167,35 @@ async function callMinimaxWithToolsStream(messages, tools, options = {}, onChunk
   };
 }
 
-module.exports = { callMinimax, callDeepseekReasoner, callMinimaxWithTools, callMinimaxWithToolsStream };
+/**
+ * 纯文本流式输出（无工具调用）
+ * @param {Array}    messages
+ * @param {object}   options  - { runtimeKey, minimaxModel, temperature, maxTokens, signal, extra }
+ * @param {Function} onChunk  - (delta: string) => void，每个文本片段调用一次
+ * @returns {Promise<string>} 完整文本
+ */
+async function callMinimaxStreamText(messages, options = {}, onChunk = () => {}) {
+  const client = createMinimaxClient(options.runtimeKey);
+  const model = options.minimaxModel || config.minimaxModel;
+  const requestOpts = options.signal ? { signal: options.signal } : undefined;
+  const stream = await client.chat.completions.create({
+    model,
+    messages,
+    stream: true,
+    temperature: options.temperature ?? 0.7,
+    max_tokens: options.maxTokens ?? 4096,
+    ...(options.extra || {})
+  }, requestOpts);
+  let fullContent = '';
+  for await (const chunk of stream) {
+    if (options.signal?.aborted) break;
+    const delta = chunk.choices[0]?.delta?.content || '';
+    if (delta) {
+      fullContent += delta;
+      onChunk(delta);
+    }
+  }
+  return fullContent;
+}
+
+module.exports = { callMinimax, callDeepseekReasoner, callMinimaxWithTools, callMinimaxWithToolsStream, callMinimaxStreamText };

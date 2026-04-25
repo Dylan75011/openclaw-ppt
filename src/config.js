@@ -28,5 +28,14 @@ module.exports = {
 
   // 公网部署时设置此项，所有生成的下载链接将带上完整域名
   // 例如：PUBLIC_BASE_URL=https://your-domain.com 或 http://1.2.3.4:3000
-  publicBaseUrl: (process.env.PUBLIC_BASE_URL || '').replace(/\/$/, '')
+  publicBaseUrl: (process.env.PUBLIC_BASE_URL || '').replace(/\/$/, ''),
+
+  // 产出物保留策略：避免 output/ 永久膨胀
+  // 设为 0 表示该维度不限制
+  retention: {
+    runsKeep:    parseInt(process.env.RETENTION_RUNS_KEEP     || '20', 10),   // output/runs 最多保留个数
+    runsMaxAge:  parseInt(process.env.RETENTION_RUNS_MAX_AGE  || String(7 * 24 * 3600 * 1000), 10), // 7 天
+    uploadsKeep: parseInt(process.env.RETENTION_UPLOADS_KEEP  || '50', 10),   // agent-inputs 上传图
+    uploadsMaxAge: parseInt(process.env.RETENTION_UPLOADS_MAX_AGE || String(3 * 24 * 3600 * 1000), 10), // 3 天
+  }
 };

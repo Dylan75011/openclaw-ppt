@@ -99,11 +99,22 @@ function readTree() {
   return JSON.parse(fs.readFileSync(WORKSPACE_FILE, 'utf8'));
 }
 
-// 写回 workspaces.json
+// Atomic write：先写到临时文件再 rename，保证宕机/并发场景下
+// workspaces.json 不会出现半写状态。Node single-threaded 事件循环内同一
+// tick 的多个 writeTree 调用彼此互斥，只要每个调用自己完整读-改-写即可。
 function writeTree(tree) {
   ensureDirs();
   tree.updatedAt = new Date().toISOString();
-  fs.writeFileSync(WORKSPACE_FILE, JSON.stringify(tree, null, 2));
+  const tmpFile = `${WORKSPACE_FILE}.${process.pid}.${Date.now()}.tmp`;
+  fs.writeFileSync(tmpFile, JSON.stringify(tree, null, 2));
+  fs.renameSync(tmpFile, WORKSPACE_FILE);
+}
+
+// Atomic write for any JSON file under data/docs (per-doc content files).
+function writeJsonAtomic(filePath, data) {
+  const tmpFile = `${filePath}.${process.pid}.${Date.now()}.tmp`;
+  fs.writeFileSync(tmpFile, JSON.stringify(data, null, 2));
+  fs.renameSync(tmpFile, filePath);
 }
 
 // 在树中递归查找节点，返回 { node, parent, parentList }
@@ -264,7 +275,7 @@ function writeDocumentFile(node, payload = {}) {
     updatedAt: node.updatedAt,
     ...payload
   };
-  fs.writeFileSync(contentFile, JSON.stringify(initContent, null, 2));
+  writeJsonAtomic(contentFile, initContent);
 }
 
 function ensureSpaceIndex(spaceId) {
@@ -333,7 +344,7 @@ function saveSpaceIndex(spaceId, { html, indexData }) {
     indexData,
     updatedAt
   };
-  fs.writeFileSync(file, JSON.stringify(next, null, 2));
+  writeJsonAtomic(file, next);
 
   const tree = readTree();
   const found = findNode(tree.spaces, indexNode.id);
@@ -573,6 +584,22 @@ function renameNode(id, newName) {
   writeTree(tree);
 }
 
+// 设置文档 role（requirements / reference / draft / ''），用于意图分类消歧
+const ALLOWED_DOC_ROLES = ['requirements', 'reference', 'draft', ''];
+function setDocumentRole(id, role) {
+  const normalized = String(role || '').trim().toLowerCase();
+  if (!ALLOWED_DOC_ROLES.includes(normalized)) {
+    throw new Error(`role 必须是 ${ALLOWED_DOC_ROLES.filter(Boolean).join('/')} 或空`);
+  }
+  const tree = readTree();
+  const found = findNode(tree.spaces, id);
+  if (!found || found.node.type !== 'document') throw new Error('文档不存在: ' + id);
+  found.node.role = normalized;
+  found.node.updatedAt = new Date().toISOString();
+  writeTree(tree);
+  return found.node;
+}
+
 // 删除节点（递归删除子节点和内容文件）
 function deleteNode(id) {
   const tree = readTree();
@@ -619,7 +646,7 @@ function getContent(id) {
     try {
       data.content = htmlToTiptap(data.content);
       data.contentFormat = 'tiptap-json';
-      fs.writeFileSync(f, JSON.stringify(data, null, 2));
+      writeJsonAtomic(f, data);
     } catch (error) {
       console.warn('[workspaceManager] legacy-html 转 tiptap-json 失败:', error.message);
     }
@@ -635,7 +662,7 @@ function saveContent(id, content, contentFormat = 'tiptap-json') {
   data.content = content;
   data.contentFormat = contentFormat;
   data.updatedAt = new Date().toISOString();
-  fs.writeFileSync(f, JSON.stringify(data, null, 2));
+  writeJsonAtomic(f, data);
 
   // 同步更新树中的 updatedAt
   const tree = readTree();
@@ -720,7 +747,7 @@ function savePptToSpace({ spaceId, parentId, name, pptData, downloadUrl, preview
     createdAt: node.createdAt,
     updatedAt: node.updatedAt
   };
-  fs.writeFileSync(f, JSON.stringify(content, null, 2));
+  writeJsonAtomic(f, content);
   return node;
 }
 
@@ -744,7 +771,7 @@ function saveAssetToSpace({ spaceId, parentId, name, docType = 'file', filePath 
     updatedAt: node.updatedAt,
     ...meta
   };
-  fs.writeFileSync(f, JSON.stringify(content, null, 2));
+  writeJsonAtomic(f, content);
   return node;
 }
 
@@ -769,6 +796,7 @@ function getSpaceContext(spaceId) {
         name: node.name,
         docType: node.docType || 'document',
         systemType: node.systemType || '',
+        role: node.role || data.role || '',
         updatedAt: node.updatedAt || data.updatedAt || node.createdAt,
         snippet: rawText.slice(0, 1200)
       };
@@ -801,6 +829,7 @@ module.exports = {
   createSpace,
   createNode,
   renameNode,
+  setDocumentRole,
   deleteNode,
   getContent,
   saveContent,

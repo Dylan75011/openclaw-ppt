@@ -3,7 +3,7 @@ const ResearchAgent    = require('../agents/researchAgent');
 const PptBuilderAgent  = require('../agents/pptBuilderAgent');
 const ImageAgent       = require('../agents/imageAgent');
 const EventVisualDesignerAgent = require('../agents/eventVisualDesignerAgent');
-const { orchestrate, strategize, critique, writeDoc } = require('../skills');
+const { orchestrate, strategize, writeDoc } = require('../skills');
 const { generatePPT }  = require('./pptGenerator');
 const { renderToHtml } = require('./previewRenderer');
 const taskManager      = require('./taskManager');
@@ -11,6 +11,7 @@ const config           = require('../config');
 const workspaceManager = require('./workspaceManager');
 const platformMemory   = require('./platformMemory');
 const { buildImageCanvasPayload } = require('./imageCanvas');
+const { createStallWatcher } = require('./tools/helpers');
 
 function push(taskId, stage, status, extra = {}) {
   taskManager.pushEvent(taskId, 'progress', { stage, status, ...extra });
@@ -104,69 +105,44 @@ async function runMultiAgent(taskId, userInput, apiKeys = {}) {
     );
     taskManager.updateTask(taskId, { progress: 40 });
 
-    // ─── 3. Strategize + Critique 评审循环 ───────────────────────
-    let bestPlan = null;
-    let bestScore = 0;
-    let previousFeedback = null;
-    const maxRounds = config.criticMaxRounds;
-
-    for (let round = 1; round <= maxRounds; round++) {
-      taskManager.updateTask(taskId, { round });
-
-      push(taskId, 'strategy', 'running', { round, message: `第${round}轮：正在制定策划方案...` });
-      const plan = await strategize({ orchestratorOutput, researchResults, round, previousFeedback, userInput }, apiKeys);
-      push(taskId, 'strategy', 'completed', { round, message: `第${round}轮方案完成` });
-      pushArtifact(taskId, 'plan_draft', {
-        round,
-        planTitle:    plan.planTitle || '',
-        coreStrategy: plan.coreStrategy || '',
-        highlights:   plan.highlights || [],
-        sections: (plan.sections || []).map(section => ({
-          title:     section.title,
-          keyPoints: section.keyPoints || []
-        }))
+    // ─── 3. Strategize（单轮，跳过 Critique 评审）────────────────
+    push(taskId, 'strategy', 'running', { round: 1, message: '正在制定策划方案...' });
+    const bestPlan = await strategize({ orchestratorOutput, researchResults, round: 1, previousFeedback: null, userInput }, apiKeys);
+    push(taskId, 'strategy', 'completed', { round: 1, message: '策划方案完成' });
+    (bestPlan.sections || []).forEach((section, index) => {
+      pushArtifact(taskId, 'plan_section', {
+        round: 1,
+        index,
+        title:     section.title || `章节 ${index + 1}`,
+        keyPoints: section.keyPoints || [],
+        content:   section.content || {}
       });
-      (plan.sections || []).forEach((section, index) => {
-        pushArtifact(taskId, 'plan_section', {
-          round,
-          index,
-          title:     section.title || `章节 ${index + 1}`,
-          keyPoints: section.keyPoints || [],
-          content:   section.content || {}
-        });
-      });
-      taskManager.updateTask(taskId, { progress: 40 + round * 12 });
-
-      push(taskId, 'critic', 'running', { round, message: `第${round}轮：专家评审中（DeepSeek-R1）...` });
-      const review = await critique({ plan, round, userInput }, apiKeys);
-      push(taskId, 'critic', 'completed', {
-        round,
-        score:   review.score,
-        passed:  review.passed,
-        message: `第${round}轮评审完成，得分：${review.score}${review.passed ? '（通过）' : '（未通过）'}`
-      });
-      pushArtifact(taskId, 'review_feedback', {
-        round,
-        score:           review.score,
-        passed:          review.passed,
-        strengths:       review.strengths || [],
-        weaknesses:      review.weaknesses || [],
-        specificFeedback:review.specificFeedback || ''
-      });
-      taskManager.updateTask(taskId, { progress: 40 + round * 18 });
-
-      if (review.score > bestScore) {
-        bestScore = review.score;
-        bestPlan  = plan;
-      }
-
-      if (review.passed) break;
-      previousFeedback = review;
-    }
+    });
+    const bestScore = 0;
+    taskManager.updateTask(taskId, { progress: 70 });
 
     // ─── 4. 生成策划文档 ──────────────────────────────────────────
     push(taskId, 'building', 'running', { message: '正在整理策划文档...' });
-    const { markdown, html: docHtml } = await writeDoc({ plan: bestPlan, userInput, reviewFeedback: previousFeedback }, apiKeys);
+    const docWatchdog = createStallWatcher(() => {
+      push(taskId, 'building', 'running', { message: '策划文档仍在整理，正在等待模型返回...' });
+    });
+    let markdown;
+    let docHtml;
+    try {
+      ({ markdown, html: docHtml } = await writeDoc({
+        plan: bestPlan,
+        userInput,
+        reviewFeedback: null,
+        onStatus: ({ status }) => {
+          docWatchdog.bump();
+          if (status === 'fallback_start') {
+            push(taskId, 'building', 'running', { message: '文档整理稍慢，先切换为稳态成稿继续往下走...' });
+          }
+        }
+      }, apiKeys));
+    } finally {
+      docWatchdog.stop();
+    }
     push(taskId, 'building', 'completed', { message: '策划文档已生成' });
 
     taskManager.updateTask(taskId, {

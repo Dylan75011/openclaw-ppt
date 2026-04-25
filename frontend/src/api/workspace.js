@@ -17,6 +17,20 @@ export const workspaceApi = {
   createConversation: (spaceId, title)      => req('POST',   `/${spaceId}/conversations`, { title }),
   getConversation:  (id)                    => req('GET',    `/conversations/${id}`),
   saveConversation: (id, payload)           => req('PUT',    `/conversations/${id}`, payload),
+  saveConversationBeacon(id, payload) {
+    // 页面卸载时用：keepalive 让请求能在页面关闭后继续送达后端
+    try {
+      return fetch(`${BASE}/conversations/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true
+      })
+    } catch {
+      return null
+    }
+  },
+  appendConversationMessage: (id, payload)  => req('POST',   `/conversations/${id}/messages`, payload),
   removeConversation: (id)                  => req('DELETE', `/conversations/${id}`),
   rename:         (id, name)                => req('PUT',    `/${id}/rename`,    { name }),
   remove:         (id)                      => req('DELETE', `/${id}`),

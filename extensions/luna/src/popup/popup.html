@@ -1,0 +1,63 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Luna Bridge</title>
+  <style>
+    body { font: 13px/1.5 -apple-system, system-ui, sans-serif; width: 320px; padding: 14px; color: #0f172a; margin: 0; }
+    h1 { font-size: 14px; margin: 0 0 10px; }
+    h2 { font-size: 12px; color: #475569; margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .row { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; gap: 8px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; vertical-align: middle; }
+    .on  { background: #10b981; }
+    .off { background: #64748b; }
+    .warn { background: #dc2626; }
+    button { cursor: pointer; padding: 4px 10px; font-size: 12px; border: 1px solid #cbd5e1; background: #fff; border-radius: 6px; }
+    button:hover { background: #f1f5f9; }
+    button.primary { background: #0f172a; color: #fff; border-color: #0f172a; }
+    button.primary:hover { background: #1e293b; }
+    button.danger { color: #dc2626; border-color: #fecaca; }
+    input { width: 100%; padding: 4px 6px; font-size: 12px; border: 1px solid #cbd5e1; border-radius: 4px; box-sizing: border-box; font-family: ui-monospace, monospace; }
+    label { font-size: 11px; color: #64748b; }
+    .hint { color: #64748b; font-size: 11px; margin-top: 8px; }
+    .err { color: #dc2626; font-size: 11px; margin-top: 4px; }
+    .pill { display: inline-block; padding: 1px 6px; border-radius: 10px; font-size: 10px; background: #e2e8f0; color: #475569; margin-right: 4px; margin-bottom: 2px; }
+    .grants { max-height: 120px; overflow: auto; border: 1px solid #e2e8f0; border-radius: 4px; padding: 6px; background: #f8fafc; }
+    .grant-row { display: flex; justify-content: space-between; align-items: center; font-size: 11px; padding: 2px 0; }
+    .grant-row .host { font-family: ui-monospace, monospace; color: #0f172a; }
+    .empty { color: #94a3b8; font-size: 11px; text-align: center; padding: 6px; }
+  </style>
+</head>
+<body>
+  <h1>Luna Browser Bridge</h1>
+
+  <div class="row">
+    <div><span id="dot" class="dot off"></span><span id="state">加载中…</span></div>
+    <button id="reconnect">重连</button>
+  </div>
+  <div id="errMsg" class="err" style="display:none"></div>
+
+  <h2>后端连接</h2>
+  <div class="row"><label>Bridge URL</label></div>
+  <div class="row"><input id="url" value="ws://127.0.0.1:3399" /></div>
+  <div class="row">
+    <button id="save" class="primary">保存并连接</button>
+    <span id="saved" style="color:#10b981;font-size:11px;visibility:hidden">已保存</span>
+  </div>
+  <div class="hint">Token 由扩展从后端自动拉取，无需手动填。</div>
+
+  <h2>本次会话授权（session 级）</h2>
+  <div id="grants" class="grants">
+    <div class="empty">暂无授权。Agent 首次访问时会弹出审批。</div>
+  </div>
+  <div class="row" style="margin-top:6px">
+    <button id="clearGrants" class="danger">清空本次授权</button>
+    <label><input type="checkbox" id="autoRead" style="width:auto;margin-right:4px" /> allowlist 内站点只读自动放行</label>
+  </div>
+
+  <div class="hint">
+    默认只读。写操作（click/fill/navigate）必须每次点确认。Agent 搜小红书前请先手动登录 xiaohongshu.com。
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

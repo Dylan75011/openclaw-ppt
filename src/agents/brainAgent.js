@@ -1,8 +1,10 @@
 // Brain Agent：ReAct 循环（Reason → Act → Observe → Reason...）
 const { callMinimaxWithToolsStream } = require('../services/llmClients');
 const { TOOL_DEFINITIONS, executeTool, getToolDisplay } = require('../services/toolRegistry');
+const { validateAskUserArgs } = require('../services/tools/askUserValidator');
 const { analyzeAgentImages } = require('../services/visionMcp');
 const { buildBrainSystemPrompt } = require('../prompts/brain');
+const { classifyTaskIntentWithLLM } = require('../services/intentClassifier');
 const {
   createExecutionPlan,
   buildExecutionPlanContextBlock,
@@ -11,17 +13,43 @@ const {
 } = require('../services/taskPlanner');
 const { buildRouteToolSequence } = require('../services/routeExecutor');
 const wm = require('../services/workspaceManager');
+const { TimeoutError, AbortError } = require('../utils/abortx');
 
 const MAX_TURNS = 15;
 
-// 单条工具结果最大保留字符数（约 250 token）
-const TOOL_RESULT_MAX_CHARS = 1000;
-// 估算 token 数（中英混合约 0.4 token/字符）
-function estimateTokens(text) {
-  return Math.ceil((text || '').length * 0.4);
-}
-// 整体对话历史 token 警戒线（超过时截断早期工具结果）
-const CONTEXT_TOKEN_WARN = 10000;
+// 每个工具的"前台等待预算"——超过就转后台，把控制权立刻还给模型。
+// 不是工具本身的截止时间：底层调用可能继续跑完，我们只是不再阻塞主循环。
+const TOOL_BUDGET_MS = {
+  build_ppt:           120_000,
+  generate_image:       60_000,
+  search_images:        25_000,
+  web_fetch:            25_000,
+  web_search:           20_000,
+  browser_search:       30_000,
+  browser_read_page:    25_000,
+  browser_read_notes:   30_000,
+  analyze_note_images:  30_000,
+  run_strategy:         90_000,
+  review_strategy:      60_000,
+  challenge_brief:      30_000,
+  propose_concept:      30_000,
+  approve_concept:      15_000,
+  review_uploaded_images: 30_000
+};
+const TOOL_BUDGET_DEFAULT_MS = 30_000;
+// LLM 流式：超过 N 秒没新 chunk 就视为卡死并 abort
+const LLM_STREAM_IDLE_MS = 30_000;
+// 用户停止信号的轮询间隔（毫秒）
+const STOP_POLL_INTERVAL_MS = 500;
+
+const {
+  CONTEXT_TOKEN_WARN,
+  estimateTokens,
+  truncateToolResult,
+  isCompactableTool,
+  compressOldMessages,
+  extractKeyState,
+} = require('../services/contextManager');
 
 /**
  * 流式输出中实时过滤 <think>...</think> 块
@@ -136,69 +164,91 @@ function buildMessages(session) {
         lastSavedDocName: session.lastSavedDocName || null
       }
     : null;
+
+  const compactSummary = extractKeyState(session);
+
   const systemPrompt = buildBrainSystemPrompt(
     spaceContextWithLastDoc,
     session.executionPlan || null,
     session.taskSpec || null,
-    session.routeToolSequence || []
+    session.routeToolSequence || [],
+    compactSummary,
+    Array.isArray(session.askedQuestions) ? session.askedQuestions : []
   );
 
-  // 第一步：对每条 tool 消息的 content 做截断，防止搜索/抓取结果撑爆 token
-  const trimmed = session.messages.map((message) => {
+  const toolNameMap = buildToolNameMap(session.messages);
+
+  const trimmed = session.messages.map((message, idx) => {
     const next = {
       role: message.role,
       content: message.content
     };
-    if (message.tool_calls)   next.tool_calls   = message.tool_calls;
+    // 清洗 tool_calls：确保 arguments 始终是合法 JSON 字符串，
+    // 防止 MiniMax 截断或生成非法 JSON 后被 API 以 400 拒绝
+    if (message.tool_calls) {
+      next.tool_calls = message.tool_calls.map(tc => {
+        const raw = tc.function?.arguments ?? '{}';
+        let safeArgs = raw;
+        try { JSON.parse(raw); } catch { safeArgs = '{}'; }
+        return { ...tc, function: { ...tc.function, arguments: safeArgs } };
+      });
+    }
     if (message.tool_call_id) next.tool_call_id = message.tool_call_id;
 
-    if (message.role === 'tool' && typeof message.content === 'string'
-        && message.content.length > TOOL_RESULT_MAX_CHARS) {
-      next.content = message.content.slice(0, TOOL_RESULT_MAX_CHARS) + '\n...[结果已截断]';
+    if (message.role === 'tool' && typeof message.content === 'string') {
+      const toolName = toolNameMap[idx] || 'unknown';
+      next.content = truncateToolResult(toolName, message.content);
     }
     return next;
   });
 
-  // 第二步：估算总 token，超出警戒线时删除最早的工具往返（user→assistant+tool_calls→tool）
   const totalTokens = estimateTokens(systemPrompt)
     + trimmed.reduce((sum, m) => sum + estimateTokens(JSON.stringify(m)), 0);
 
   if (totalTokens > CONTEXT_TOKEN_WARN && trimmed.length > 6) {
-    // 保留最近 6 条，但要确保消息完整性
-    // 1. tool 消息必须紧跟在对应的 assistant(tool_calls) 之后
-    // 2. 如果最近 6 条的第一条是 tool 或 assistant(tool_calls)，需要调整截断点
-    
     let splitIndex = trimmed.length - 6;
-    
-    // 检查最近6条的第一条消息
+
     const firstRecentMsg = trimmed[splitIndex];
-    
-    // 如果第一条是 tool 消息，需要向前找对应的 assistant(tool_calls)
     if (firstRecentMsg.role === 'tool') {
-      // 向前找对应的 assistant
       for (let i = splitIndex - 1; i >= 0; i--) {
         const msg = trimmed[i];
         if (msg.role === 'assistant' && msg.tool_calls) {
           if (msg.tool_calls.some(tc => tc.id === firstRecentMsg.tool_call_id)) {
-            splitIndex = i; // 找到了对应的 assistant，从这里开始截断
+            splitIndex = i;
             break;
           }
         }
       }
     }
-    
+
     const recent = trimmed.slice(splitIndex);
-    const older  = trimmed.slice(0, splitIndex).filter(m => m.role !== 'tool').map(m => {
-      if (m.role === 'assistant' && m.tool_calls) {
-        // assistant 只保留文字部分，去掉 tool_calls
-        return { role: 'assistant', content: m.content || '[工具调用，已归档]' };
-      }
-      return m;
-    });
-    return [{ role: 'system', content: systemPrompt }, ...older, ...recent];
+    const older  = trimmed.slice(0, splitIndex);
+
+    const compressed = compressOldMessages(older);
+
+    return [{ role: 'system', content: systemPrompt }, ...compressed, ...recent];
   }
 
   return [{ role: 'system', content: systemPrompt }, ...trimmed];
+}
+
+function buildToolNameMap(messages) {
+  const map = {};
+  for (let i = 0; i < messages.length; i++) {
+    const msg = messages[i];
+    if (msg.role === 'assistant' && Array.isArray(msg.tool_calls)) {
+      for (const tc of msg.tool_calls) {
+        const fnName = tc.function?.name || tc.name;
+        for (let j = i + 1; j < messages.length; j++) {
+          if (messages[j].role === 'tool' && messages[j].tool_call_id === tc.id) {
+            map[j] = fnName;
+            break;
+          }
+        }
+      }
+    }
+  }
+  return map;
 }
 
 function canCallBuildPpt(session) {
@@ -333,101 +383,185 @@ async function runAutoRoutePrelude(session, onEvent, context = {}) {
   }
 }
 
-function detectTaskIntent(text = '', { documents = [], workspaceDocs = [], session = null } = {}) {
-  const normalized = String(text || '').trim().toLowerCase();
-  const sourceText = normalized.replace(/\s+/g, '');
-  if (!sourceText && !documents.length && !workspaceDocs.length) {
+
+function toIntentMeta(type = 'chat') {
+  const map = {
+    chat: {
+      label: '普通对话',
+      hint: ''
+    },
+    image_search: {
+      label: '找图配图',
+      hint: '用户当前主要意图是”找图/配图/图片参考”。优先调用 search_images，除非用户明确要案例、数据或行业信息，否则不要改走 web_search。'
+    },
+    image_generate: {
+      label: 'AI生图',
+      hint: '用户想用 AI 生成全新图片，或修改/替换已有图片。调用 generate_image，不要用 search_images 代替。'
+    },
+    research: {
+      label: '信息搜索',
+      hint: '用户当前主要意图是“搜索信息/案例/关键事实”。优先调用 web_search；只有值得深读的页面再调用 web_fetch。'
+    },
+    doc_edit: {
+      label: '文档修改',
+      hint: '用户当前主要意图是”基于现有文档修改/续写/润色”。优先读取并更新文档，不要默认重走完整 research -> strategy 流程。'
+    },
+    strategy: {
+      label: '方案策划',
+      hint: '用户当前主要意图是“做策划方案”。信息足够时直接推进 update_brief -> write_todos -> web_search -> run_strategy。'
+    },
+    ppt: {
+      label: 'PPT生成',
+      hint: '用户当前主要意图是“生成或修改 PPT”。如果还没有方案，先确认依据；如果已有方案，再判断是否进入 build_ppt。'
+    }
+  };
+
+  return map[type] || map.chat;
+}
+
+// 工具直达模式（前端"+"按钮锁定的工具）→ 强制意图
+// 跳过 LLM 分类，直接告诉 brain 用指定工具
+const FORCE_TOOL_INTENT_MAP = {
+  generate_image: {
+    type: 'image_generate',
+    label: 'AI生图',
+    hint: '【用户已手动选择"生图"工具】请直接调用 generate_image 生成图片。不要走 web_search / search_images / 策划 / PPT 等流程。如果用户描述不够具体，可以基于已知信息合理发挥；只有在描述完全无法推断主题时才用 ask_user 追问一句。'
+  },
+  build_ppt: {
+    type: 'ppt',
+    label: 'PPT',
+    hint: '【用户已手动选择"PPT"工具】请根据当前会话状态智能决定：如果已有完整策划方案（session.bestPlan），直接调用 build_ppt 生成/重生成；如果没有方案但已有足够上下文（上传的文档/空间引用/历史消息），先最小化地走 update_brief → run_strategy 拿到方案，再立即 build_ppt，不要再反复追问研究方向。跳过意图澄清。'
+  },
+  web_search: {
+    type: 'research',
+    label: '网页搜索',
+    hint: '【用户已手动选择"网页搜索"工具】请直接调用 web_search 搜资料。不要改走 search_images / 策划 / PPT。如果需要深读再调 web_fetch，搜完用 3-5 句总结关键发现即可。'
+  },
+  propose_concept: {
+    type: 'strategy',
+    label: '创意方向',
+    hint: '【用户已手动选择"创意方向"工具】请直接调用 propose_concept 给出 3 个差异化创意方向。不要走完整策划流程，不要生成 PPT。每个方向一句话核心概念 + 一句执行要点即可。'
+  }
+};
+
+function buildForcedIntent(forceTool) {
+  const meta = FORCE_TOOL_INTENT_MAP[forceTool];
+  if (!meta) return null;
+  return {
+    type: meta.type,
+    label: meta.label,
+    confidence: 1,
+    hint: meta.hint,
+    reason: `force_tool:${forceTool}`,
+    needsClarification: false,
+    suggestedType: '',
+    forcedTool: forceTool
+  };
+}
+
+const CLARIFY_HINT = '当前用户意图不够明确。先用一句话和用户确认想要的产物（找图 / 查资料 / 改文档 / 出方案 / 出 PPT），再决定后续动作。在确认前不要调用任何任务工具，也不要默认走 research / strategy / doc_edit / ppt 流程。';
+
+function buildClarifyIntent({ confidence = 0, reason = '', suggestedType = '' } = {}) {
+  return {
+    type: 'chat',
+    label: '普通对话',
+    confidence,
+    hint: CLARIFY_HINT,
+    reason,
+    needsClarification: true,
+    suggestedType: suggestedType || ''
+  };
+}
+
+// 明显的闲聊输入：无附件/文档，文本短且不含任务动词，跳过 LLM 分类节省 1-2s
+const CHAT_ACTION_VERBS = /[问查搜找生成改写出做创建制作分析研究优化调整生产修改]/u;
+const CHAT_SHORTCIRCUIT_MAX_LEN = 30;
+
+function isObviousChatMessage(text, documents, workspaceDocs, attachments) {
+  if (documents.length || workspaceDocs.length || attachments.length) return false;
+  if (text.length > CHAT_SHORTCIRCUIT_MAX_LEN) return false;
+  if (CHAT_ACTION_VERBS.test(text)) return false;
+  return true;
+}
+
+async function detectTaskIntent(text = '', {
+  documents = [],
+  workspaceDocs = [],
+  attachments = [],
+  session = null,
+  intentClassifier = null
+} = {}) {
+  const normalizedText = String(text || '').trim();
+
+  // 完全没有输入：直接落到普通对话，不需要分类
+  if (!normalizedText && !documents.length && !workspaceDocs.length && !attachments.length) {
     return {
       type: 'chat',
       label: '普通对话',
       confidence: 0.2,
-      hint: ''
+      hint: '',
+      reason: '',
+      needsClarification: false,
+      suggestedType: ''
     };
   }
 
-  const imageGenerateSignals = /(生成图|生成.*图片|生成一张|生成几张|画一张|画几张|ai生图|ai.*图|重新生成.*图|改.*这张|换.*这张|这张.*换|这张.*改|重新画|生图)/;
-  const imageSearchSignals = /(找图|搜图|配图|参考图|效果图|海报图|kv|主视觉|意向图|素材图|展台图|现场图|氛围图|背景图|找一下.*图|来几张.*图|找几张.*图|配几张.*图|.*的图么|.*的图吗)/;
-  const researchSignals = /(案例|竞品|趋势|数据|信息|新闻|资料|关键点|关键词|调研|研究|搜一下|查一下)/;
-  const docEditSignals = /(改文档|改一下文档|修改文档|润色|重写|改写|扩写|缩写|压缩|补充|完善文档|整理文档|优化文案|改方案|补一段|补一版|改一下这段|续写|精简这份文档|调整这份文档|更新文档|更新一下文档|写进文档|加进文档|写到文档|加到文档|放进文档|插进文档|追加到|补到文档|补充到文档)/;
-  const pptSignals = /(生成ppt|做ppt|出ppt|转成ppt|汇报页|排成ppt|修改ppt|优化ppt|改ppt|重做ppt|重排ppt|精简成.*页|这一页重做|这一页改一下|基于.*ppt)/;
-  const strategySignals = /(策划|方案|活动方案|发布会方案|创意方向|整合方案)/;
-
-  if (imageGenerateSignals.test(sourceText)) {
+  // 明显闲聊（短文本、无附件、无任务动词）：跳过 LLM 分类，直接返回 chat
+  if (isObviousChatMessage(normalizedText, documents, workspaceDocs, attachments)) {
     return {
-      type: 'image_generate',
-      label: 'AI生图',
-      confidence: 0.95,
-      hint: '用户想用 AI 生成全新图片，或修改/替换已有图片。调用 generate_image，不要用 search_images 代替。'
+      type: 'chat',
+      label: '普通对话',
+      confidence: 0.85,
+      hint: '',
+      reason: 'heuristic_short_circuit',
+      needsClarification: false,
+      suggestedType: ''
     };
   }
 
-  if (imageSearchSignals.test(sourceText) && !researchSignals.test(sourceText)) {
-    return {
-      type: 'image_search',
-      label: '找图配图',
-      confidence: 0.95,
-      hint: '用户当前主要意图是”找图/配图/图片参考”。优先调用 search_images，除非用户明确要案例、数据或行业信息，否则不要改走 web_search。'
-    };
+  const classifier = intentClassifier || classifyTaskIntentWithLLM;
+  if (typeof classifier !== 'function') {
+    return buildClarifyIntent({ reason: 'classifier_unavailable' });
   }
 
-  const hasSessionDoc = !!(session?.lastSavedDocId || session?.docJson);
-  if ((documents.length || workspaceDocs.length || hasSessionDoc) && docEditSignals.test(sourceText)) {
-    return {
-      type: 'doc_edit',
-      label: '文档修改',
-      confidence: 0.94,
-      hint: '用户当前主要意图是”基于现有文档修改/续写/润色”。优先读取并更新文档，不要默认重走完整 research -> strategy 流程。'
-    };
+  let classified;
+  try {
+    classified = await classifier(normalizedText, { documents, workspaceDocs, attachments, session });
+  } catch (error) {
+    return buildClarifyIntent({ reason: error?.message || 'classifier_error' });
   }
 
-  if ((documents.length || workspaceDocs.length || hasSessionDoc) && /(基于|按照|参考).*(文档|提案|方案|那份|这份)|开场文案|摘要|前言/.test(sourceText)) {
-    return {
-      type: 'doc_edit',
-      label: '文档修改',
-      confidence: 0.88,
-      hint: '用户当前主要意图是”在已有文档基础上补充或修改内容”。优先读取上下文文档并直接编辑。'
-    };
-  }
+  const conf = Number(classified?.confidence) || 0;
+  const meta = toIntentMeta(classified?.type);
 
-  if (pptSignals.test(sourceText)) {
-    return {
-      type: 'ppt',
-      label: 'PPT生成',
-      confidence: 0.93,
-      hint: '用户当前主要意图是“生成或修改 PPT”。如果还没有方案，先确认依据；如果已有方案，再判断是否进入 build_ppt。'
-    };
-  }
-
-  if (researchSignals.test(sourceText) && !imageGenerateSignals.test(sourceText) && !imageSearchSignals.test(sourceText)) {
-    return {
-      type: 'research',
-      label: '信息搜索',
-      confidence: 0.92,
-      hint: '用户当前主要意图是“搜索信息/案例/关键事实”。优先调用 web_search；只有值得深读的页面再调用 web_fetch。'
-    };
-  }
-
-  if (strategySignals.test(sourceText)) {
-    return {
-      type: 'strategy',
-      label: '方案策划',
-      confidence: 0.9,
-      hint: '用户当前主要意图是“做策划方案”。信息足够时直接推进 update_brief -> write_todos -> web_search -> run_strategy。'
-    };
+  // 低置信或模型自己说要澄清 → 不要硬猜，转为澄清对话
+  const threshold = Number.parseFloat(process.env.INTENT_CONFIDENCE_THRESHOLD);
+  const confThreshold = Number.isFinite(threshold) && threshold >= 0 && threshold <= 1 ? threshold : 0.5;
+  if (conf < confThreshold || classified?.needsClarification) {
+    return buildClarifyIntent({
+      confidence: conf,
+      reason: classified?.reason || '',
+      suggestedType: classified?.type || ''
+    });
   }
 
   return {
-    type: 'chat',
-    label: '普通对话',
-    confidence: 0.45,
-    hint: ''
+    type: classified.type,
+    label: meta.label,
+    confidence: conf,
+    hint: meta.hint || '',
+    reason: classified.reason || '',
+    needsClarification: false,
+    suggestedType: ''
   };
 }
 
-async function prepareUserInputMessage(text, attachments = [], documents = [], session, onEvent, workspaceDocs = []) {
+async function prepareUserInputMessage(text, attachments = [], documents = [], session, onEvent, workspaceDocs = [], forceTool = '') {
   const normalizedText = String(text || '').trim();
   const parts = [];
-  const detectedIntent = detectTaskIntent(normalizedText, { documents, workspaceDocs, session });
+  // 前端"+"按钮锁定的工具直达模式：跳过 LLM 意图分类，直接用强制意图
+  const forcedIntent = forceTool ? buildForcedIntent(forceTool) : null;
+  const detectedIntent = forcedIntent || await detectTaskIntent(normalizedText, { documents, workspaceDocs, attachments, session });
   const executionPlan = createExecutionPlan({
     text: normalizedText,
     intent: detectedIntent,
@@ -538,7 +672,9 @@ async function run(session, userMessage, onEvent, options = {}) {
     }
   }
 
-  const prepared = await prepareUserInputMessage(userMessage, options.attachments || [], options.documents || [], session, onEvent, options.workspaceDocs || []);
+  // 记下本轮是否是 "+ 工具直达" 模式（pill 在前端可持续亮，每轮发送都会带 forceTool 过来）
+  session.forceTool = options.forceTool || '';
+  const prepared = await prepareUserInputMessage(userMessage, options.attachments || [], options.documents || [], session, onEvent, options.workspaceDocs || [], session.forceTool);
   appendSessionAttachments(session, prepared.attachments);
   session.messages.push({
     role: 'user',
@@ -556,7 +692,10 @@ async function run(session, userMessage, onEvent, options = {}) {
  * 用户回答了 ask_user 的问题，恢复循环
  */
 async function resume(session, userReply, onEvent, options = {}) {
-  const prepared = await prepareUserInputMessage(userReply, options.attachments || [], options.documents || [], session, onEvent, options.workspaceDocs || []);
+  // resume 时复用 session 上已锁定的 forceTool（clarification 回答不应丢失工具模式）
+  const forceTool = options.forceTool || session.forceTool || '';
+  session.forceTool = forceTool;
+  const prepared = await prepareUserInputMessage(userReply, options.attachments || [], options.documents || [], session, onEvent, options.workspaceDocs || [], forceTool);
   appendSessionAttachments(session, prepared.attachments);
   // 把用户回答作为 tool result 补回去
   if (session.pendingToolCallId) {
@@ -569,6 +708,15 @@ async function resume(session, userReply, onEvent, options = {}) {
       })
     });
     session.pendingToolCallId = null;
+  }
+
+  // 把用户的回答补到 askedQuestions 最后一条 pending 记录上
+  if (Array.isArray(session.askedQuestions) && session.askedQuestions.length) {
+    const lastAsk = session.askedQuestions[session.askedQuestions.length - 1];
+    if (lastAsk && lastAsk.answer == null) {
+      lastAsk.answer = String(prepared.content || '').trim().slice(0, 200);
+      lastAsk.answeredAt = new Date().toISOString();
+    }
   }
   session.status = 'running';
   session.stopRequested = false;
@@ -593,6 +741,18 @@ async function runLoop(session, onEvent) {
     onEvent('thinking', {});
 
     let choice;
+    // 给本轮 LLM 流式调用一个独立 AbortController，挂到 session 上让 stop endpoint 能直接打断
+    const llmAc = new AbortController();
+    session._currentLlmAbort = llmAc;
+    let lastChunkAt = Date.now();
+    const llmWatchdog = setInterval(() => {
+      if (isStopRequested(session)) { llmAc.abort('user_stop'); return; }
+      if (Date.now() - lastChunkAt > LLM_STREAM_IDLE_MS) {
+        llmAc.abort(new TimeoutError('llm_stream_idle', LLM_STREAM_IDLE_MS));
+      }
+    }, STOP_POLL_INTERVAL_MS);
+    if (typeof llmWatchdog.unref === 'function') llmWatchdog.unref();
+
     try {
       const filter = new ThinkFilter();
       let hasStreamedText = false;
@@ -604,9 +764,11 @@ async function runLoop(session, onEvent) {
           runtimeKey: session.apiKeys.minimaxApiKey,
           minimaxModel: session.apiKeys.minimaxModel,
           maxTokens: 4096,
-          temperature: 0.7
+          temperature: 0.7,
+          signal: llmAc.signal
         },
         (chunk) => {
+          lastChunkAt = Date.now();
           if (chunk.type !== 'text_delta') return;
           const clean = filter.push(chunk.delta);
           if (clean) {
@@ -627,13 +789,46 @@ async function runLoop(session, onEvent) {
 
     } catch (err) {
       console.error('[BrainAgent] LLM 调用失败:', err.message);
-      if (isStopRequested(session)) {
+      if (isStopRequested(session) || llmAc.signal.aborted && llmAc.signal.reason === 'user_stop') {
         session.status = 'idle';
         return;
       }
+      // 空闲超时：给模型一个更友好的错误 + 让外层 catch 走"普通错误"分支
+      if (err instanceof TimeoutError || err?.code === 'TIMEOUT') {
+        err.message = `LLM 流响应超时（${LLM_STREAM_IDLE_MS / 1000}s 无新内容）`;
+      }
+
+      // ── 400 invalid function arguments：清理历史中的坏 tool_call 后重试一次 ──
+      const is400InvalidArgs = /400.*invalid.*function|invalid.*arguments.*json|2013/i.test(err.message);
+      if (is400InvalidArgs && turn === 0) {
+        console.warn('[BrainAgent] 检测到 tool_call arguments 非法，清理历史后重试...');
+        // 移除最近一条含 tool_calls 的 assistant 消息及其对应的 tool 回复
+        const msgs = session.messages;
+        let lastAssistIdx = -1;
+        for (let i = msgs.length - 1; i >= 0; i--) {
+          if (msgs[i].role === 'assistant' && Array.isArray(msgs[i].tool_calls)) {
+            lastAssistIdx = i;
+            break;
+          }
+        }
+        if (lastAssistIdx >= 0) {
+          const badIds = new Set(msgs[lastAssistIdx].tool_calls.map(tc => tc.id));
+          session.messages = msgs.filter((m, i) => {
+            if (i === lastAssistIdx) return false;
+            if (m.role === 'tool' && badIds.has(m.tool_call_id)) return false;
+            return true;
+          });
+          console.warn(`[BrainAgent] 已移除 turn ${lastAssistIdx} 的 tool_calls，继续重试`);
+          continue; // 重新进入本轮循环
+        }
+      }
+
       onEvent('error', { message: `AI 调用失败：${err.message}` });
       session.status = 'failed';
       return;
+    } finally {
+      clearInterval(llmWatchdog);
+      if (session._currentLlmAbort === llmAc) session._currentLlmAbort = null;
     }
 
     if (isStopRequested(session)) {
@@ -690,8 +885,45 @@ async function runLoop(session, onEvent) {
 
       // ── ask_user：特殊处理，暂停循环 ──────────────────────────
       if (toolName === 'ask_user') {
+        // 质量体检：拦住浅问（缺 description、只有 1 个 option、suggestion 没带 options 等）
+        const validation = validateAskUserArgs(args);
+        if (!validation.valid) {
+          console.warn(`[BrainAgent] ask_user 调用被拒：${validation.error}`);
+          onEvent('tool_call', { tool: toolName, display: getToolDisplay(toolName, args), toolCallId: toolCall.id });
+          const toolResult = { success: false, error: validation.error, guidance: validation.guidance };
+          onEvent('tool_result', buildToolResultEvent(toolName, toolResult));
+          session.messages.push({
+            role: 'tool',
+            tool_call_id: toolCall.id,
+            content: JSON.stringify(toolResult)
+          });
+          session.messages.push({
+            role: 'user',
+            content: `系统提示：你上一次的 ask_user 调用不合格（${validation.error}）。${validation.guidance}\n请重新构造 ask_user 调用，不要换成普通文本发问。`
+          });
+          continue;
+        }
+
         session.pendingToolCallId = toolCall.id;
         session.status = 'waiting_for_user';
+
+        // 记录一笔"已问但未答"的追问到 session，防止跨轮鬼打墙
+        if (!Array.isArray(session.askedQuestions)) session.askedQuestions = [];
+        const _trim = (x) => String(x || '').trim();
+        session.askedQuestions.push({
+          header: _trim(args.header),
+          question: _trim(args.question).slice(0, 160),
+          type: _trim(args.type) || 'missing_info',
+          optionLabels: (Array.isArray(args.options) ? args.options : [])
+            .map(o => _trim(o && o.label))
+            .filter(Boolean),
+          askedAtTurn: turn,
+          answer: null
+        });
+        if (session.askedQuestions.length > 6) {
+          session.askedQuestions = session.askedQuestions.slice(-6);
+        }
+
         onEvent('clarification', {
           header: args.header || '',
           question: args.question || '请提供更多信息',
@@ -725,17 +957,54 @@ async function runLoop(session, onEvent) {
       const display = getToolDisplay(toolName, args);
       onEvent('tool_call', { tool: toolName, display, toolCallId: toolCall.id });
 
+      // 给本次工具调用一个独立 AbortController，挂到 session 上让 stop endpoint 能直接打断。
+      // 同时启 watchdog 周期性检查 stopRequested —— 不依赖底层工具自己看 signal。
+      const toolAc = new AbortController();
+      session._currentToolAbort = toolAc;
+      const toolWatchdog = setInterval(() => {
+        if (isStopRequested(session)) toolAc.abort('user_stop');
+      }, STOP_POLL_INTERVAL_MS);
+      if (typeof toolWatchdog.unref === 'function') toolWatchdog.unref();
+
+      const budget = TOOL_BUDGET_MS[toolName] || TOOL_BUDGET_DEFAULT_MS;
       let toolResult;
       try {
-        toolResult = await executeTool(toolName, args, session, onEvent);
+        // race(real, timeout, abort) —— 任意一个赢都立刻把控制权交还给主循环。
+        // 底层 executeTool 不一定真的停下（它没传 signal），但我们不再阻塞 LLM 的下一轮。
+        toolResult = await Promise.race([
+          executeTool(toolName, args, session, onEvent),
+          new Promise((_, reject) => {
+            const t = setTimeout(() => reject(new TimeoutError(`tool:${toolName}`, budget)), budget);
+            if (typeof t.unref === 'function') t.unref();
+          }),
+          new Promise((_, reject) => {
+            toolAc.signal.addEventListener('abort', () => reject(new AbortError(toolAc.signal.reason)), { once: true });
+          })
+        ]);
       } catch (err) {
-        console.error(`[BrainAgent] 工具 ${toolName} 执行失败:`, err.message);
-        if (isStopRequested(session)) {
+        if (err instanceof AbortError && (err.reason === 'user_stop' || isStopRequested(session))) {
           session.status = 'idle';
           return;
         }
-        toolResult = { error: err.message };
-        onEvent('tool_progress', { message: `执行失败：${err.message}` });
+        if (err instanceof TimeoutError || err?.code === 'TIMEOUT') {
+          // 关键：超时不当成失败抛回模型。返回一段"已转后台"的 tool_result，
+          // 让模型自己决定下一步（继续别的事 / 直接回答用户 / 等等）。
+          toolResult = {
+            backgrounded: true,
+            tool: toolName,
+            budget_ms: budget,
+            message: `工具 ${toolName} 在 ${Math.round(budget / 1000)} 秒内未返回，已转入后台继续执行。请勿重复调用同一工具；可基于已有信息继续推进，或直接告知用户当前阶段进展。`
+          };
+          console.warn(`[BrainAgent] 工具 ${toolName} 超时（${budget}ms），转后台`);
+          onEvent('tool_progress', { message: `${toolName} 已转后台（${Math.round(budget / 1000)}s 未返回）` });
+        } else {
+          console.error(`[BrainAgent] 工具 ${toolName} 执行失败:`, err.message);
+          toolResult = { error: err.message };
+          onEvent('tool_progress', { message: `执行失败：${err.message}` });
+        }
+      } finally {
+        clearInterval(toolWatchdog);
+        if (session._currentToolAbort === toolAc) session._currentToolAbort = null;
       }
 
       if (isStopRequested(session)) {
@@ -846,8 +1115,19 @@ function buildToolResultEvent(toolName, toolResult) {
         tool: toolName,
         ok: !!safeResult.success,
         summary: safeResult.success
-          ? `方案已形成，评分 ${safeResult.score || 0}`
+          ? (safeResult.degraded
+              ? `方案已生成（${safeResult.sectionCount || 0} 个章节，**降级兜底版**：模型结构化输出异常）并在右侧展示。回复时必须提示用户"这一版偏保守/兜底"，建议再跑一次或继续调整；不要复述方案内容。`
+              : `方案已生成（${safeResult.sectionCount || 0} 个章节）并在右侧文档面板展示。回复时**不要**复述方案内容/亮点/章节（用户已看到），只用 1-2 句告诉用户方案好了，并询问下一步（出 PPT / 评审 / 继续改）。`)
           : (safeResult.error || '方案生成失败'),
+        details
+      };
+    case 'review_strategy':
+      return {
+        tool: toolName,
+        ok: !!safeResult.success,
+        summary: safeResult.success
+          ? `评审完成，得分 ${safeResult.score}${safeResult.passed ? '（通过）' : '（待优化）'}`
+          : (safeResult.error || '评审失败'),
         details
       };
     case 'build_ppt':

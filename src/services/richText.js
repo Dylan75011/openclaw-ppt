@@ -62,7 +62,13 @@ function markdownToHtml(md = '') {
       tableRows = [];
     }
 
-    if (/^### (.+)/.test(line)) {
+    if (/^#{6} (.+)/.test(line)) {
+      result.push(`<h6>${inlineParse(line.replace(/^#{6} /, ''))}</h6>`);
+    } else if (/^#{5} (.+)/.test(line)) {
+      result.push(`<h5>${inlineParse(line.replace(/^#{5} /, ''))}</h5>`);
+    } else if (/^#### (.+)/.test(line)) {
+      result.push(`<h4>${inlineParse(line.replace(/^#### /, ''))}</h4>`);
+    } else if (/^### (.+)/.test(line)) {
       result.push(`<h3>${inlineParse(line.replace(/^### /, ''))}</h3>`);
     } else if (/^## (.+)/.test(line)) {
       result.push(`<h2>${inlineParse(line.replace(/^## /, ''))}</h2>`);

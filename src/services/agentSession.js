@@ -8,9 +8,9 @@ const MAX_SESSIONS   = 200;                  // 最多同时保留 200 个 sessi
 
 /**
  * 创建新会话
- * @param {{ apiKeys, spaceId, sessionId }} opts
+ * @param {{ apiKeys, spaceId, sessionId, conversationId }} opts
  */
-function createSession({ apiKeys = {}, spaceId = '', sessionId: providedSessionId = '' } = {}) {
+function createSession({ apiKeys = {}, spaceId = '', sessionId: providedSessionId = '', conversationId = '' } = {}) {
   // 容量保护：超过上限时逐出最旧的 idle/failed session
   if (sessions.size >= MAX_SESSIONS) {
     const evictable = [...sessions.entries()]
@@ -29,6 +29,7 @@ function createSession({ apiKeys = {}, spaceId = '', sessionId: providedSessionI
   const session = {
     sessionId,
     spaceId,
+    conversationId: conversationId || '',  // 绑定到具体对话，防止 sessionId 被错误对话复用造成数据污染
     apiKeys,                  // { minimaxApiKey, deepseekApiKey, minimaxModel, tavilyApiKey, jinaApiKey }
     status: 'idle',           // idle | running | waiting_for_user | completed | failed
     messages: [],             // 完整对话历史（含 tool_calls / tool results）
@@ -49,6 +50,7 @@ function createSession({ apiKeys = {}, spaceId = '', sessionId: providedSessionI
     planItems: [],            // 当前任务计划
     attachments: [],          // 当前会话累计上传的图片
     researchStore: [],        // 累积所有 web_search 结果，供 run_strategy 强制引用
+    askedQuestions: [],       // ask_user 历史：记录每次追问与用户回复，防止跨轮重复发问
     doneEmitted: false,       // 防止重复推送 done
     createdAt: Date.now(),
     updatedAt: Date.now()
@@ -59,6 +61,21 @@ function createSession({ apiKeys = {}, spaceId = '', sessionId: providedSessionI
 
 function getSession(sessionId) {
   return sessions.get(sessionId) || null;
+}
+
+/**
+ * 在尚未绑定 conversationId 时绑定，已绑定则比较是否一致。
+ * 用于防止 sessionId 被前端错误地用在另一个对话里 — 任何不匹配都会
+ * 让调用方主动报错，避免静默把消息写到错误的对话。
+ */
+function bindConversation(session, conversationId) {
+  if (!session) return false;
+  if (!conversationId) return true;
+  if (!session.conversationId) {
+    session.conversationId = conversationId;
+    return true;
+  }
+  return session.conversationId === conversationId;
 }
 
 function updateSession(sessionId, updates) {
@@ -131,4 +148,4 @@ setInterval(() => {
   }
 }, 10 * 60 * 1000).unref(); // unref 使定时器不阻止进程退出
 
-module.exports = { createSession, getSession, updateSession, deleteSession, addSseClient, removeSseClient, pushEvent };
+module.exports = { createSession, getSession, updateSession, deleteSession, addSseClient, removeSseClient, pushEvent, bindConversation };

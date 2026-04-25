@@ -957,7 +957,7 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
   background: #fff;
 }
 
@@ -1091,16 +1091,32 @@ onUnmounted(() => {
 .doc-page-title::placeholder { color: #d6d3d1; }
 
 .doc-editor-area {
-  flex: 1;
+  flex: 1 0 auto;
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
   background: transparent;
+}
+
+.doc-editor-area {
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .doc-editor-area :deep(.notion-editor) {
   max-width: none;
   width: 100%;
-  margin: 0 auto;
+  margin: 0;
+  overflow: visible;
+  min-height: auto;
+  /* 对齐标题文字：32px 外边距 + 42px 图标 + 14px 间隔 = 88px */
+  padding: 32px 32px 100px 88px;
+}
+
+@media (max-width: 768px) {
+  .doc-editor-area :deep(.notion-editor) {
+    padding: 24px 18px 90px 18px;
+  }
 }
 
 @media (max-width: 768px) {

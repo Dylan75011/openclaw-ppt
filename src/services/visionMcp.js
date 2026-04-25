@@ -1,6 +1,13 @@
 const fs = require('fs/promises');
 const path = require('path');
 const config = require('../config');
+const { fetchWithTimeout, withTimeout } = require('../utils/abortx');
+
+// 单图下载/VLM 调用的硬上限。上层 brainAgent 还会有更大的 race，这里只防"挂死在 socket"。
+const IMAGE_DOWNLOAD_TIMEOUT_MS = 8_000;
+const VLM_REQUEST_TIMEOUT_MS = 15_000;
+// analyzeAgentImages 单图整体兜底（含下载+VLM），并发模式下用来防止某张图拖慢全局
+const PER_IMAGE_BUDGET_MS = 25_000;
 
 function getMinimaxApiHost() {
   return String(config.minimaxBaseUrl || 'https://api.minimaxi.com/v1').replace(/\/v1\/?$/, '');
@@ -16,6 +23,18 @@ async function fileToDataUrl(localPath, mimeType = '') {
   return `data:${resolvedMimeType};base64,${buffer.toString('base64')}`;
 }
 
+// 部分 CDN 对 Referer / UA 校验严格（典型例子：xhs CDN 的 sns-webpic-qc.xhscdn.com）
+// 检测到这类域名时自动带上对应 Referer，避免在 Node 后端拉图被 403
+function fetchHeadersFor(url) {
+  if (/xhscdn\.com|xiaohongshu\.com/i.test(url)) {
+    return {
+      'Referer': 'https://www.xiaohongshu.com/',
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36'
+    };
+  }
+  return {};
+}
+
 async function normalizeImageSource(imageSource, mimeType = '') {
   if (!imageSource) throw new Error('图片来源不能为空');
 
@@ -24,7 +43,11 @@ async function normalizeImageSource(imageSource, mimeType = '') {
   }
 
   if (imageSource.startsWith('http://') || imageSource.startsWith('https://')) {
-    const response = await fetch(imageSource);
+    const response = await fetchWithTimeout(
+      imageSource,
+      { headers: fetchHeadersFor(imageSource) },
+      IMAGE_DOWNLOAD_TIMEOUT_MS
+    );
     if (!response.ok) throw new Error(`下载图片失败：HTTP ${response.status}`);
     const contentType = response.headers.get('content-type') || mimeType || 'image/jpeg';
     const arrayBuffer = await response.arrayBuffer();
@@ -39,7 +62,7 @@ async function understandImage(prompt, imageSource, options = {}) {
   if (!apiKey) throw new Error('MINIMAX_API_KEY 未配置，请在设置面板中填写');
 
   const imageUrl = await normalizeImageSource(imageSource, options.mimeType);
-  const response = await fetch(`${getMinimaxApiHost()}/v1/coding_plan/vlm`, {
+  const response = await fetchWithTimeout(`${getMinimaxApiHost()}/v1/coding_plan/vlm`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -49,7 +72,7 @@ async function understandImage(prompt, imageSource, options = {}) {
       prompt,
       image_url: imageUrl
     })
-  });
+  }, VLM_REQUEST_TIMEOUT_MS);
 
   if (!response.ok) {
     throw new Error(`MiniMax VLM HTTP ${response.status}`);
@@ -70,25 +93,23 @@ async function analyzeAgentImages(attachments = [], options = {}) {
     text ? `用户本轮问题或说明：${text}` : '用户本轮未提供额外文字，请重点概括图片本身。'
   ].join('\n');
 
-  const results = [];
-  for (const attachment of attachments) {
+  // 并发分析：原本 for-of 串行下 5 张图 ≈ 5×VLM 延迟。
+  // 单图整体 race PER_IMAGE_BUDGET_MS 兜底，慢的那张不会拖死全局。
+  const results = await Promise.all(attachments.map(async (attachment) => {
     try {
-      const analysis = await understandImage(prompt, attachment.localPath || attachment.url, {
-        minimaxApiKey: options.minimaxApiKey,
-        mimeType: attachment.mimeType
-      });
-      results.push({
-        ...attachment,
-        analysis
-      });
+      const analysis = await withTimeout(
+        understandImage(prompt, attachment.localPath || attachment.url, {
+          minimaxApiKey: options.minimaxApiKey,
+          mimeType: attachment.mimeType
+        }),
+        PER_IMAGE_BUDGET_MS,
+        `analyzeImage(${attachment.name || attachment.id || 'unknown'})`
+      );
+      return { ...attachment, analysis };
     } catch (error) {
-      results.push({
-        ...attachment,
-        analysis: '',
-        error: error.message
-      });
+      return { ...attachment, analysis: '', error: error.message };
     }
-  }
+  }));
   return results;
 }
 

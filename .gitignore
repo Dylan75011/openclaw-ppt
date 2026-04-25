@@ -4,3 +4,12 @@ output/
 *.pptx
 .DS_Store
 tmp/
+
+# Runtime logs（不应进入版本库；每次运行都会产生）
+*.log
+
+# Playwright skill 一次性执行脚本
+**/.temp-execution-*.js
+
+# Playwright CLI 落盘的调试快照
+.playwright-cli/
